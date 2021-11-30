@@ -1,0 +1,33 @@
+openapi: "3.0.1"
+info:
+  title: "Skynet API"
+  description: "This is the skynet infrastructure api"
+  contact:
+    email: "contact@guillaume-etheve.fr"
+  version: "0.1"
+servers:
+  - url: "http://localhost:8888"
+    description: Local test server
+paths:
+  /status:
+    get:
+      tags: ["Status"]
+      responses:
+        200:
+          description: "The server is up and running"
+components:
+  schemas:
+
+
+  responses:
+    401:
+      description: You are not authorized to acces this object
+    404:
+      description: The requested object is not available
+    500:
+      description: An internal error occured
+  securitySchemes:
+    auth:
+      type: "apiKey"
+      name: "Authorization"
+      in: "Header"
