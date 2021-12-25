@@ -1,0 +1,21 @@
+{
+  "additionalProperties": {
+    "apiPackage": "fr.blendman.skynet.api",
+    "artifactDescription": "The generated client for skynet RestApi",
+    "artifactId": "skynet-api",
+    "artifactUrl": "https://guillaume-etheve.fr",
+    "artifactVersion": "1.0",
+    "asyncNative": true,
+    "dateLibrary": "java8",
+    "developerEmail": "admin@guillaume-etheve.fr",
+    "developerName": "Blendman974",
+    "developerOrganization": "Aspaku",
+    "developerOrganizationUrl": "https://aspaku.com",
+    "groupId": "fr.blendman",
+    "hideGenerationTimestamp": true,
+    "invokerPackage": "fr.blendman.skynet.client",
+    "java8": true,
+    "library": "okhttp-gson-nextgen",
+    "modelPackage": "fr.blendman.skynet.models"
+  }
+}

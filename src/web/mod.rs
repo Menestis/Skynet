@@ -1,32 +1,33 @@
+use std::borrow::Borrow;
 use std::convert::Infallible;
-use std::env::var;
 use std::future::Future;
 use std::net::SocketAddr;
-use std::str::FromStr;
 use std::sync::Arc;
 
-use warp::{Filter, path, Rejection, Reply, reply, Server};
-use warp::reject::Reject;
+use warp::{Filter, path, Rejection, Reply, reply};
 use warp::reply::{json, Json};
 use crate::AppData;
 use serde::Serialize;
-use tokio::sync::mpsc::Sender;
-use tokio::sync::watch::Receiver;
-use tracing::instrument;
 use uuid::Uuid;
 use warp::hyper::body::HttpBody;
 use crate::web::rejections::{ApiError, handle_rejection};
 use tracing::*;
 
-mod rejections;
-mod status;
-mod login;
+pub mod rejections;
+pub mod status;
+pub mod proxy;
+pub mod server;
+pub mod registration;
+pub mod players;
 
 pub async fn create_task(addr: SocketAddr, data: Arc<AppData>) -> impl Future<Output=()> {
     let mut r = data.shutdown_receiver.clone();
 
     let routes = status::filter(data.clone())
-        .or(login::filter(data.clone()))
+        .or(proxy::filter(data.clone()))
+        .or(server::filter(data.clone()))
+        .or(registration::filter(data.clone()))
+        .or(players::filter(data.clone()))
         .or(shutdown_filter(data.clone()))
         .with(warp::log("requests"))
         .recover(handle_rejection);
@@ -35,14 +36,34 @@ pub async fn create_task(addr: SocketAddr, data: Arc<AppData>) -> impl Future<Ou
 }
 
 fn with_auth(data: Arc<AppData>, permission: &'static str) -> impl Filter<Extract=(), Error=Rejection> + Clone {
-    warp::header::<Uuid>("Authorization").and(with_data(data.clone())).map(|uuid, data| (uuid, permission.to_string(), data)).untuple_one().and_then(check_authorization).untuple_one()
+    warp::header::<String>("Authorization").and(with_data(data.clone())).map(|uuid, data| (uuid, permission.to_string(), data)).untuple_one().and_then(check_authorization).untuple_one()
 }
 
-async fn check_authorization(key: Uuid, permission: String, data: Arc<AppData>) -> Result<(), Rejection> {
-    if data.db.has_route_permission(key, permission).await.map_err(|e| ApiError::Database(e))? {
-        Ok(())
+async fn check_authorization(key: String, permission: String, data: Arc<AppData>) -> Result<(), Rejection> {
+    if key.starts_with("Server ") {
+        let key = Uuid::parse_str(&key.trim_start_matches("Server ")).map_err(ApiError::from)?;
+
+        if data.db.get_cached_api_group("server").map(|grp| grp.permissions.as_ref()).flatten().map(|perms| perms.contains(&permission)).unwrap_or(false)
+            && data.db.select_server_kind_by_key(&key).await.map_err(ApiError::from)?.map(|t| t != "proxy").unwrap_or_default() {
+            Ok(())
+        } else {
+            Err(ApiError::Authorization.into())
+        }
+    } else if key.starts_with("Proxy ") {
+        let key = Uuid::parse_str(&key.trim_start_matches("Proxy ")).map_err(ApiError::from)?;
+        if data.db.get_cached_api_group("proxy").map(|grp| grp.permissions.as_ref()).flatten().map(|perms| perms.contains(&permission)).unwrap_or(false)
+            && data.db.select_server_kind_by_key(&key).await.map_err(ApiError::from)?.map(|t| t == "proxy").unwrap_or_default() {
+            Ok(())
+        } else {
+            Err(ApiError::Authorization.into())
+        }
     } else {
-        Err(ApiError::Authorization.into())
+        let key = Uuid::parse_str(&key).map_err(ApiError::from)?;
+        if data.db.has_route_permission(key, &permission).await.map_err(|e| ApiError::Database(e))? {
+            Ok(())
+        } else {
+            Err(ApiError::Authorization.into())
+        }
     }
 }
 

@@ -71,14 +71,13 @@ pub async fn check_ip(client: &Client, api_key: &str, addr: &IpAddr) -> Result<P
         ProxyCheckStatus::Denied | ProxyCheckStatus::Error =>
             Err(ProxyCheckError::ProxyCheck(proxy_check_response.message.unwrap_or("No message".to_string())))
     }
-
 }
 
 
 impl ProxyCheckIpResponse {
-    pub fn is_risk(&self) -> bool{
+    pub fn is_risk(&self) -> bool {
         let proxy = self.proxy == "yes";
-        let vpn = self.ip_type.as_ref().map_or(false, |ty|ty == "VPN");
+        let vpn = self.ip_type.as_ref().map_or(false, |ty| ty == "VPN");
         return (proxy && !vpn) || (proxy && self.risk > 33) || self.risk > 66;
     }
 }
@@ -86,7 +85,7 @@ impl ProxyCheckIpResponse {
 impl Display for ProxyCheckIpResponse {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let proxy = self.proxy == "yes";
-        let vpn = self.ip_type.as_ref().map_or(false, |ty|ty == "VPN");
+        let vpn = self.ip_type.as_ref().map_or(false, |ty| ty == "VPN");
         write!(f, "Proxy : {}, VPN : {}, Risk : {}", proxy, vpn, self.risk)
     }
 }

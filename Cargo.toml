@@ -47,3 +47,8 @@ thiserror = "1.0.30"
 tracing = "0.1.0"
 tracing-subscriber = { version = "0.3.1", features = ["env-filter"] }
 tracing-log = "0.1.2"
+
+# Utils
+strum = "0.23.0"
+strum_macros = "0.23.1"
+rand = "0.8.4"

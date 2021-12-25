@@ -5,7 +5,7 @@ use crate::database::DatabaseError;
 
 impl Database {
     #[instrument(skip(self), level = "debug")]
-    pub async fn has_route_permission(&self, key: Uuid, permission: String) -> Result<bool, DatabaseError> {
+    pub async fn has_route_permission(&self, key: Uuid, permission: &str) -> Result<bool, DatabaseError> {
         let rows = self.session.execute(&self.queries.select_api_key, (key, )).await?.rows;
 
         let rows = match rows {
@@ -25,8 +25,8 @@ impl Database {
         let group = match group {
             None => {
                 warn!("Unrestricted api key usage ({}), usage of this type of key should be avoided", key);
-                return Ok(true)
-            },
+                return Ok(true);
+            }
             Some(group) => group
         };
 
@@ -35,6 +35,6 @@ impl Database {
             Some(group) => group
         };
 
-        Ok(group.permissions.as_ref().map(|perms| perms.contains(&permission)).unwrap_or(false))
+        Ok(group.permissions.as_ref().map(|perms| perms.contains(&permission.to_string())).unwrap_or(false))
     }
 }

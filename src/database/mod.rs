@@ -15,6 +15,9 @@ mod queries;
 pub mod api_keys;
 pub mod bans;
 pub mod servers;
+pub mod players;
+pub mod sessions;
+pub mod stats;
 
 pub struct Database {
     session: Session,
@@ -33,7 +36,7 @@ pub enum DatabaseError {
     #[error(transparent)]
     NextRow(#[from] NextRowError),
     #[error(transparent)]
-    FromRow(#[from] FromRowError)
+    FromRow(#[from] FromRowError),
 }
 
 #[instrument(name = "database_init", fields(k = field::Empty, addr = field::Empty))]
@@ -65,24 +68,25 @@ struct Cache {
 
 #[derive(Debug, FromRow)]
 pub struct Group {
-    name: String,
-    power: i32,
+    pub name: String,
+    pub power: i32,
     prefix: Option<String>,
     suffix: Option<String>,
-    permissions: Option<Vec<String>>,
+    pub permissions: Option<Vec<String>>,
 }
+
 #[derive(Debug, FromRow)]
 pub struct ApiGroup {
-    name: String,
-    permissions: Option<Vec<String>>,
+    pub name: String,
+    pub permissions: Option<Vec<String>>,
 }
 
 #[derive(Debug, FromRow)]
 pub struct ServerKind {
-    name: String,
-    image: String,
-    permissions: Option<HashMap<String, Vec<String>>>,
-    autoscale: Option<String>
+    pub name: String,
+    pub image: String,
+    pub permissions: Option<HashMap<String, Vec<String>>>,
+    pub autoscale: Option<String>,
 }
 
 
@@ -117,7 +121,7 @@ async fn prepare_cache(s: &Session) -> Result<Cache, DatabaseError> {
             .into_typed::<ApiGroup>();
         while let Some(res) = it.next().await {
             let api_group = res?;
-            trace!("Loaded {:?}", api_group.name);
+            trace!("Loaded {:?}", api_group);
             api_groups.insert(api_group.name.clone(), api_group);
         }
         Ok(api_groups)
@@ -129,7 +133,7 @@ async fn prepare_cache(s: &Session) -> Result<Cache, DatabaseError> {
             .into_typed::<ServerKind>();
         while let Some(res) = it.next().await {
             let servers_kind = res?;
-            trace!("Loaded {:?}", servers_kind.name);
+            trace!("Loaded {:?}", servers_kind);
             servers_kinds.insert(servers_kind.name.clone(), servers_kind);
         }
         Ok(servers_kinds)
@@ -138,4 +142,19 @@ async fn prepare_cache(s: &Session) -> Result<Cache, DatabaseError> {
     Ok(Cache { settings: settings?, groups: groups?, api_groups: api_groups?, servers_kinds: servers_kinds? })
 }
 
+impl Database {
+    pub fn get_cached_group(&self, group: &str) -> Option<&Group>{
+        self.cache.groups.get(group)
+    }
+    pub fn get_cached_kind(&self, kind: &str) -> Option<&ServerKind>{
+        self.cache.servers_kinds.get(kind)
+    }
+    pub fn get_cached_api_group(&self, group: &str) -> Option<&ApiGroup>{
+        self.cache.api_groups.get(group)
+    }
 
+    pub fn get_cached_settings(&self) -> &HashMap<String, String>{
+        &self.cache.settings
+    }
+
+}

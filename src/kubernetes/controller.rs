@@ -1,18 +1,23 @@
+use std::collections::HashMap;
 use std::net::{AddrParseError, IpAddr};
 use std::str::FromStr;
 use std::sync::Arc;
 use std::time::Duration;
+
 use k8s_openapi::api::core::v1::Pod;
 use kube::{Api, Client, Error, ResourceExt};
 use kube::api::{Patch, PatchParams};
 use kube::runtime::controller::{Context, ReconcilerAction};
 use serde_json::json;
 use tracing::error;
-use crate::{Database, Messenger};
-use crate::log::info;
 use uuid::Uuid;
+
+use crate::{Database, Messenger};
 use crate::database::DatabaseError;
 use crate::database::servers::Server;
+use crate::log::info;
+use crate::messenger::MessengerError;
+use crate::messenger::servers_events::ServerEvent;
 
 #[derive(Debug, thiserror::Error)]
 pub enum K8sWorkerError {
@@ -23,13 +28,15 @@ pub enum K8sWorkerError {
     #[error(transparent)]
     AddrParsing(#[from] AddrParseError),
     #[error(transparent)]
-    DatabaseError(#[from] DatabaseError)
+    DatabaseError(#[from] DatabaseError),
+    #[error(transparent)]
+    MessengerError(#[from] MessengerError),
 }
 
 const FINALIZER: &str = "skynet/finalizer";
 
-pub async fn reconcile(pod: Pod, ctx: Context<(Client, Arc<Database>, Arc<Messenger>)>) -> Result<ReconcilerAction, K8sWorkerError> {
-    let (client, db, msgr) = ctx.get_ref();
+pub async fn reconcile(pod: Pod, ctx: Context<(Api<Pod>, Arc<Database>, Arc<Messenger>)>) -> Result<ReconcilerAction, K8sWorkerError> {
+    let (pod_api, db, msgr) = ctx.get_ref();
 
     let ip = pod.status.as_ref().map(|t| t.pod_ip.as_ref()).flatten();
     if !pod.finalizers().contains(&FINALIZER.to_string()) && !pod.labels().contains_key("skynet_id") && ip.is_some() {
@@ -37,17 +44,28 @@ pub async fn reconcile(pod: Pod, ctx: Context<(Client, Arc<Database>, Arc<Messen
 
         let kind = pod.labels().get("skynet/kind").unwrap().clone();
 
-        db.insert_server(&Server{
+        let mut properties = HashMap::new();
+        pod.labels().iter().filter(|&(k, v)| k.starts_with("skynet-prop/")).for_each(|(k, v)| {
+            properties.insert(k.trim_start_matches("skynet-prop/").to_string(), v.to_string());
+        });
+
+
+        let addr = IpAddr::from_str(ip.unwrap())?;
+        db.insert_server(&Server {
             id,
             description: "".to_string(),
-            ip: IpAddr::from_str(ip.unwrap())?,
-            kind,
-            label: "".to_string(),
+            ip: addr,
+            key: None,
+            kind: kind.clone(),
+            label: pod.name(),
             state: "Starting".to_string(),
-            properties: None
+            properties: Some(properties.clone()),
         }).await?;
 
-        //TODO add in database, broadcast route creation
+        if kind != "proxy" {
+            msgr.send_event(&ServerEvent::NewRoute { addr, id, description: "".to_string(), name: pod.name(), kind, properties }).await?;
+        }
+
         let mut finalizers = Vec::from(pod.finalizers());
         finalizers.push(FINALIZER.to_string());
 
@@ -59,7 +77,7 @@ pub async fn reconcile(pod: Pod, ctx: Context<(Client, Arc<Database>, Arc<Messen
                 }
             }
         });
-        Api::<Pod>::namespaced(client.clone(), &pod.namespace().unwrap_or("default".to_string())).patch(&pod.name(), &PatchParams::default(), &Patch::Merge(&patch)).await?;
+        pod_api.patch(&pod.name(), &PatchParams::default(), &Patch::Merge(&patch)).await?;
         info!("New server {} (@{})", pod.name(), ip.unwrap());
     }
 
@@ -67,21 +85,21 @@ pub async fn reconcile(pod: Pod, ctx: Context<(Client, Arc<Database>, Arc<Messen
     if let Some(deletion) = pod.metadata.deletion_timestamp.as_ref() {
         if pod.finalizers().contains(&FINALIZER.to_string()) {
             if let Some(d) = pod.labels().get("skynet_id") {
-                let uuid = Uuid::parse_str(d.as_str().trim_start_matches("sky-").trim_end_matches("-net"))?;
-                info!("Removing server : {}",uuid);
+                let id = Uuid::parse_str(d.as_str().trim_start_matches("sky-").trim_end_matches("-net"))?;
+                info!("Removing server : {}",id);
 
-                db.delete_server(&uuid).await?;
 
-                //TODO delete in database, broadcast route deletion
+                msgr.send_event(&ServerEvent::DeleteRoute { id, name: pod.name() }).await?;
 
+                db.delete_server(&id).await?;
             }
-            let mut finalizers: Vec<String> = pod.finalizers().iter().filter(|&x| x != FINALIZER).map(|x| x.clone()).collect();
+            let finalizers: Vec<String> = pod.finalizers().iter().filter(|&x| x != FINALIZER).map(|x| x.clone()).collect();
             let patch = json!({
                 "metadata": {
                     "finalizers": finalizers
                 }
             });
-            Api::<Pod>::namespaced(client.clone(), &pod.namespace().unwrap_or("default".to_string())).patch(&pod.name(), &PatchParams::default(), &Patch::Merge(patch)).await?;
+            pod_api.patch(&pod.name(), &PatchParams::default(), &Patch::Merge(patch)).await?;
         }
     }
 
@@ -90,7 +108,7 @@ pub async fn reconcile(pod: Pod, ctx: Context<(Client, Arc<Database>, Arc<Messen
     })
 }
 
-pub fn on_error(error: &K8sWorkerError, ctx: Context<(Client, Arc<Database>, Arc<Messenger>)>) -> ReconcilerAction {
+pub fn on_error(error: &K8sWorkerError, ctx: Context<(Api<Pod>, Arc<Database>, Arc<Messenger>)>) -> ReconcilerAction {
     ReconcilerAction {
         requeue_after: Some(Duration::from_secs(60)),
     }

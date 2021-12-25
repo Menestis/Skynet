@@ -1,23 +1,24 @@
-use std::any::Any;
-use lapin::{Channel, Connection, ConnectionProperties, Consumer, Error, ExchangeKind, PromiseChain, Queue};
-use tracing::*;
 use std::env::{var, VarError};
 use std::str::FromStr;
-use std::string::FromUtf8Error;
 use std::sync::Arc;
+
 use futures::StreamExt;
-use lapin::message::Delivery;
-use lapin::options::{BasicAckOptions, BasicConsumeOptions, BasicRecoverAsyncOptions, BasicRecoverOptions, ExchangeDeclareOptions, QueueBindOptions, QueueDeclareOptions};
+use lapin::{Channel, Connection, ConnectionProperties, Consumer, Error, ExchangeKind, Queue};
+use lapin::options::{BasicAckOptions, BasicConsumeOptions, BasicRecoverOptions, ExchangeDeclareOptions, QueueBindOptions, QueueDeclareOptions};
 use lapin::types::FieldTable;
 use lapin::uri::AMQPUri;
 use thiserror::Error;
+use tokio::runtime::Runtime;
 use tokio::select;
-use tokio::sync::mpsc::Sender;
-use tokio::sync::watch::Receiver;
+use tokio_amqp::LapinTokioExt;
+use tracing::*;
 use uuid::Uuid;
+
 use crate::AppData;
 
 pub mod receiver;
+pub mod sender;
+pub mod servers_events;
 
 pub struct Messenger {
     con: Connection,
@@ -33,6 +34,8 @@ pub enum MessengerError {
     Parsing(String),
     #[error(transparent)]
     Lapin(#[from] Error),
+    #[error("Could not deserialise/serialize data : {0}")]
+    Serde(#[from] serde_json::Error),
 }
 
 
@@ -44,7 +47,7 @@ pub async fn init(id: &Uuid) -> Result<Messenger, MessengerError> {
 
     let id_str = id.to_string();
 
-    let con = Connection::connect_uri(uri, ConnectionProperties::default().with_connection_name(id_str.clone().into())).await?;
+    let con = Connection::connect_uri(uri, ConnectionProperties::default().with_tokio().with_connection_name(id_str.clone().into())).await?;
 
     let channel = con.create_channel().await?;
 
@@ -90,7 +93,7 @@ impl Messenger {
     pub async fn run_task(&self, data: Arc<AppData>) {
         let mut r = data.shutdown_receiver.clone();
 
-        let mut consumer = match self.channel.basic_consume(self.queue.name().as_str(), "skynet", BasicConsumeOptions {
+        let consumer = match self.channel.basic_consume(self.queue.name().as_str(), "skynet", BasicConsumeOptions {
             no_local: false,
             no_ack: false,
             exclusive: true,
@@ -108,11 +111,27 @@ impl Messenger {
             opt = self.run(consumer, data)  => {},
             _ = r.changed() => {}
         }
+        if let Err(err) = self.channel.close(200, "OK").await {
+            error!("{}", err)
+        }
     }
 
     async fn run(&self, mut consumer: Consumer, data: Arc<AppData>) {
         while let Some(delivery) = consumer.next().await {
-            let (_channel, delivery) = delivery.expect("error in consumer");
+            let (_channel, delivery) = match delivery {
+                Ok(s) => s,
+                Err(err) => {
+                    warn!("Rabbitmq error : {}. Attempting recovery !", err);
+                    if let Err(err) = self.channel.basic_recover(BasicRecoverOptions::default()).await {
+                        error!("Recovery failed : {}. Shutdown initiated ", err);
+                        data.shutdown().await;
+                        return;
+                    } else {
+                        info!("Recovered successfully");
+                    }
+                    continue;
+                }
+            };
             if let Err(e) = match delivery.ack(BasicAckOptions::default()).await {
                 Ok(()) => self.on_message(delivery, data.clone()).await,
                 Err(err) => {
