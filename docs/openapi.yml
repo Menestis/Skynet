@@ -23,22 +23,58 @@ paths:
       responses:
         200:
           description: "The server is shutting-down"
-  /api/procedure/proxy/login:
+  /api/players:
+    get:
+      security:
+        - auth: [ "get-online-players" ]
+      tags: [ "Player" ]
+      responses:
+        200:
+          description: "Online players"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OnlinePlayerInfo"
+  /api/players/{player}:
+    get:
+      security:
+        - auth: [ "get-player" ]
+      tags: [ "Player" ]
+      parameters:
+        - name: player
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: "Players"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlayerInfo"
+  /api/players/{uuid}/proxy/login:
     post:
       security:
         - auth: [ "proxy-login" ]
-      tags: [ "Proxy" ]
+      tags: [ "Login" ]
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
       requestBody:
         content:
           application/json:
             schema:
               title: ProxyLoginRequest
-              required: [ uuid, username, version ]
+              required: [ username, version ]
               type: object
               properties:
-                uuid:
-                  type: string
-                  format: uuid
                 username:
                   type: string
                 ip:
@@ -48,28 +84,29 @@ paths:
                   type: string
                   format: uuid
                 version:
-                  title: MinecraftVersion
-                  type: object
-                  required: [ brand, version ]
-                  properties:
-                    brand:
-                      type: string
-                    version:
-                      type: string
-                    mods:
-                      type: array
-                      items:
-                        title: ModInfo
-                        required: [ id, version ]
-                        type: object
-                        properties:
-                          id:
-                            type: string
-                          version:
-                            type: string
+                  type: string
+                #                version:
+                #                  title: MinecraftVersion
+                #                  type: object
+                #                  required: [ brand, version ]
+                #                  properties:
+                #                    brand:
+                #                      type: string
+                #                    version:
+                #                      type: string
+                #                    mods:
+                #                      type: array
+                #                      items:
+                #                        title: ModInfo
+                #                        required: [ id, version ]
+                #                        type: object
+                #                        properties:
+                #                          id:
+                #                            type: string
+                #                          version:
+                #                            type: string
                 locale:
                   type: string
-
       responses:
         200:
           description: "Login is permitted"
@@ -105,25 +142,71 @@ paths:
                   session:
                     type: string
                     format: uuid
-  /api/procedure/proxy/prelogin:
+  /api/sessions/{session}/modsinfo:
     post:
       security:
-        - auth: [ "proxy-prelogin" ]
-      tags: [ "Proxy" ]
+        - auth: [ "proxy-login" ]
+      tags: [ "Login", "Session" ]
+      parameters:
+        - name: session
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
       requestBody:
         content:
           application/json:
             schema:
-              type: object
-              title: ProxyPreLoginRequest
-              required: [ "address", "username" ]
-              properties:
-                address:
-                  type: string
-                  format: "ipv4"
-                username:
-                  type: string
-        required: true
+              type: array
+              items:
+                type: object
+                title: ModInfo
+                required: [ id, version ]
+                properties:
+                  id:
+                    type: string
+                  version:
+                    type: string
+      responses:
+        200:
+          description: "Ok"
+        404:
+          description: "The session was not found"
+  /api/sessions/{session}/clientbrand:
+    post:
+      security:
+        - auth: [ "proxy-login" ]
+      tags: [ "Login", "Session" ]
+      parameters:
+        - name: session
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        200:
+          description: "Ok"
+        404:
+          description: "The session was not found"
+  /api/players/{ip}/proxy/prelogin:
+    get:
+      security:
+        - auth: [ "proxy-prelogin" ]
+      tags: [ "Login" ]
+      parameters:
+        - name: ip
+          in: path
+          required: true
+          schema:
+            type: string
+            format: ipv4
       responses:
         200:
           description: "PreLogin is permitted"
@@ -139,50 +222,40 @@ paths:
                     enum: [ "Allowed", "Denied" ]
                   message:
                     $ref: "#/components/schemas/Message"
-  /api/procedure/proxy/close:
-    post:
+  /api/players/{uuid}/session:
+    delete:
       security:
         - auth: [ "proxy-close-session" ]
-      tags: [ "Proxy" ]
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              title: ProxyCloseSessionRequest
-              required: [ uuid, username, session ]
-              properties:
-                uuid:
-                  type: string
-                  format: uuid
-                username:
-                  type: string
-                session:
-                  type: string
-                  format: uuid
-        required: true
+      tags: [ "Session" ]
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
       responses:
         200:
           description: "Ok"
-  /api/procedure/server/login:
+  /api/players/{uuid}/login:
     post:
       security:
         - auth: [ "server-login" ]
-      tags: [ "Server" ]
+      tags: [ "Login" ]
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
       requestBody:
         content:
           application/json:
             schema:
-              type: object
-              title: ServerLoginRequest
-              required: [ uuid, server ]
-              properties:
-                uuid:
-                  type: string
-                  format: uuid
-                server:
-                  type: string
-                  format: uuid
+              description: The server who is requesting the player
+              type: string
+              format: uuid
         required: true
       responses:
         200:
@@ -229,22 +302,26 @@ paths:
                     type: object
                     additionalProperties:
                       type: string
-  /api/procedure/player/stats:
+  /api/players/{uuid}/stats:
     post:
       security:
         - auth: [ "player-stats" ]
       tags: [ "Player" ]
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
       requestBody:
         content:
           application/json:
             schema:
               type: object
               title: PlayerStats
-              required: [ uuid, session, server, stats ]
+              required: [ session, server, stats ]
               properties:
-                player:
-                  type: string
-                  format: uuid
                 session:
                   type: string
                   format: uuid
@@ -259,7 +336,7 @@ paths:
       responses:
         200:
           description: OK
-  /api/procedure/register/{label}:
+  /api/servers/{label}/register:
     get:
       tags: [ "Registration" ]
       parameters:
@@ -277,21 +354,7 @@ paths:
                 $ref: "#/components/schemas/Server"
         404:
           description: not found
-  /api/procedure/proxy/init:
-    get:
-      tags: [ "Proxy" ]
-      security:
-        - auth: [ "proxy-init" ]
-      responses:
-        200:
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Server"
-  /api/procedure/proxy/ping:
+  /api/proxy/ping:
     get:
       tags: [ "Proxy" ]
       security:
@@ -357,13 +420,32 @@ paths:
                 description: Server name
         404:
           description: Kind not found
-  /api/servers/{name}:
+  /api/servers/{label}:
+    get:
+      tags: [ "Server" ]
+      security:
+        - auth: [ "get-server" ]
+      parameters:
+        - name: label
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Server"
+        400:
+          description: Server not found
     delete:
       tags: [ "Server" ]
       security:
         - auth: [ "delete-server" ]
       parameters:
-        - name: name
+        - name: label
           in: path
           required: true
           schema:
@@ -442,6 +524,56 @@ paths:
           description: OK
         404:
           description: Player does not exist
+  /api/players/{uuid}/disconnect:
+    post:
+      security:
+        - auth: [ "disconnect-player" ]
+      tags: [ "Player" ]
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: OK
+        404:
+          description: Player does not exist or is not online
+  /api/players/{uuid}/transaction:
+    post:
+      security:
+        - auth: [ "disconnect-player" ]
+      tags: [ "Player" ]
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              title: PlayerTransaction
+              properties:
+                currency:
+                  type: integer
+                premium_currency:
+                  type: integer
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: boolean
+        404:
+          description: Player does not exist
 components:
   schemas:
     Message:
@@ -496,6 +628,88 @@ components:
           type: object
           additionalProperties:
             type: string
+    OnlinePlayerInfo:
+      type: object
+      required: [ uuid, username, session, proxy ]
+      properties:
+        uuid:
+          type: string
+          format: uuid
+        username:
+          type: string
+        session:
+          type: string
+          format: uuid
+        proxy:
+          type: string
+          format: uuid
+        server:
+          type: string
+          format: uuid
+    PlayerInfo:
+      type: object
+      required: [ uuid, username, power, locale, properties, inventory, blocked ]
+      properties:
+        uuid:
+          type: string
+          format: uuid
+        username:
+          type: string
+        power:
+          type: integer
+        locale:
+          type: string
+        prefix:
+          type: string
+        suffix:
+          type: string
+        currency:
+          type: integer
+        premium_currency:
+          type: integer
+        proxy:
+          type: string
+          format: uuid
+        server:
+          type: string
+          format: uuid
+        blocked:
+          type: array
+          items:
+            type: string
+            format: uuid
+        ban:
+          $ref: "#/components/schemas/Ban"
+        inventory:
+          additionalProperties:
+            type: integer
+        properties:
+          additionalProperties:
+            type: string
+    Ban:
+      type: object
+      required: [ id, start ]
+      properties:
+        id:
+          type: string
+          format: uuid
+        start:
+          type: string
+          format: date-time
+        end:
+          type: string
+          format: date-time
+        issuer:
+          type: string
+          format: uuid
+        reason:
+          type: string
+        ip:
+          type: string
+          format: ipv4
+        target:
+          type: string
+          format: uuid
   responses:
     401:
       description: You are not authorized to acces this object

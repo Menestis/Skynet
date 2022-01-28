@@ -23,8 +23,8 @@ pub async fn handle_rejection(err: Rejection) -> Result<Response, Rejection> {
 
 #[derive(Error, Debug)]
 pub enum ApiError {
-    #[error("An internal server error occurred : {0}")]
-    Failure(String),
+    // #[error("An internal server error occurred : {0}")]
+    // Failure(String),
     #[error("You are not authorized to use this endpoint")]
     Authorization,
     #[error("An internal server error occurred : {0}")]

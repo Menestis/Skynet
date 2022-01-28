@@ -1,73 +1,48 @@
+use std::collections::HashMap;
+use std::net::IpAddr;
 use std::sync::Arc;
 use chrono::Duration;
 use reqwest::StatusCode;
 use warp::{Filter, path, Rejection, Reply, reply};
 use crate::AppData;
 use tracing::{instrument};
-use uuid::Uuid;
+use uuid::{Uuid};
 use warp::body::json;
 use crate::web::rejections::ApiError;
-use crate::web::with_auth;
+use crate::web::{with_auth, with_data};
 use serde::{Serialize, Deserialize};
 use crate::messenger::servers_events::ServerEvent;
 
 pub fn filter(data: Arc<AppData>) -> impl Filter<Extract=impl Reply, Error=Rejection> + Clone {
-    warp::post().and(path!("api"/"players"/Uuid/"move")).and(with_auth(data.clone(), "move-player")).and(super::with_data(data.clone()).and(json::<PlayerMove>())).and_then(move_player)
-        .or(warp::get().and(path!("api"/"players")).and(with_auth(data.clone(), "get-online-players")).and(super::with_data(data.clone())).and_then(get_online))
-        .or(warp::post().and(path!("api"/"players"/Uuid/"ban")).and(with_auth(data.clone(), "ban-player")).and(super::with_data(data.clone())).and(json::<PlayerBan>()).and_then(ban_player))
-
-    //.or(warp::patch().and(path!("api"/"players"/Uuid)).and(with_auth(data.clone(), "patch-online-player")).and(super::with_data(data.clone())).and(json::<PlayerPatch>()).and_then(patch_player))
+    warp::post().and(path!("api"/"players"/Uuid/"stats")).and(with_auth(data.clone(), "player-stats")).and(with_data(data.clone())).and(json::<PlayerStats>()).and_then(post_stats)
+        .or(warp::post().and(path!("api"/"players"/Uuid/"move")).and(with_auth(data.clone(), "move-player")).and(with_data(data.clone()).and(json::<PlayerMove>())).and_then(move_player))
+        .or(warp::post().and(path!("api"/"players"/Uuid/"ban")).and(with_auth(data.clone(), "ban-player")).and(with_data(data.clone())).and(json::<PlayerBan>()).and_then(ban_player))
+        .or(warp::post().and(path!("api"/"players"/Uuid/"disconnect")).and(with_auth(data.clone(), "disconnect-player")).and(with_data(data.clone())).and_then(disconnect_player))
+        .or(warp::post().and(path!("api"/"players"/Uuid/"transaction")).and(with_auth(data.clone(), "make-transaction")).and(with_data(data.clone())).and(json::<PlayerTransaction>()).and_then(player_transaction))
+        .or(warp::get().and(path!("api"/"players")).and(with_auth(data.clone(), "get-online-players")).and(with_data(data.clone())).and_then(get_online))
+        .or(warp::get().and(path!("api"/"players"/String)).and(with_auth(data.clone(), "get-player")).and(with_data(data.clone())).and_then(get_player))
 }
 
 
-#[instrument(skip(data), level = "debug")]
-async fn get_online(data: Arc<AppData>) -> Result<impl Reply, Rejection> {
-    Ok(reply::json(&data.db.select_online_players_reduced_info().await.map_err(ApiError::from)?).into_response())
+#[derive(Deserialize, Serialize, Debug)]
+struct PlayerStats {
+    server: Uuid,
+    session: Uuid,
+    stats: HashMap<String, i32>,
 }
 
-// #[derive(Debug, Serialize, Deserialize)]
-// struct PlayerPatch {
-//     currency: Option<i32>,
-//     premium_currency: Option<i32>,
-//     blocked: Option<Vec<Uuid>>,
-//     // friend_policy: Option<FriendPoly>,
-//     friends: Option<Vec<Uuid>>,
-//     groups: Option<Vec<String>>,
-//     suffix: Option<String>,
-//     prefix: Option<String>,
-//     locale: Option<String>,
-//     ban: Option<PlayerBan>,
-//
-//     disconnected: Option<bool>,
-//     server: Option<Uuid>,
-// }
-//
-// #[derive(Debug, Serialize, Deserialize)]
-// struct PlayerBan {
-//     reason: String,
-//     duration: Option<i32>,
-//     issuer: Option<Uuid>,
-//     #[serde(default)]
-//     ip: bool
-// }
-//
-// #[instrument(skip(data), level = "debug")]
-// async fn patch_player(uuid: Uuid, data: Arc<AppData>, patch: PlayerPatch) -> Result<impl Reply, Rejection> {
-//     let info = match data.db.select_full_player_info(&uuid).await.map_err(ApiError::from)? {
-//         None => return Ok(StatusCode::NOT_FOUND.into_response()),
-//         Some(info) => info
-//     };
-//
-//
-//
-//     data.db.update_full_player_info(info)
-//
-//
-//
-//
-//     Ok(reply::reply().into_response())
-// }
 
+#[instrument(skip(data, request))]
+async fn post_stats(uuid: Uuid, data: Arc<AppData>, request: PlayerStats) -> Result<impl Reply, Rejection> {
+    let kind = match data.db.select_server_kind(&request.server).await.map_err(ApiError::from)?.map(|kind| data.db.get_cached_kind(&kind)).flatten() {
+        None => return Ok(StatusCode::NOT_FOUND.into_response()),
+        Some(kind) => kind
+    };
+
+    data.db.insert_stats(&uuid, &request.session, &request.server, &kind.name, &request.stats).await.map_err(ApiError::from)?;
+
+    Ok(reply().into_response())
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(untagged)]
@@ -82,6 +57,7 @@ enum PlayerMove {
     },
 }
 
+#[instrument(skip(data))]
 async fn move_player(uuid: Uuid, data: Arc<AppData>, request: PlayerMove) -> Result<impl Reply, Rejection> {
     let proxy = match data.db.select_online_player_proxy(&uuid).await.map_err(ApiError::from)? {
         None => return Ok(reply::with_status("Player is not online or does not exists", StatusCode::NOT_FOUND).into_response()),
@@ -134,7 +110,7 @@ struct PlayerBan {
     unban: bool,
 }
 
-
+#[instrument(skip(data))]
 async fn ban_player(uuid: Uuid, data: Arc<AppData>, request: PlayerBan) -> Result<impl Reply, Rejection> {
     if request.ip {
         if request.unban {
@@ -147,14 +123,12 @@ async fn ban_player(uuid: Uuid, data: Arc<AppData>, request: PlayerBan) -> Resul
         }
 
         return Ok(reply().into_response());
+    } else if request.unban {
+        data.db.remove_player_ban(&uuid).await.map_err(ApiError::from)?;
+        return Ok(reply().into_response());
     } else {
-        if request.unban {
-            //TODO
-            return Ok(reply().into_response());
-        } else {
-            let duration = request.duration.map(|t| Duration::seconds(t as i64));
-            data.db.insert_ban(&uuid, request.reason.as_ref(), request.issuer.as_ref(), duration.as_ref()).await.map_err(ApiError::from)?;
-        }
+        let duration = request.duration.map(|t| Duration::seconds(t as i64));
+        data.db.insert_ban(&uuid, request.reason.as_ref(), request.issuer.as_ref(), duration.as_ref()).await.map_err(ApiError::from)?;
     }
 
     if let Some(proxy) = data.db.select_online_player_proxy(&uuid).await.map_err(ApiError::from)? {
@@ -166,3 +140,86 @@ async fn ban_player(uuid: Uuid, data: Arc<AppData>, request: PlayerBan) -> Resul
 }
 
 
+#[instrument(skip(data))]
+async fn get_online(data: Arc<AppData>) -> Result<impl Reply, Rejection> {
+    Ok(reply::json(&data.db.select_online_players_reduced_info().await.map_err(ApiError::from)?).into_response())
+}
+
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct PlayerInfo {
+    pub uuid: Uuid,
+    pub username: String,
+    pub power: i32,
+    pub locale: String,
+    pub prefix: Option<String>,
+    pub suffix: Option<String>,
+    pub currency: i32,
+    pub premium_currency: i32,
+    pub proxy: Option<Uuid>,
+    pub server: Option<Uuid>,
+    pub blocked: Vec<Uuid>,
+    pub inventory: HashMap<String, i32>,
+    pub properties: HashMap<String, String>,
+    pub ban: Option<Ban>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Ban {
+    pub id: Uuid,
+    pub start: String,
+    pub end: Option<String>,
+    pub issuer: Option<Uuid>,
+    pub reason: Option<String>,
+    pub ip: Option<IpAddr>,
+    pub target: Option<Uuid>,
+}
+
+
+#[instrument(skip(data))]
+async fn get_player(player: String, data: Arc<AppData>) -> Result<impl Reply, Rejection> {
+    match Uuid::parse_str(&player) {
+        Ok(uuid) => Ok(reply::json(&match data.db.select_player_info(&uuid).await.map_err(ApiError::from)? {
+            None => return Ok(StatusCode::NOT_FOUND.into_response()),
+            Some(info) => info
+        }.build_player_info(&data.db).await.map_err(ApiError::from)?).into_response()),
+        Err(_) => {
+            Ok(reply::json(&match data.db.select_player_info_by_name(&player).await.map_err(ApiError::from)? {
+                None => return Ok(StatusCode::NOT_FOUND.into_response()),
+                Some(info) => info
+            }.build_player_info(&data.db).await.map_err(ApiError::from)?).into_response())
+        }
+    }
+}
+
+#[instrument(skip(data))]
+async fn disconnect_player(uuid: Uuid, data: Arc<AppData>) -> Result<impl Reply, Rejection> {
+    if let Some(proxy) = data.db.select_online_player_proxy(&uuid).await.map_err(ApiError::from)? {
+        data.msgr.send_event(&ServerEvent::DisconnectPlayer { proxy, player: uuid }).await.map_err(ApiError::from)?;
+        Ok(StatusCode::OK)
+    }else {
+        Ok(StatusCode::NOT_FOUND)
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct PlayerTransaction{
+    #[serde(default)]
+    currency: i32,
+    #[serde(default)]
+    premium_currency: i32
+}
+
+#[instrument(skip(data))]
+async fn player_transaction(uuid: Uuid, data: Arc<AppData>, request: PlayerTransaction) -> Result<impl Reply, Rejection> {
+    if let Some((currency, premium_currency)) = data.db.select_player_currencies(&uuid).await.map_err(ApiError::from)? {
+        if currency >= request.currency && premium_currency >= request.premium_currency{
+            data.db.set_player_currencies(&uuid, currency - request.currency, premium_currency - request.premium_currency).await.map_err(ApiError::from)?;
+            Ok(reply::json(&true).into_response())
+        }else {
+            Ok(reply::json(&false).into_response())
+        }
+    }else {
+        Ok(StatusCode::NOT_FOUND.into_response())
+    }
+}

@@ -1,4 +1,4 @@
-use serde::{Serialize, Deserialize};
+use serde::{Serialize};
 
 pub type Message = Vec<MessageComponent>;
 
@@ -107,12 +107,12 @@ impl MessageComponentBuilder {
         self
     }
 
-    pub fn with_modifiers(mut self, modifiers: Option<Modifiers>) -> MessageComponentBuilder {
+    pub fn _with_modifiers(mut self, modifiers: Option<Modifiers>) -> MessageComponentBuilder {
         self.component.modifiers = modifiers;
         self
     }
 
-    pub fn with_font(mut self, font: Option<String>) -> MessageComponentBuilder {
+    pub fn _with_font(mut self, font: Option<String>) -> MessageComponentBuilder {
         self.component.font = font;
         self
     }

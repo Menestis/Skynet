@@ -9,6 +9,8 @@ use scylla::transport::iterator::NextRowError;
 use thiserror::Error;
 use tracing::*;
 use scylla::cql_to_rust::FromRowError;
+use scylla::frame::value::ValueList;
+use scylla::prepared_statement::PreparedStatement;
 use crate::database::queries::Queries;
 
 mod queries;
@@ -143,18 +145,39 @@ async fn prepare_cache(s: &Session) -> Result<Cache, DatabaseError> {
 }
 
 impl Database {
-    pub fn get_cached_group(&self, group: &str) -> Option<&Group>{
+    pub fn _get_cached_group(&self, group: &str) -> Option<&Group> {
         self.cache.groups.get(group)
     }
-    pub fn get_cached_kind(&self, kind: &str) -> Option<&ServerKind>{
+    pub fn get_cached_kind(&self, kind: &str) -> Option<&ServerKind> {
         self.cache.servers_kinds.get(kind)
     }
-    pub fn get_cached_api_group(&self, group: &str) -> Option<&ApiGroup>{
+    pub fn get_cached_api_group(&self, group: &str) -> Option<&ApiGroup> {
         self.cache.api_groups.get(group)
     }
 
-    pub fn get_cached_settings(&self) -> &HashMap<String, String>{
+    pub fn get_cached_settings(&self) -> &HashMap<String, String> {
         &self.cache.settings
     }
+}
 
+
+async fn select_one<U: FromRow, V: ValueList>(statement: &PreparedStatement, session: &Session, values: V) -> Result<Option<U>, DatabaseError> {
+    let rows = session.execute(statement, values).await?.rows;
+    Ok(rows.map(|rows| rows.into_iter().last()).flatten().map(|row| row.into_typed::<U>()).transpose()?)
+}
+
+async fn execute<V: ValueList>(statement: &PreparedStatement, session: &Session, values: V) -> Result<(), DatabaseError> {
+    session.execute(statement, values).await?;
+    Ok(())
+}
+
+async fn select_iter<U: FromRow, V: ValueList>(statement: &PreparedStatement, session: &Session, values: V) -> Result<Vec<U>, DatabaseError> {
+    let mut vector = Vec::new();
+    let mut stream = session.execute_iter(statement.clone(), values).await?.into_typed::<U>();
+
+    while let Some(srv) = stream.next().await {
+        vector.push(srv?);
+    }
+
+    Ok(vector)
 }

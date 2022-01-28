@@ -5,7 +5,7 @@ use std::time::Duration;
 
 use futures::StreamExt;
 use k8s_openapi::api::core::v1::Pod;
-use kube::{Api, Client, Error, ResourceExt};
+use kube::{Api, Client, Error};
 use kube::api::ListParams;
 use kube::runtime::Controller;
 use kube::runtime::controller::Context;
@@ -27,7 +27,7 @@ pub struct Kubernetes {
     pod_api: Api<Pod>,
     leadership: LeaseLock,
     leader: AtomicBool,
-    namespace: String,
+    _namespace: String,
     sender: RwLock<Option<Sender<()>>>,
     database: Arc<Database>,
     messenger: Arc<Messenger>,
@@ -57,7 +57,7 @@ pub async fn init(id: &Uuid, database: Arc<Database>, messenger: Arc<Messenger>)
         pod_api,
         leadership,
         leader: AtomicBool::new(false),
-        namespace,
+        _namespace: namespace,
         sender: RwLock::new(None),
         database,
         messenger,
@@ -84,7 +84,7 @@ impl Kubernetes {
         }
     }
 
-    pub fn is_leader(&self) -> bool {
+    pub fn _is_leader(&self) -> bool {
         self.leader.load(Ordering::Relaxed)
     }
 
@@ -102,6 +102,7 @@ impl Kubernetes {
 
     pub async fn run(&self) {
         loop {
+            tokio::task::yield_now().await;
             self.renew_lock().await;
             sleep(Duration::from_secs(5)).await;
         }

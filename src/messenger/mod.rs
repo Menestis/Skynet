@@ -8,7 +8,6 @@ use lapin::options::{BasicAckOptions, BasicConsumeOptions, BasicRecoverOptions, 
 use lapin::types::FieldTable;
 use lapin::uri::AMQPUri;
 use thiserror::Error;
-use tokio::runtime::Runtime;
 use tokio::select;
 use tokio_amqp::LapinTokioExt;
 use tracing::*;
@@ -108,12 +107,19 @@ impl Messenger {
         };
 
         select! {
-            opt = self.run(consumer, data)  => {},
+            _ = self.run(consumer, data)  => {},
             _ = r.changed() => {}
         }
-        if let Err(err) = self.channel.close(200, "OK").await {
+        if let Err(err) = self.close().await{
             error!("{}", err)
+
         }
+    }
+
+    async fn close(&self) -> Result<(), lapin::Error>{
+        self.channel.close(200, "OK").await?;
+        self.con.close(200, "OK").await?;
+        Ok(())
     }
 
     async fn run(&self, mut consumer: Consumer, data: Arc<AppData>) {

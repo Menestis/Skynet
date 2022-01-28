@@ -1,16 +1,15 @@
 use std::collections::HashMap;
-use futures::StreamExt;
-use scylla::frame::value::Counter;
 use tracing::*;
 use uuid::Uuid;
 use crate::Database;
-use crate::database::{DatabaseError, Group};
+use crate::database::{DatabaseError, execute, Group, select_iter, select_one};
 use scylla::FromRow;
-use crate::web::proxy::ProxyLoginPlayerInfo;
 use serde::Serialize;
-use crate::web::server::ServerLoginPlayerInfo;
+use crate::database::bans::DbBan;
+use crate::web::login::{ProxyLoginPlayerInfo, ServerLoginPlayerInfo};
+use crate::web::players::PlayerInfo;
 
-#[derive(Serialize, Debug, FromRow)]
+#[derive(Serialize, Debug, Default, FromRow)]
 pub struct DbProxyPlayerInfo {
     pub locale: Option<String>, //Having one there means that we force his locale to this
 
@@ -76,79 +75,110 @@ pub struct DbFullPlayerInfo {
     pub suffix: Option<String>,
 }
 
+#[derive(Serialize, Debug, FromRow)]
+pub struct DbPlayerInfo {
+    uuid: Uuid,
+    username: String,
+    groups: Option<Vec<String>>,
+    locale: Option<String>,
+    prefix: Option<String>,
+    suffix: Option<String>,
+    currency: i32,
+    premium_currency: i32,
+    proxy: Option<Uuid>,
+    server: Option<Uuid>,
+    blocked: Option<Vec<Uuid>>,
+    inventory: Option<HashMap<String, i32>>,
+    properties: Option<HashMap<String, String>>,
+    ban: Option<Uuid>,
+}
 
 impl Database {
     #[instrument(skip(self), level = "debug")]
     pub async fn select_online_players_reduced_info(&self) -> Result<Vec<ReducedPlayerInfo>, DatabaseError> {
-        let mut servers = Vec::new();
-        let mut stream = self.session.execute_iter(self.queries.select_online_players_reduced_info.clone(), ()).await?.into_typed::<ReducedPlayerInfo>();
-
-        while let Some(srv) = stream.next().await {
-            servers.push(srv?);
-        }
-
-        Ok(servers)
-    }
-
-    #[instrument(skip(self), level = "debug")]
-    pub async fn select_online_players_count(&self) -> Result<i64, DatabaseError> {
-        let rows = self.session.execute(&self.queries.select_online_players_count, ()).await?.rows;
-
-        Ok(rows.map(|rows| rows.into_iter().last()).flatten().map(|row| row.into_typed::<(i64, )>()).transpose()?.map(|(t, )| t).unwrap_or_default())
+        //#[query(select_online_players_reduced_info = "SELECT uuid, username, session, proxy, server FROM players_by_session;")]
+        select_iter(&self.queries.select_online_players_reduced_info, &self.session, ()).await
     }
 
     #[instrument(skip(self), level = "debug")]
     pub async fn select_online_player_proxy(&self, uuid: &Uuid) -> Result<Option<Uuid>, DatabaseError> {
-        let rows = self.session.execute(&self.queries.select_player_proxy, (uuid, )).await?.rows;
-
-        Ok(rows.map(|rows| rows.into_iter().last()).flatten().map(|row| row.into_typed::<(Option<Uuid>, )>()).transpose()?.map(|(t, )| t).unwrap_or_default())
+        //#[query(select_player_proxy = "SELECT proxy FROM players WHERE uuid = ?")]
+        Ok(select_one::<(Option<Uuid>, ), _>(&self.queries.select_player_proxy, &self.session, (uuid, )).await?.map(|t| t.0).flatten())
     }
 
 
     #[instrument(skip(self), level = "debug")]
     pub async fn select_proxy_player_info(&self, uuid: &Uuid) -> Result<Option<DbProxyPlayerInfo>, DatabaseError> {
-        let rows = self.session.execute(&self.queries.select_proxy_player_info, (uuid, )).await?.rows;
-        Ok(rows.map(|rows| rows.into_iter().last()).flatten().map(|row| row.into_typed::<DbProxyPlayerInfo>()).transpose()?)
+        //#[query(select_proxy_player_info = "SELECT locale, groups, permissions, properties, ban, ban_reason, TTL(ban) AS ban_ttl FROM players WHERE uuid = ?;")]
+        select_one(&self.queries.select_proxy_player_info, &self.session, (uuid, )).await
     }
 
     #[instrument(skip(self), level = "debug")]
     pub async fn select_server_player_info(&self, uuid: &Uuid) -> Result<Option<DbServerPlayerInfo>, DatabaseError> {
-        let rows = self.session.execute(&self.queries.select_server_player_info, (uuid, )).await?.rows;
-        Ok(rows.map(|rows| rows.into_iter().last()).flatten().map(|row| row.into_typed::<DbServerPlayerInfo>()).transpose()?)
+        //#[query(select_server_player_info = "SELECT prefix, suffix, proxy, session, locale, groups, permissions, currency, premium_currency, blocked, inventory, properties FROM players WHERE uuid = ?;")]
+        select_one(&self.queries.select_server_player_info, &self.session, (uuid, )).await
+    }
+
+    #[instrument(skip(self), level = "debug")]
+    pub async fn select_player_info(&self, uuid: &Uuid) -> Result<Option<DbPlayerInfo>, DatabaseError> {
+        //#[query(select_player_info = "SELECT uuid, username, groups, locale, prefix, suffix, currency, premium_currency, proxy, server, blocked, inventory, properties, ban FROM players WHERE uuid = ?;")]
+        select_one(&self.queries.select_player_info, &self.session, (uuid, )).await
+    }
+
+    #[instrument(skip(self), level = "debug")]
+    pub async fn select_player_info_by_name(&self, name: &str) -> Result<Option<DbPlayerInfo>, DatabaseError> {
+        //#[query(select_player_info_by_name = "SELECT uuid, username, groups, locale, prefix, suffix, currency, premium_currency, proxy, server, blocked, inventory, properties, ban FROM players_by_username WHERE username = ?;")]
+        select_one(&self.queries.select_player_info_by_name, &self.session, (name, )).await
     }
 
     #[instrument(skip(self), level = "debug")]
     pub async fn select_full_player_info(&self, uuid: &Uuid) -> Result<Option<DbFullPlayerInfo>, DatabaseError> {
-        let rows = self.session.execute(&self.queries.select_full_player_info, (uuid, )).await?.rows;
-        Ok(rows.map(|rows| rows.into_iter().last()).flatten().map(|row| row.into_typed::<DbFullPlayerInfo>()).transpose()?)
+        //#[query(select_full_player_info = "SELECT uuid, ban, ban_reason, blocked, currency, premium_currency, friends, groups, inventory, locale, permissions, proxy, server, session, username, prefix, suffix FROM players WHERE uuid = ?")]
+        select_one(&self.queries.select_full_player_info, &self.session, (uuid, )).await
     }
 
 
     #[instrument(skip(self), level = "debug")]
     pub async fn insert_player(&self, uuid: &Uuid, username: &str, locale: Option<&str>) -> Result<(), DatabaseError> {
-        self.session.execute(&self.queries.insert_player, (uuid, username, locale)).await?;
-        Ok(())
+        //#[query(insert_player = "INSERT INTO players(uuid, username, currency, premium_currency, locale, groups) VALUES (?, ?, 0, 0, ?, ['Default']);")]
+        execute(&self.queries.insert_player, &self.session, (uuid, username, locale)).await
     }
 
 
     #[instrument(skip(self), level = "debug")]
     pub async fn update_player_online_proxy_info(&self, player: &Uuid, proxy: Uuid, session: &Uuid, username: &str) -> Result<(), DatabaseError> {
-        self.session.execute(&self.queries.update_player_proxy_online_info, (proxy, session, username, player)).await?;
-        Ok(())
+        //#[query(update_player_proxy_online_info = "UPDATE players SET proxy = ?, session = ?, username = ? WHERE uuid = ?;")]
+        execute(&self.queries.update_player_proxy_online_info, &self.session, (proxy, session, username, player)).await
     }
 
     #[instrument(skip(self), level = "debug")]
     pub async fn update_player_online_sever_info(&self, player: &Uuid, server: Uuid) -> Result<(), DatabaseError> {
-        self.session.execute(&self.queries.update_player_server_online_info, (server, player)).await?;
-        Ok(())
+        //#[query(update_player_server_online_info = "UPDATE players SET server = ? WHERE uuid = ?;")]
+        execute(&self.queries.update_player_server_online_info, &self.session, (server, player)).await
     }
 
 
     #[instrument(skip(self), level = "debug")]
     pub async fn close_player_session(&self, player: &Uuid) -> Result<(), DatabaseError> {
-        self.session.execute(&self.queries.close_player_session, (player, )).await?;
-        Ok(())
+        //#[query(close_player_session = "UPDATE players SET proxy = null, server = null, session = null WHERE uuid = ?;")]
+        execute(&self.queries.close_player_session, &self.session, (player, )).await
     }
+
+    #[instrument(skip(self), level = "debug")]
+    pub async fn select_player_currencies(&self, player: &Uuid) -> Result<Option<(i32, i32)>, DatabaseError> {
+        //#[query(select_player_currencies = "SELECT currency, premium_currency FROM players WHERE uuid = ?;")]
+        select_one(&self.queries.select_player_currencies, &self.session, (player, )).await
+    }
+
+    #[instrument(skip(self), level = "debug")]
+    pub async fn set_player_currencies(&self, player: &Uuid, currency: i32, premium_currency: i32) -> Result<(), DatabaseError> {
+        //#[query(set_player_currencies = "UPDATE players SET currency = ?, premium_currency = ? WHERE uuid = ?;")]
+        execute(&self.queries.set_player_currencies, &self.session, (currency, premium_currency, player )).await
+    }
+
+
+
+
 }
 
 impl DbProxyPlayerInfo {
@@ -165,7 +195,7 @@ impl DbProxyPlayerInfo {
         }
 
         if let Some(kind_permissions) = &db.get_cached_kind("proxy").map(|kind| kind.permissions.as_ref()).flatten() {
-            kind_permissions.iter().filter(|&(group, kpermissions)| raw_groups.contains(group)).for_each(|(group, kpermissions)| permissions.extend(kpermissions.clone()));
+            kind_permissions.iter().filter(|&(group, _kpermissions)| raw_groups.contains(group)).for_each(|(_group, kpermissions)| permissions.extend(kpermissions.clone()));
         }
 
         let permissions = permissions.into_iter().filter_map(|p| if !p.contains(":") {
@@ -190,7 +220,7 @@ impl DbServerPlayerInfo {
     pub fn build_server_login_player_info(self, db: &Database, kind: &str) -> ServerLoginPlayerInfo {
         let raw_groups = self.groups.unwrap_or(vec!["Default".to_string()]);
         let groups: Vec<&Group> = raw_groups.iter().filter_map(|x| db.cache.groups.get(x)).collect();
-        let power = groups.iter().map(|grp| grp.power).max().unwrap_or(0);
+        let power = groups.iter().map(|&grp| grp.power).max().unwrap_or(0);
         let mut permissions: Vec<String> = groups.iter().filter_map(|grp| grp.permissions.clone()).flatten().collect();
 
         permissions.push(format!("power.{}", power));
@@ -200,7 +230,7 @@ impl DbServerPlayerInfo {
         }
 
         if let Some(kind_permissions) = &db.get_cached_kind(kind).map(|kind| kind.permissions.as_ref()).flatten() {
-            kind_permissions.iter().filter(|&(group, kpermissions)| raw_groups.contains(group)).for_each(|(group, kpermissions)| permissions.extend(kpermissions.clone()));
+            kind_permissions.iter().filter(|&(group, _kpermissions)| raw_groups.contains(group)).for_each(|(_group, kpermissions)| permissions.extend(kpermissions.clone()));
         }
 
         let permissions: Vec<String> = permissions.into_iter().filter_map(|p| if !p.contains(":") {
@@ -238,5 +268,35 @@ impl DbServerPlayerInfo {
             inventory: self.inventory.unwrap_or_default(),
             properties: self.properties.unwrap_or_default(),
         }
+    }
+}
+
+impl DbPlayerInfo {
+    pub async fn build_player_info(self, db: &Database) -> Result<PlayerInfo, DatabaseError> {
+        let raw_groups = self.groups.unwrap_or(vec!["Default".to_string()]);
+        let groups: Vec<&Group> = raw_groups.iter().filter_map(|x| db.cache.groups.get(x)).collect();
+        let power = groups.iter().map(|grp| grp.power).max().unwrap_or(0);
+
+        let ban = match self.ban {
+            None => None,
+            Some(ban_id) => db.select_ban(ban_id).await?
+        };
+
+        Ok(PlayerInfo {
+            uuid: self.uuid,
+            username: self.username,
+            power,
+            locale: self.locale.unwrap_or("fr".to_string()),
+            prefix: self.prefix,
+            suffix: self.suffix,
+            currency: self.currency,
+            premium_currency: self.premium_currency,
+            proxy: self.proxy,
+            server: self.server,
+            blocked: self.blocked.unwrap_or_default(),
+            inventory: self.inventory.unwrap_or_default(),
+            properties: self.properties.unwrap_or_default(),
+            ban: ban.map(DbBan::into),
+        })
     }
 }

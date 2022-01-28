@@ -2,10 +2,9 @@ use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 use std::net::IpAddr;
 use reqwest::{Client, Error};
-use tracing::{error, instrument, warn};
+use tracing::{error, instrument};
 use serde::{Serialize, Deserialize};
 use thiserror::Error;
-use crate::log::debug;
 use crate::utils::proxycheck::ProxyCheckError::ProxyCheck;
 
 #[derive(Serialize, Deserialize)]

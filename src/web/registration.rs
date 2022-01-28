@@ -1,19 +1,18 @@
-use std::net::SocketAddr;
 use std::sync::Arc;
 use warp::http::StatusCode;
 use warp::{Filter, path, Rejection, Reply, reply};
 use crate::AppData;
-use tracing::{instrument, warn};
+use tracing::instrument;
 use uuid::Uuid;
 use crate::messenger::servers_events::ServerEvent;
 use crate::web::rejections::ApiError;
 
 pub fn filter(data: Arc<AppData>) -> impl Filter<Extract=impl Reply, Error=Rejection> + Clone {
-    warp::get().and(path!("api"/"procedure"/"register"/String)).and(super::with_data(data)).and_then(register)
+    warp::get().and(path!("api"/"servers"/String/"register")).and(super::with_data(data)).and_then(register)
 }
 
 
-#[instrument(skip(data), level = "debug")]
+#[instrument(skip(data))]
 async fn register(hostname: String, data: Arc<AppData>) -> Result<impl Reply, Rejection> {
     let mut srv = match data.db.select_server_by_label(&hostname).await.map_err(ApiError::from)? {
         None => return Ok(StatusCode::NOT_FOUND.into_response()),
@@ -33,7 +32,7 @@ async fn register(hostname: String, data: Arc<AppData>) -> Result<impl Reply, Re
     data.msgr.send_event(&ServerEvent::ServerStarted {
         addr: srv.ip,
         id: srv.id.clone(),
-        description: srv.description,
+        description: srv.description.clone(),
         name: srv.label.clone(),
         kind: srv.kind.clone(),
         properties: srv.properties.clone().unwrap_or_default(),

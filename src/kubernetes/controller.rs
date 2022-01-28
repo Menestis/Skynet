@@ -5,7 +5,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use k8s_openapi::api::core::v1::Pod;
-use kube::{Api, Client, Error, ResourceExt};
+use kube::{Api, Error, ResourceExt};
 use kube::api::{Patch, PatchParams};
 use kube::runtime::controller::{Context, ReconcilerAction};
 use serde_json::json;
@@ -45,7 +45,7 @@ pub async fn reconcile(pod: Pod, ctx: Context<(Api<Pod>, Arc<Database>, Arc<Mess
         let kind = pod.labels().get("skynet/kind").unwrap().clone();
 
         let mut properties = HashMap::new();
-        pod.labels().iter().filter(|&(k, v)| k.starts_with("skynet-prop/")).for_each(|(k, v)| {
+        pod.labels().iter().filter(|&(k, _v)| k.starts_with("skynet-prop/")).for_each(|(k, v)| {
             properties.insert(k.trim_start_matches("skynet-prop/").to_string(), v.to_string());
         });
 
@@ -82,7 +82,7 @@ pub async fn reconcile(pod: Pod, ctx: Context<(Api<Pod>, Arc<Database>, Arc<Mess
     }
 
 
-    if let Some(deletion) = pod.metadata.deletion_timestamp.as_ref() {
+    if let Some(_deletion) = pod.metadata.deletion_timestamp.as_ref() {
         if pod.finalizers().contains(&FINALIZER.to_string()) {
             if let Some(d) = pod.labels().get("skynet_id") {
                 let id = Uuid::parse_str(d.as_str().trim_start_matches("sky-").trim_end_matches("-net"))?;
@@ -91,7 +91,13 @@ pub async fn reconcile(pod: Pod, ctx: Context<(Api<Pod>, Arc<Database>, Arc<Mess
 
                 msgr.send_event(&ServerEvent::DeleteRoute { id, name: pod.name() }).await?;
 
-                db.delete_server(&id).await?;
+                let server = db.select_server(&id).await?;
+                if let Some(server) = server{
+                    db.delete_server(&id).await?;
+                    db.insert_server_log(&server.id, &server.description, &server.kind, &server.label, &server.properties.unwrap_or_default()).await?;
+                }
+
+
             }
             let finalizers: Vec<String> = pod.finalizers().iter().filter(|&x| x != FINALIZER).map(|x| x.clone()).collect();
             let patch = json!({
@@ -108,7 +114,7 @@ pub async fn reconcile(pod: Pod, ctx: Context<(Api<Pod>, Arc<Database>, Arc<Mess
     })
 }
 
-pub fn on_error(error: &K8sWorkerError, ctx: Context<(Api<Pod>, Arc<Database>, Arc<Messenger>)>) -> ReconcilerAction {
+pub fn on_error(_error: &K8sWorkerError, _ctx: Context<(Api<Pod>, Arc<Database>, Arc<Messenger>)>) -> ReconcilerAction {
     ReconcilerAction {
         requeue_after: Some(Duration::from_secs(60)),
     }

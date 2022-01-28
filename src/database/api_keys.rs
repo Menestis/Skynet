@@ -6,6 +6,7 @@ use crate::database::DatabaseError;
 impl Database {
     #[instrument(skip(self), level = "debug")]
     pub async fn has_route_permission(&self, key: Uuid, permission: &str) -> Result<bool, DatabaseError> {
+        //#[query(select_api_key = "SELECT key,group FROM api_keys WHERE key = ?;")]
         let rows = self.session.execute(&self.queries.select_api_key, (key, )).await?.rows;
 
         let rows = match rows {

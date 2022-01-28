@@ -4,9 +4,9 @@ use crate::{AppData, Messenger};
 use tracing::*;
 
 impl Messenger {
-    #[instrument(name = "messenger_task", skip(self, data, delivery), level = "trace")]
-    pub async fn on_message(&self, delivery: Delivery, data: Arc<AppData>) -> anyhow::Result<()> {
-        let msg = match serde_json::from_str(&match String::from_utf8(delivery.data) {
+    #[instrument(name = "messenger_task", skip(self, _data, delivery), level = "trace")]
+    pub async fn on_message(&self, delivery: Delivery, _data: Arc<AppData>) -> anyhow::Result<()> {
+        let _msg = match serde_json::from_str(&match String::from_utf8(delivery.data) {
             Ok(msg) => {
                 trace!("Msg : {}", msg);
                 msg
@@ -22,7 +22,6 @@ impl Messenger {
                 return Ok(());
             }
         };
-
 
         Ok(())
     }

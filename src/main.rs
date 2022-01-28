@@ -7,7 +7,6 @@ use std::sync::Arc;
 
 use futures::join;
 use reqwest::Client;
-use tokio::runtime::Runtime;
 use tokio::signal;
 use tokio::signal::unix::SignalKind;
 use tokio::sync::{mpsc, watch};
@@ -28,7 +27,7 @@ mod web;
 mod utils;
 
 pub struct AppData {
-    uuid: Uuid,
+    _uuid: Uuid,
     db: Arc<Database>,
     msgr: Arc<Messenger>,
     k8s: Arc<Kubernetes>,
@@ -53,7 +52,7 @@ async fn main() -> anyhow::Result<()> {
     let (shutdown_task, s, r) = shutdown();
 
     let data = Arc::new(AppData {
-        uuid,
+        _uuid: uuid,
         db,
         msgr,
         k8s,
@@ -77,7 +76,7 @@ async fn main() -> anyhow::Result<()> {
 fn init_logs() {
     tracing_subscriber::fmt()
         .with_env_filter(env::var("LOG_LEVEL").unwrap_or("mio=info,lapin=info,pinky_swear=info,scylla=info,tower=info,hyper=info,want=info,warp=info,kube_leader_election=warn,renew_lock=warn,kube=warn,tokio=info,info".to_string()))
-        .with_span_events(FmtSpan::NEW | FmtSpan::CLOSE).init();
+        .with_span_events(FmtSpan::CLOSE).init();
 }
 
 fn shutdown() -> (impl Future, mpsc::Sender<()>, watch::Receiver<bool>) {
