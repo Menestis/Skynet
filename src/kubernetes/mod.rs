@@ -21,6 +21,7 @@ use crate::{AppData, Database, Messenger};
 
 pub mod controller;
 pub mod templates;
+pub mod autoscaler;
 
 pub struct Kubernetes {
     pub client: Client,
@@ -104,6 +105,9 @@ impl Kubernetes {
         loop {
             tokio::task::yield_now().await;
             self.renew_lock().await;
+            if let Err(err) = self.tick_autoscale().await{
+                error!("{}", err);
+            }
             sleep(Duration::from_secs(5)).await;
         }
     }

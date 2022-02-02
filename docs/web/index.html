@@ -1349,6 +1349,12 @@ ul.nav-tabs {
                     <li data-group="Player" data-name="apiPlayersUuidDisconnectPost" class="">
                       <a href="#api-Player-apiPlayersUuidDisconnectPost">apiPlayersUuidDisconnectPost</a>
                     </li>
+                    <li data-group="Player" data-name="apiPlayersUuidGroupsUpdatePost" class="">
+                      <a href="#api-Player-apiPlayersUuidGroupsUpdatePost">apiPlayersUuidGroupsUpdatePost</a>
+                    </li>
+                    <li data-group="Player" data-name="apiPlayersUuidInventoryTransactionPost" class="">
+                      <a href="#api-Player-apiPlayersUuidInventoryTransactionPost">apiPlayersUuidInventoryTransactionPost</a>
+                    </li>
                     <li data-group="Player" data-name="apiPlayersUuidMovePost" class="">
                       <a href="#api-Player-apiPlayersUuidMovePost">apiPlayersUuidMovePost</a>
                     </li>
@@ -5249,6 +5255,874 @@ pub fn main() {
 
 
                             <div class="tab-content" id="responses-Player-apiPlayersUuidDisconnectPost-404-wrapper" style='margin-bottom: 10px;'>
+                            </div>
+                        </article>
+                      </div>
+                      <hr>
+                    <div id="api-Player-apiPlayersUuidGroupsUpdatePost">
+                      <article id="api-Player-apiPlayersUuidGroupsUpdatePost-0" data-group="User" data-name="apiPlayersUuidGroupsUpdatePost" data-version="0">
+                        <div class="pull-left">
+                          <h1>apiPlayersUuidGroupsUpdatePost</h1>
+                          <p></p>
+                        </div>
+                        <div class="pull-right"></div>
+                        <div class="clearfix"></div>
+                        <p></p>
+                        <p class="marked"></p>
+                        <p></p>
+                        <br />
+                        <pre class="prettyprint language-html prettyprinted" data-type="post"><code><span class="pln">/api/players/{uuid}/groups/update</span></code></pre>
+                        <p>
+                          <h3>Usage and SDK Samples</h3>
+                        </p>
+                        <ul class="nav nav-tabs nav-tabs-examples">
+                          <li class="active"><a href="#examples-Player-apiPlayersUuidGroupsUpdatePost-0-curl">Curl</a></li>
+                          <li class=""><a href="#examples-Player-apiPlayersUuidGroupsUpdatePost-0-java">Java</a></li>
+                          <li class=""><a href="#examples-Player-apiPlayersUuidGroupsUpdatePost-0-android">Android</a></li>
+                          <!--<li class=""><a href="#examples-Player-apiPlayersUuidGroupsUpdatePost-0-groovy">Groovy</a></li>-->
+                          <li class=""><a href="#examples-Player-apiPlayersUuidGroupsUpdatePost-0-objc">Obj-C</a></li>
+                          <li class=""><a href="#examples-Player-apiPlayersUuidGroupsUpdatePost-0-javascript">JavaScript</a></li>
+                          <!--<li class=""><a href="#examples-Player-apiPlayersUuidGroupsUpdatePost-0-angular">Angular</a></li>-->
+                          <li class=""><a href="#examples-Player-apiPlayersUuidGroupsUpdatePost-0-csharp">C#</a></li>
+                          <li class=""><a href="#examples-Player-apiPlayersUuidGroupsUpdatePost-0-php">PHP</a></li>
+                          <li class=""><a href="#examples-Player-apiPlayersUuidGroupsUpdatePost-0-perl">Perl</a></li>
+                          <li class=""><a href="#examples-Player-apiPlayersUuidGroupsUpdatePost-0-python">Python</a></li>
+                          <li class=""><a href="#examples-Player-apiPlayersUuidGroupsUpdatePost-0-rust">Rust</a></li>
+                        </ul>
+
+                        <div class="tab-content">
+                          <div class="tab-pane active" id="examples-Player-apiPlayersUuidGroupsUpdatePost-0-curl">
+                            <pre class="prettyprint"><code class="language-bsh">curl -X POST \
+-H "Authorization: [[apiKey]]" \
+ -H "Content-Type: application/json" \
+ "http://localhost:8888/api/players/{uuid}/groups/update" \
+ -d ''
+</code></pre>
+                          </div>
+                          <div class="tab-pane" id="examples-Player-apiPlayersUuidGroupsUpdatePost-0-java">
+                            <pre class="prettyprint"><code class="language-java">import org.openapitools.client.*;
+import org.openapitools.client.auth.*;
+import org.openapitools.client.model.*;
+import org.openapitools.client.api.PlayerApi;
+
+import java.io.File;
+import java.util.*;
+
+public class PlayerApiExample {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        
+        // Configure API key authorization: auth
+        ApiKeyAuth auth = (ApiKeyAuth) defaultClient.getAuthentication("auth");
+        auth.setApiKey("YOUR API KEY");
+        // Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+        //auth.setApiKeyPrefix("Token");
+
+        // Create an instance of the API class
+        PlayerApi apiInstance = new PlayerApi();
+        UUID uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // UUID | 
+        array[String] string = ; // array[String] | 
+
+        try {
+            apiInstance.apiPlayersUuidGroupsUpdatePost(uuid, string);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling PlayerApi#apiPlayersUuidGroupsUpdatePost");
+            e.printStackTrace();
+        }
+    }
+}
+</code></pre>
+                          </div>
+
+                          <div class="tab-pane" id="examples-Player-apiPlayersUuidGroupsUpdatePost-0-android">
+                            <pre class="prettyprint"><code class="language-java">import org.openapitools.client.api.PlayerApi;
+
+public class PlayerApiExample {
+    public static void main(String[] args) {
+        PlayerApi apiInstance = new PlayerApi();
+        UUID uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // UUID | 
+        array[String] string = ; // array[String] | 
+
+        try {
+            apiInstance.apiPlayersUuidGroupsUpdatePost(uuid, string);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling PlayerApi#apiPlayersUuidGroupsUpdatePost");
+            e.printStackTrace();
+        }
+    }
+}</code></pre>
+                          </div>
+  <!--
+  <div class="tab-pane" id="examples-Player-apiPlayersUuidGroupsUpdatePost-0-groovy">
+  <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+  </div> -->
+                            <div class="tab-pane" id="examples-Player-apiPlayersUuidGroupsUpdatePost-0-objc">
+                              <pre class="prettyprint"><code class="language-cpp">Configuration *apiConfig = [Configuration sharedConfig];
+
+// Configure API key authorization: (authentication scheme: auth)
+[apiConfig setApiKey:@"YOUR_API_KEY" forApiKeyIdentifier:@"Authorization"];
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//[apiConfig setApiKeyPrefix:@"Bearer" forApiKeyIdentifier:@"Authorization"];
+
+
+// Create an instance of the API class
+PlayerApi *apiInstance = [[PlayerApi alloc] init];
+UUID *uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; //  (default to null)
+array[String] *string = ; // 
+
+[apiInstance apiPlayersUuidGroupsUpdatePostWith:uuid
+    string:string
+              completionHandler: ^(NSError* error) {
+    if (error) {
+        NSLog(@"Error: %@", error);
+    }
+}];
+</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Player-apiPlayersUuidGroupsUpdatePost-0-javascript">
+                              <pre class="prettyprint"><code class="language-js">var SkynetApi = require('skynet_api');
+var defaultClient = SkynetApi.ApiClient.instance;
+
+// Configure API key authorization: auth
+var auth = defaultClient.authentications['auth'];
+auth.apiKey = "YOUR API KEY";
+// Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+//auth.apiKeyPrefix['Authorization'] = "Token";
+
+// Create an instance of the API class
+var api = new SkynetApi.PlayerApi()
+var uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // {UUID} 
+var string = ; // {array[String]} 
+
+var callback = function(error, data, response) {
+  if (error) {
+    console.error(error);
+  } else {
+    console.log('API called successfully.');
+  }
+};
+api.apiPlayersUuidGroupsUpdatePost(uuid, string, callback);
+</code></pre>
+                            </div>
+
+                            <!--<div class="tab-pane" id="examples-Player-apiPlayersUuidGroupsUpdatePost-0-angular">
+              <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+            </div>-->
+                            <div class="tab-pane" id="examples-Player-apiPlayersUuidGroupsUpdatePost-0-csharp">
+                              <pre class="prettyprint"><code class="language-cs">using System;
+using System.Diagnostics;
+using Org.OpenAPITools.Api;
+using Org.OpenAPITools.Client;
+using Org.OpenAPITools.Model;
+
+namespace Example
+{
+    public class apiPlayersUuidGroupsUpdatePostExample
+    {
+        public void main()
+        {
+            // Configure API key authorization: auth
+            Configuration.Default.ApiKey.Add("Authorization", "YOUR_API_KEY");
+            // Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+            // Configuration.Default.ApiKeyPrefix.Add("Authorization", "Bearer");
+
+            // Create an instance of the API class
+            var apiInstance = new PlayerApi();
+            var uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d;  // UUID |  (default to null)
+            var string = new array[String](); // array[String] | 
+
+            try {
+                apiInstance.apiPlayersUuidGroupsUpdatePost(uuid, string);
+            } catch (Exception e) {
+                Debug.Print("Exception when calling PlayerApi.apiPlayersUuidGroupsUpdatePost: " + e.Message );
+            }
+        }
+    }
+}
+</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Player-apiPlayersUuidGroupsUpdatePost-0-php">
+                              <pre class="prettyprint"><code class="language-php"><&#63;php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+// Configure API key authorization: auth
+OpenAPITools\Client\Configuration::getDefaultConfiguration()->setApiKey('Authorization', 'YOUR_API_KEY');
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+// OpenAPITools\Client\Configuration::getDefaultConfiguration()->setApiKeyPrefix('Authorization', 'Bearer');
+
+// Create an instance of the API class
+$api_instance = new OpenAPITools\Client\Api\PlayerApi();
+$uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // UUID | 
+$string = ; // array[String] | 
+
+try {
+    $api_instance->apiPlayersUuidGroupsUpdatePost($uuid, $string);
+} catch (Exception $e) {
+    echo 'Exception when calling PlayerApi->apiPlayersUuidGroupsUpdatePost: ', $e->getMessage(), PHP_EOL;
+}
+?></code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Player-apiPlayersUuidGroupsUpdatePost-0-perl">
+                              <pre class="prettyprint"><code class="language-perl">use Data::Dumper;
+use WWW::OPenAPIClient::Configuration;
+use WWW::OPenAPIClient::PlayerApi;
+
+# Configure API key authorization: auth
+$WWW::OPenAPIClient::Configuration::api_key->{'Authorization'} = 'YOUR_API_KEY';
+# uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+#$WWW::OPenAPIClient::Configuration::api_key_prefix->{'Authorization'} = "Bearer";
+
+# Create an instance of the API class
+my $api_instance = WWW::OPenAPIClient::PlayerApi->new();
+my $uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; # UUID | 
+my $string = [WWW::OPenAPIClient::Object::array[String]->new()]; # array[String] | 
+
+eval {
+    $api_instance->apiPlayersUuidGroupsUpdatePost(uuid => $uuid, string => $string);
+};
+if ($@) {
+    warn "Exception when calling PlayerApi->apiPlayersUuidGroupsUpdatePost: $@\n";
+}</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Player-apiPlayersUuidGroupsUpdatePost-0-python">
+                              <pre class="prettyprint"><code class="language-python">from __future__ import print_statement
+import time
+import openapi_client
+from openapi_client.rest import ApiException
+from pprint import pprint
+
+# Configure API key authorization: auth
+openapi_client.configuration.api_key['Authorization'] = 'YOUR_API_KEY'
+# Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+# openapi_client.configuration.api_key_prefix['Authorization'] = 'Bearer'
+
+# Create an instance of the API class
+api_instance = openapi_client.PlayerApi()
+uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d # UUID |  (default to null)
+string =  # array[String] | 
+
+try:
+    api_instance.api_players_uuid_groups_update_post(uuid, string)
+except ApiException as e:
+    print("Exception when calling PlayerApi->apiPlayersUuidGroupsUpdatePost: %s\n" % e)</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Player-apiPlayersUuidGroupsUpdatePost-0-rust">
+                              <pre class="prettyprint"><code class="language-rust">extern crate PlayerApi;
+
+pub fn main() {
+    let uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // UUID
+    let string = ; // array[String]
+
+    let mut context = PlayerApi::Context::default();
+    let result = client.apiPlayersUuidGroupsUpdatePost(uuid, string, &context).wait();
+
+    println!("{:?}", result);
+}
+</code></pre>
+                            </div>
+                          </div>
+
+                          <h2>Scopes</h2>
+                          <table>
+                            
+                          </table>
+
+                          <h2>Parameters</h2>
+
+                            <div class="methodsubtabletitle">Path parameters</div>
+                            <table id="methodsubtable">
+                                <tr>
+                                  <th width="150px">Name</th>
+                                  <th>Description</th>
+                                </tr>
+                                  <tr><td style="width:150px;">uuid*</td>
+<td>
+
+
+    <div id="d2e199_apiPlayersUuidGroupsUpdatePost_uuid">
+        <div class="json-schema-view">
+            <div class="primitive">
+                <span class="type">
+                    UUID
+                </span>
+                    <span class="format">
+                        (uuid)
+                    </span>
+
+            </div>
+                <div class="inner required">
+                    Required
+                </div>
+        </div>
+    </div>
+</td>
+</tr>
+
+                            </table>
+
+
+                            <div class="methodsubtabletitle">Body parameters</div>
+                            <table id="methodsubtable">
+                              <tr>
+                                <th width="150px">Name</th>
+                                <th>Description</th>
+                              </tr>
+                                <tr><td style="width:150px;">string <span style="color:red;">*</span></td>
+<td>
+<p class="marked"></p>
+<script>
+$(document).ready(function() {
+  var schemaWrapper = {
+  "content" : {
+    "application/json" : {
+      "schema" : {
+        "type" : "array",
+        "items" : {
+          "type" : "string"
+        }
+      }
+    }
+  },
+  "required" : true
+};
+
+  var schema = findNode('schema',schemaWrapper).schema;
+  if (!schema) {
+    schema = schemaWrapper.schema;
+  }
+  if (schema.$ref != null) {
+    schema = defsParser.$refs.get(schema.$ref);
+  } else {
+    schemaWrapper.definitions = Object.assign({}, defs);
+    $RefParser.dereference(schemaWrapper).catch(function(err) {
+      console.log(err);
+    });
+  }
+
+  var view = new JSONSchemaView(schema,2,{isBodyParam: true});
+  var result = $('#d2e199_apiPlayersUuidGroupsUpdatePost_string');
+  result.empty();
+  result.append(view.render());
+});
+</script>
+<div id="d2e199_apiPlayersUuidGroupsUpdatePost_string"></div>
+</td>
+</tr>
+
+                            </table>
+
+
+
+                          <h2>Responses</h2>
+                            <h3 id="examples-Player-apiPlayersUuidGroupsUpdatePost-title-200"></h3>
+                            <p id="examples-Player-apiPlayersUuidGroupsUpdatePost-description-200" class="marked"></p>
+                            <script>
+                              var responsePlayer200_description = `OK`;
+                              var responsePlayer200_description_break = responsePlayer200_description.indexOf('\n');
+                              if (responsePlayer200_description_break == -1) {
+                                $("#examples-Player-apiPlayersUuidGroupsUpdatePost-title-200").text("Status: 200 - " + responsePlayer200_description);
+                              } else {
+                                $("#examples-Player-apiPlayersUuidGroupsUpdatePost-title-200").text("Status: 200 - " + responsePlayer200_description.substring(0, responsePlayer200_description_break));
+                                $("#examples-Player-apiPlayersUuidGroupsUpdatePost-description-200").html(responsePlayer200_description.substring(responsePlayer200_description_break));
+                              }
+                            </script>
+
+
+                            <ul id="responses-detail-Player-apiPlayersUuidGroupsUpdatePost-200" class="nav nav-tabs nav-tabs-examples" >
+
+
+                            </ul>
+
+
+                            <div class="tab-content" id="responses-Player-apiPlayersUuidGroupsUpdatePost-200-wrapper" style='margin-bottom: 10px;'>
+                            </div>
+                            <h3 id="examples-Player-apiPlayersUuidGroupsUpdatePost-title-404"></h3>
+                            <p id="examples-Player-apiPlayersUuidGroupsUpdatePost-description-404" class="marked"></p>
+                            <script>
+                              var responsePlayer404_description = `Player not found`;
+                              var responsePlayer404_description_break = responsePlayer404_description.indexOf('\n');
+                              if (responsePlayer404_description_break == -1) {
+                                $("#examples-Player-apiPlayersUuidGroupsUpdatePost-title-404").text("Status: 404 - " + responsePlayer404_description);
+                              } else {
+                                $("#examples-Player-apiPlayersUuidGroupsUpdatePost-title-404").text("Status: 404 - " + responsePlayer404_description.substring(0, responsePlayer404_description_break));
+                                $("#examples-Player-apiPlayersUuidGroupsUpdatePost-description-404").html(responsePlayer404_description.substring(responsePlayer404_description_break));
+                              }
+                            </script>
+
+
+                            <ul id="responses-detail-Player-apiPlayersUuidGroupsUpdatePost-404" class="nav nav-tabs nav-tabs-examples" >
+
+
+                            </ul>
+
+
+                            <div class="tab-content" id="responses-Player-apiPlayersUuidGroupsUpdatePost-404-wrapper" style='margin-bottom: 10px;'>
+                            </div>
+                        </article>
+                      </div>
+                      <hr>
+                    <div id="api-Player-apiPlayersUuidInventoryTransactionPost">
+                      <article id="api-Player-apiPlayersUuidInventoryTransactionPost-0" data-group="User" data-name="apiPlayersUuidInventoryTransactionPost" data-version="0">
+                        <div class="pull-left">
+                          <h1>apiPlayersUuidInventoryTransactionPost</h1>
+                          <p></p>
+                        </div>
+                        <div class="pull-right"></div>
+                        <div class="clearfix"></div>
+                        <p></p>
+                        <p class="marked"></p>
+                        <p></p>
+                        <br />
+                        <pre class="prettyprint language-html prettyprinted" data-type="post"><code><span class="pln">/api/players/{uuid}/inventory/transaction</span></code></pre>
+                        <p>
+                          <h3>Usage and SDK Samples</h3>
+                        </p>
+                        <ul class="nav nav-tabs nav-tabs-examples">
+                          <li class="active"><a href="#examples-Player-apiPlayersUuidInventoryTransactionPost-0-curl">Curl</a></li>
+                          <li class=""><a href="#examples-Player-apiPlayersUuidInventoryTransactionPost-0-java">Java</a></li>
+                          <li class=""><a href="#examples-Player-apiPlayersUuidInventoryTransactionPost-0-android">Android</a></li>
+                          <!--<li class=""><a href="#examples-Player-apiPlayersUuidInventoryTransactionPost-0-groovy">Groovy</a></li>-->
+                          <li class=""><a href="#examples-Player-apiPlayersUuidInventoryTransactionPost-0-objc">Obj-C</a></li>
+                          <li class=""><a href="#examples-Player-apiPlayersUuidInventoryTransactionPost-0-javascript">JavaScript</a></li>
+                          <!--<li class=""><a href="#examples-Player-apiPlayersUuidInventoryTransactionPost-0-angular">Angular</a></li>-->
+                          <li class=""><a href="#examples-Player-apiPlayersUuidInventoryTransactionPost-0-csharp">C#</a></li>
+                          <li class=""><a href="#examples-Player-apiPlayersUuidInventoryTransactionPost-0-php">PHP</a></li>
+                          <li class=""><a href="#examples-Player-apiPlayersUuidInventoryTransactionPost-0-perl">Perl</a></li>
+                          <li class=""><a href="#examples-Player-apiPlayersUuidInventoryTransactionPost-0-python">Python</a></li>
+                          <li class=""><a href="#examples-Player-apiPlayersUuidInventoryTransactionPost-0-rust">Rust</a></li>
+                        </ul>
+
+                        <div class="tab-content">
+                          <div class="tab-pane active" id="examples-Player-apiPlayersUuidInventoryTransactionPost-0-curl">
+                            <pre class="prettyprint"><code class="language-bsh">curl -X POST \
+-H "Authorization: [[apiKey]]" \
+ -H "Accept: application/json" \
+ -H "Content-Type: application/json" \
+ "http://localhost:8888/api/players/{uuid}/inventory/transaction" \
+ -d ''
+</code></pre>
+                          </div>
+                          <div class="tab-pane" id="examples-Player-apiPlayersUuidInventoryTransactionPost-0-java">
+                            <pre class="prettyprint"><code class="language-java">import org.openapitools.client.*;
+import org.openapitools.client.auth.*;
+import org.openapitools.client.model.*;
+import org.openapitools.client.api.PlayerApi;
+
+import java.io.File;
+import java.util.*;
+
+public class PlayerApiExample {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        
+        // Configure API key authorization: auth
+        ApiKeyAuth auth = (ApiKeyAuth) defaultClient.getAuthentication("auth");
+        auth.setApiKey("YOUR API KEY");
+        // Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+        //auth.setApiKeyPrefix("Token");
+
+        // Create an instance of the API class
+        PlayerApi apiInstance = new PlayerApi();
+        UUID uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // UUID | 
+        map[String, Integer] requestBody = ; // map[String, Integer] | 
+
+        try {
+            'Boolean' result = apiInstance.apiPlayersUuidInventoryTransactionPost(uuid, requestBody);
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling PlayerApi#apiPlayersUuidInventoryTransactionPost");
+            e.printStackTrace();
+        }
+    }
+}
+</code></pre>
+                          </div>
+
+                          <div class="tab-pane" id="examples-Player-apiPlayersUuidInventoryTransactionPost-0-android">
+                            <pre class="prettyprint"><code class="language-java">import org.openapitools.client.api.PlayerApi;
+
+public class PlayerApiExample {
+    public static void main(String[] args) {
+        PlayerApi apiInstance = new PlayerApi();
+        UUID uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // UUID | 
+        map[String, Integer] requestBody = ; // map[String, Integer] | 
+
+        try {
+            'Boolean' result = apiInstance.apiPlayersUuidInventoryTransactionPost(uuid, requestBody);
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling PlayerApi#apiPlayersUuidInventoryTransactionPost");
+            e.printStackTrace();
+        }
+    }
+}</code></pre>
+                          </div>
+  <!--
+  <div class="tab-pane" id="examples-Player-apiPlayersUuidInventoryTransactionPost-0-groovy">
+  <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+  </div> -->
+                            <div class="tab-pane" id="examples-Player-apiPlayersUuidInventoryTransactionPost-0-objc">
+                              <pre class="prettyprint"><code class="language-cpp">Configuration *apiConfig = [Configuration sharedConfig];
+
+// Configure API key authorization: (authentication scheme: auth)
+[apiConfig setApiKey:@"YOUR_API_KEY" forApiKeyIdentifier:@"Authorization"];
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//[apiConfig setApiKeyPrefix:@"Bearer" forApiKeyIdentifier:@"Authorization"];
+
+
+// Create an instance of the API class
+PlayerApi *apiInstance = [[PlayerApi alloc] init];
+UUID *uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; //  (default to null)
+map[String, Integer] *requestBody = ; // 
+
+[apiInstance apiPlayersUuidInventoryTransactionPostWith:uuid
+    requestBody:requestBody
+              completionHandler: ^('Boolean' output, NSError* error) {
+    if (output) {
+        NSLog(@"%@", output);
+    }
+    if (error) {
+        NSLog(@"Error: %@", error);
+    }
+}];
+</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Player-apiPlayersUuidInventoryTransactionPost-0-javascript">
+                              <pre class="prettyprint"><code class="language-js">var SkynetApi = require('skynet_api');
+var defaultClient = SkynetApi.ApiClient.instance;
+
+// Configure API key authorization: auth
+var auth = defaultClient.authentications['auth'];
+auth.apiKey = "YOUR API KEY";
+// Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+//auth.apiKeyPrefix['Authorization'] = "Token";
+
+// Create an instance of the API class
+var api = new SkynetApi.PlayerApi()
+var uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // {UUID} 
+var requestBody = ; // {map[String, Integer]} 
+
+var callback = function(error, data, response) {
+  if (error) {
+    console.error(error);
+  } else {
+    console.log('API called successfully. Returned data: ' + data);
+  }
+};
+api.apiPlayersUuidInventoryTransactionPost(uuid, requestBody, callback);
+</code></pre>
+                            </div>
+
+                            <!--<div class="tab-pane" id="examples-Player-apiPlayersUuidInventoryTransactionPost-0-angular">
+              <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+            </div>-->
+                            <div class="tab-pane" id="examples-Player-apiPlayersUuidInventoryTransactionPost-0-csharp">
+                              <pre class="prettyprint"><code class="language-cs">using System;
+using System.Diagnostics;
+using Org.OpenAPITools.Api;
+using Org.OpenAPITools.Client;
+using Org.OpenAPITools.Model;
+
+namespace Example
+{
+    public class apiPlayersUuidInventoryTransactionPostExample
+    {
+        public void main()
+        {
+            // Configure API key authorization: auth
+            Configuration.Default.ApiKey.Add("Authorization", "YOUR_API_KEY");
+            // Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+            // Configuration.Default.ApiKeyPrefix.Add("Authorization", "Bearer");
+
+            // Create an instance of the API class
+            var apiInstance = new PlayerApi();
+            var uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d;  // UUID |  (default to null)
+            var requestBody = new map[String, Integer](); // map[String, Integer] | 
+
+            try {
+                'Boolean' result = apiInstance.apiPlayersUuidInventoryTransactionPost(uuid, requestBody);
+                Debug.WriteLine(result);
+            } catch (Exception e) {
+                Debug.Print("Exception when calling PlayerApi.apiPlayersUuidInventoryTransactionPost: " + e.Message );
+            }
+        }
+    }
+}
+</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Player-apiPlayersUuidInventoryTransactionPost-0-php">
+                              <pre class="prettyprint"><code class="language-php"><&#63;php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+// Configure API key authorization: auth
+OpenAPITools\Client\Configuration::getDefaultConfiguration()->setApiKey('Authorization', 'YOUR_API_KEY');
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+// OpenAPITools\Client\Configuration::getDefaultConfiguration()->setApiKeyPrefix('Authorization', 'Bearer');
+
+// Create an instance of the API class
+$api_instance = new OpenAPITools\Client\Api\PlayerApi();
+$uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // UUID | 
+$requestBody = ; // map[String, Integer] | 
+
+try {
+    $result = $api_instance->apiPlayersUuidInventoryTransactionPost($uuid, $requestBody);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling PlayerApi->apiPlayersUuidInventoryTransactionPost: ', $e->getMessage(), PHP_EOL;
+}
+?></code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Player-apiPlayersUuidInventoryTransactionPost-0-perl">
+                              <pre class="prettyprint"><code class="language-perl">use Data::Dumper;
+use WWW::OPenAPIClient::Configuration;
+use WWW::OPenAPIClient::PlayerApi;
+
+# Configure API key authorization: auth
+$WWW::OPenAPIClient::Configuration::api_key->{'Authorization'} = 'YOUR_API_KEY';
+# uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+#$WWW::OPenAPIClient::Configuration::api_key_prefix->{'Authorization'} = "Bearer";
+
+# Create an instance of the API class
+my $api_instance = WWW::OPenAPIClient::PlayerApi->new();
+my $uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; # UUID | 
+my $requestBody = WWW::OPenAPIClient::Object::map[String, Integer]->new(); # map[String, Integer] | 
+
+eval {
+    my $result = $api_instance->apiPlayersUuidInventoryTransactionPost(uuid => $uuid, requestBody => $requestBody);
+    print Dumper($result);
+};
+if ($@) {
+    warn "Exception when calling PlayerApi->apiPlayersUuidInventoryTransactionPost: $@\n";
+}</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Player-apiPlayersUuidInventoryTransactionPost-0-python">
+                              <pre class="prettyprint"><code class="language-python">from __future__ import print_statement
+import time
+import openapi_client
+from openapi_client.rest import ApiException
+from pprint import pprint
+
+# Configure API key authorization: auth
+openapi_client.configuration.api_key['Authorization'] = 'YOUR_API_KEY'
+# Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+# openapi_client.configuration.api_key_prefix['Authorization'] = 'Bearer'
+
+# Create an instance of the API class
+api_instance = openapi_client.PlayerApi()
+uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d # UUID |  (default to null)
+requestBody =  # map[String, Integer] | 
+
+try:
+    api_response = api_instance.api_players_uuid_inventory_transaction_post(uuid, requestBody)
+    pprint(api_response)
+except ApiException as e:
+    print("Exception when calling PlayerApi->apiPlayersUuidInventoryTransactionPost: %s\n" % e)</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Player-apiPlayersUuidInventoryTransactionPost-0-rust">
+                              <pre class="prettyprint"><code class="language-rust">extern crate PlayerApi;
+
+pub fn main() {
+    let uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // UUID
+    let requestBody = ; // map[String, Integer]
+
+    let mut context = PlayerApi::Context::default();
+    let result = client.apiPlayersUuidInventoryTransactionPost(uuid, requestBody, &context).wait();
+
+    println!("{:?}", result);
+}
+</code></pre>
+                            </div>
+                          </div>
+
+                          <h2>Scopes</h2>
+                          <table>
+                            
+                          </table>
+
+                          <h2>Parameters</h2>
+
+                            <div class="methodsubtabletitle">Path parameters</div>
+                            <table id="methodsubtable">
+                                <tr>
+                                  <th width="150px">Name</th>
+                                  <th>Description</th>
+                                </tr>
+                                  <tr><td style="width:150px;">uuid*</td>
+<td>
+
+
+    <div id="d2e199_apiPlayersUuidInventoryTransactionPost_uuid">
+        <div class="json-schema-view">
+            <div class="primitive">
+                <span class="type">
+                    UUID
+                </span>
+                    <span class="format">
+                        (uuid)
+                    </span>
+
+            </div>
+                <div class="inner required">
+                    Required
+                </div>
+        </div>
+    </div>
+</td>
+</tr>
+
+                            </table>
+
+
+                            <div class="methodsubtabletitle">Body parameters</div>
+                            <table id="methodsubtable">
+                              <tr>
+                                <th width="150px">Name</th>
+                                <th>Description</th>
+                              </tr>
+                                <tr><td style="width:150px;">requestBody <span style="color:red;">*</span></td>
+<td>
+<p class="marked"></p>
+<script>
+$(document).ready(function() {
+  var schemaWrapper = {
+  "content" : {
+    "application/json" : {
+      "schema" : {
+        "type" : "object",
+        "additionalProperties" : {
+          "type" : "integer"
+        }
+      }
+    }
+  },
+  "required" : true
+};
+
+  var schema = findNode('schema',schemaWrapper).schema;
+  if (!schema) {
+    schema = schemaWrapper.schema;
+  }
+  if (schema.$ref != null) {
+    schema = defsParser.$refs.get(schema.$ref);
+  } else {
+    schemaWrapper.definitions = Object.assign({}, defs);
+    $RefParser.dereference(schemaWrapper).catch(function(err) {
+      console.log(err);
+    });
+  }
+
+  var view = new JSONSchemaView(schema,2,{isBodyParam: true});
+  var result = $('#d2e199_apiPlayersUuidInventoryTransactionPost_requestBody');
+  result.empty();
+  result.append(view.render());
+});
+</script>
+<div id="d2e199_apiPlayersUuidInventoryTransactionPost_requestBody"></div>
+</td>
+</tr>
+
+                            </table>
+
+
+
+                          <h2>Responses</h2>
+                            <h3 id="examples-Player-apiPlayersUuidInventoryTransactionPost-title-200"></h3>
+                            <p id="examples-Player-apiPlayersUuidInventoryTransactionPost-description-200" class="marked"></p>
+                            <script>
+                              var responsePlayer200_description = `OK`;
+                              var responsePlayer200_description_break = responsePlayer200_description.indexOf('\n');
+                              if (responsePlayer200_description_break == -1) {
+                                $("#examples-Player-apiPlayersUuidInventoryTransactionPost-title-200").text("Status: 200 - " + responsePlayer200_description);
+                              } else {
+                                $("#examples-Player-apiPlayersUuidInventoryTransactionPost-title-200").text("Status: 200 - " + responsePlayer200_description.substring(0, responsePlayer200_description_break));
+                                $("#examples-Player-apiPlayersUuidInventoryTransactionPost-description-200").html(responsePlayer200_description.substring(responsePlayer200_description_break));
+                              }
+                            </script>
+
+
+                            <ul id="responses-detail-Player-apiPlayersUuidInventoryTransactionPost-200" class="nav nav-tabs nav-tabs-examples" >
+                                <li class="active">
+                                  <a data-toggle="tab" href="#responses-Player-apiPlayersUuidInventoryTransactionPost-200-schema">Schema</a>
+                                </li>
+
+
+
+
+                            </ul>
+
+
+                            <div class="tab-content" id="responses-Player-apiPlayersUuidInventoryTransactionPost-200-wrapper" style='margin-bottom: 10px;'>
+                                <div class="tab-pane active" id="responses-Player-apiPlayersUuidInventoryTransactionPost-200-schema">
+                                  <div id="responses-Player-apiPlayersUuidInventoryTransactionPost-schema-200" class="exampleStyle">
+                                    <script>
+                                      $(document).ready(function() {
+                                        var schemaWrapper = {
+  "description" : "OK",
+  "content" : {
+    "application/json" : {
+      "schema" : {
+        "type" : "boolean"
+      }
+    }
+  }
+};
+                                        var schema = findNode('schema',schemaWrapper).schema;
+                                        if (!schema) {
+                                          schema = schemaWrapper.schema;
+                                        }
+                                        if (schema.$ref != null) {
+                                          schema = defsParser.$refs.get(schema.$ref);
+                                        } else if (schema.items != null && schema.items.$ref != null) {
+                                            schema.items = defsParser.$refs.get(schema.items.$ref);
+                                        } else {
+                                          schemaWrapper.definitions = Object.assign({}, defs);
+                                          $RefParser.dereference(schemaWrapper).catch(function(err) {
+                                            console.log(err);
+                                          });
+                                        }
+
+                                        var view = new JSONSchemaView(schema, 3);
+                                        $('#responses-Player-apiPlayersUuidInventoryTransactionPost-200-schema-data').val(JSON.stringify(schema));
+                                        var result = $('#responses-Player-apiPlayersUuidInventoryTransactionPost-schema-200');
+                                        result.empty();
+                                        result.append(view.render());
+                                      });
+                                    </script>
+                                  </div>
+                                  <input id='responses-Player-apiPlayersUuidInventoryTransactionPost-200-schema-data' type='hidden' value=''></input>
+                                </div>
+                            </div>
+                            <h3 id="examples-Player-apiPlayersUuidInventoryTransactionPost-title-404"></h3>
+                            <p id="examples-Player-apiPlayersUuidInventoryTransactionPost-description-404" class="marked"></p>
+                            <script>
+                              var responsePlayer404_description = `Player not found`;
+                              var responsePlayer404_description_break = responsePlayer404_description.indexOf('\n');
+                              if (responsePlayer404_description_break == -1) {
+                                $("#examples-Player-apiPlayersUuidInventoryTransactionPost-title-404").text("Status: 404 - " + responsePlayer404_description);
+                              } else {
+                                $("#examples-Player-apiPlayersUuidInventoryTransactionPost-title-404").text("Status: 404 - " + responsePlayer404_description.substring(0, responsePlayer404_description_break));
+                                $("#examples-Player-apiPlayersUuidInventoryTransactionPost-description-404").html(responsePlayer404_description.substring(responsePlayer404_description_break));
+                              }
+                            </script>
+
+
+                            <ul id="responses-detail-Player-apiPlayersUuidInventoryTransactionPost-404" class="nav nav-tabs nav-tabs-examples" >
+
+
+                            </ul>
+
+
+                            <div class="tab-content" id="responses-Player-apiPlayersUuidInventoryTransactionPost-404-wrapper" style='margin-bottom: 10px;'>
                             </div>
                         </article>
                       </div>

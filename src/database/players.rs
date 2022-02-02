@@ -5,6 +5,7 @@ use crate::Database;
 use crate::database::{DatabaseError, execute, Group, select_iter, select_one};
 use scylla::FromRow;
 use serde::Serialize;
+use warp::query;
 use crate::database::bans::DbBan;
 use crate::web::login::{ProxyLoginPlayerInfo, ServerLoginPlayerInfo};
 use crate::web::players::PlayerInfo;
@@ -77,20 +78,20 @@ pub struct DbFullPlayerInfo {
 
 #[derive(Serialize, Debug, FromRow)]
 pub struct DbPlayerInfo {
-    uuid: Uuid,
-    username: String,
-    groups: Option<Vec<String>>,
-    locale: Option<String>,
-    prefix: Option<String>,
-    suffix: Option<String>,
-    currency: i32,
-    premium_currency: i32,
-    proxy: Option<Uuid>,
-    server: Option<Uuid>,
-    blocked: Option<Vec<Uuid>>,
-    inventory: Option<HashMap<String, i32>>,
-    properties: Option<HashMap<String, String>>,
-    ban: Option<Uuid>,
+    pub uuid: Uuid,
+    pub username: String,
+    pub groups: Option<Vec<String>>,
+    pub locale: Option<String>,
+    pub prefix: Option<String>,
+    pub suffix: Option<String>,
+    pub currency: i32,
+    pub premium_currency: i32,
+    pub proxy: Option<Uuid>,
+    pub server: Option<Uuid>,
+    pub blocked: Option<Vec<Uuid>>,
+    pub inventory: Option<HashMap<String, i32>>,
+    pub properties: Option<HashMap<String, String>>,
+    pub ban: Option<Uuid>,
 }
 
 impl Database {
@@ -106,6 +107,11 @@ impl Database {
         Ok(select_one::<(Option<Uuid>, ), _>(&self.queries.select_player_proxy, &self.session, (uuid, )).await?.map(|t| t.0).flatten())
     }
 
+    #[instrument(skip(self), level = "debug")]
+    pub async fn select_online_player_server(&self, uuid: &Uuid) -> Result<Option<Uuid>, DatabaseError> {
+        //#[query(select_player_server = "SELECT server FROM players WHERE uuid = ?")]
+        Ok(select_one::<(Option<Uuid>, ), _>(&self.queries.select_player_server, &self.session, (uuid, )).await?.map(|t| t.0).flatten())
+    }
 
     #[instrument(skip(self), level = "debug")]
     pub async fn select_proxy_player_info(&self, uuid: &Uuid) -> Result<Option<DbProxyPlayerInfo>, DatabaseError> {
@@ -173,12 +179,38 @@ impl Database {
     #[instrument(skip(self), level = "debug")]
     pub async fn set_player_currencies(&self, player: &Uuid, currency: i32, premium_currency: i32) -> Result<(), DatabaseError> {
         //#[query(set_player_currencies = "UPDATE players SET currency = ?, premium_currency = ? WHERE uuid = ?;")]
-        execute(&self.queries.set_player_currencies, &self.session, (currency, premium_currency, player )).await
+        execute(&self.queries.set_player_currencies, &self.session, (currency, premium_currency, player)).await
     }
 
+    #[instrument(skip(self), level = "debug")]
+    pub async fn add_player_group(&self, player: &Uuid, group: &str) -> Result<(), DatabaseError> {
+        //#[query(add_player_group = "UPDATE players SET groups = groups + ? WHERE uuid = ?;")]
+        execute(&self.queries.add_player_group, &self.session, (vec![group], player)).await
+    }
 
+    #[instrument(skip(self), level = "debug")]
+    pub async fn add_player_group_ttl(&self, player: &Uuid, group: &str, ttl: i32) -> Result<(), DatabaseError> {
+        //#[query(add_player_group_ttl = "UPDATE players USING TTL ? SET groups = groups + ? WHERE uuid = ?;")]
+        execute(&self.queries.add_player_group_ttl, &self.session, (ttl, vec![group], player)).await
+    }
 
+    #[instrument(skip(self), level = "debug")]
+    pub async fn remove_player_group(&self, player: &Uuid, group: &str) -> Result<(), DatabaseError> {
+        //#[query(remove_player_group = "UPDATE players SET groups = groups - ? WHERE uuid = ?;")]
+        execute(&self.queries.remove_player_group, &self.session, (vec![group], player)).await
+    }
 
+    #[instrument(skip(self), level = "debug")]
+    pub async fn select_player_inventory(&self, player: &Uuid) -> Result<Option<HashMap<String, i32>>, DatabaseError> {
+        //#[query(select_player_inventory = "SELECT inventory FROM players WHERE uuid = ?;")]
+        Ok(select_one::<(Option<HashMap<String, i32>>, ), _>(&self.queries.select_player_inventory, &self.session, (player, )).await?.map(|t| t.0).flatten())
+    }
+
+    #[instrument(skip(self), level = "debug")]
+    pub async fn set_player_inventory_item(&self, player: &Uuid, item: &str, count: i32) -> Result<(), DatabaseError> {
+        //#[query(set_player_inventory_item = "UPDATE players SET inventory[?] = ? WHERE uuid = ?;")]
+        execute(&self.queries.set_player_inventory_item, &self.session, (item, count, player)).await
+    }
 }
 
 impl DbProxyPlayerInfo {
@@ -270,6 +302,7 @@ impl DbServerPlayerInfo {
         }
     }
 }
+
 
 impl DbPlayerInfo {
     pub async fn build_player_info(self, db: &Database) -> Result<PlayerInfo, DatabaseError> {

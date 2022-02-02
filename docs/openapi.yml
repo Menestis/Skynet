@@ -336,6 +336,60 @@ paths:
       responses:
         200:
           description: OK
+  /api/players/{uuid}/groups/update:
+    post:
+      security:
+        - auth: [ "update-player-groups" ]
+      tags: [ "Player" ]
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+        required: true
+      responses:
+        200:
+          description: OK
+        404:
+          description: Player not found
+  /api/players/{uuid}/inventory/transaction:
+    post:
+      security:
+        - auth: [ "player-inventory-transaction" ]
+      tags: [ "Player" ]
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties:
+                type: integer
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: booleanget-player
+        404:
+          description: Player not found
   /api/servers/{label}/register:
     get:
       tags: [ "Registration" ]

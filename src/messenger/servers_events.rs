@@ -27,9 +27,9 @@ pub enum ServerEvent {
         kind: String,
         properties: HashMap<String, String>,
     },
-/*    UpdateProxyConfig {
-        //TODO
-    },*/
+    /*    UpdateProxyConfig {
+            //TODO
+        },*/
     MovePlayer {
         #[serde(skip)]
         proxy: Uuid,
@@ -51,28 +51,38 @@ pub enum ServerEvent {
         proxy: Uuid,
         player: Uuid,
     },
+    InvalidatePlayer {
+        #[serde(skip)]
+        server: Uuid,
+        uuid: Uuid,
+    },
 }
 
 
 impl ServerEvent {
     pub fn route(&self) -> String {
+        use ServerEvent::*;
+
         match self {
-            ServerEvent::NewRoute { .. } => "proxy.servers.routes.new".to_string(),
-            ServerEvent::DeleteRoute { .. } => "proxy.servers.routes.delete".to_string(),
-            ServerEvent::ServerStarted { .. } => "proxy.servers.routes.started".to_string(),
+            NewRoute { .. } => "proxy.servers.routes.new".to_string(),
+            DeleteRoute { .. } => "proxy.servers.routes.delete".to_string(),
+            ServerStarted { .. } => "proxy.servers.routes.started".to_string(),
             //ServerEvent::UpdateProxyConfig { .. } => "disabled".to_string(),
-            ServerEvent::MovePlayer { proxy, .. } => proxy.to_string(),
-            ServerEvent::AdminMovePlayer { server, .. } => server.to_string(),
-            ServerEvent::MovePlayerToAvailable { proxy, .. } => proxy.to_string(),
-            ServerEvent::DisconnectPlayer { proxy, .. } => proxy.to_string()
+            MovePlayer { proxy, .. } => proxy.to_string(),
+            AdminMovePlayer { server, .. } => server.to_string(),
+            MovePlayerToAvailable { proxy, .. } => proxy.to_string(),
+            DisconnectPlayer { proxy, .. } => proxy.to_string(),
+            InvalidatePlayer { server, .. } => server.to_string(),
         }
     }
     pub fn direct(&self) -> bool {
+        use ServerEvent::*;
         match self {
-            ServerEvent::MovePlayer { .. } |
-            ServerEvent::AdminMovePlayer { .. } |
-            ServerEvent::MovePlayerToAvailable { .. } |
-            ServerEvent::DisconnectPlayer { .. } => true,
+            MovePlayer { .. } |
+            AdminMovePlayer { .. } |
+            MovePlayerToAvailable { .. } |
+            DisconnectPlayer { .. } | 
+            InvalidatePlayer { .. } => true,
             _ => false
         }
     }
