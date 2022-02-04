@@ -9,7 +9,6 @@ pub fn filter(_data: Arc<AppData>) -> impl Filter<Extract=impl Reply, Error=Reje
     warp::get().and(path!("status")).and_then(status)
 }
 
-
 #[instrument(level = "debug")]
 pub async fn status() -> Result<impl Reply, Infallible> {
     Ok(StatusCode::OK)

@@ -19,6 +19,14 @@ pub struct Server {
     pub state: String,
 }
 
+#[derive(Debug, FromRow)]
+pub struct ServerKind {
+    pub name: String,
+    pub image: String,
+    pub permissions: Option<HashMap<String, Vec<String>>>,
+    pub autoscale: Option<String>,
+}
+
 impl Database {
     #[instrument(skip(self), level = "debug")]
     pub async fn insert_server(&self, server: &Server) -> Result<(), DatabaseError> {
@@ -33,15 +41,28 @@ impl Database {
     }
 
     #[instrument(skip(self), level = "debug")]
+    pub async fn select_all_servers_by_kind(&self, kind: &str) -> Result<Vec<Server>, DatabaseError> {
+        //#[query(select_all_servers_by_kind = "SELECT id, description, ip, key, kind, label, properties, state FROM servers_by_kinds WHERE kind = ?;")]
+        select_iter(&self.queries.select_all_servers_by_kind, &self.session, (kind, )).await
+    }
+
+    #[instrument(skip(self), level = "debug")]
+    pub async fn select_player_count_by_server(&self, id: &Uuid) -> Result<i64, DatabaseError> {
+        //#[query(select_player_count_by_server = "SELECT count(*) FROM players_by_server WHERE server = ?;")]
+        Ok(select_one::<(i64, ), _>(&self.queries.select_player_count_by_server, &self.session, (id, )).await?.map(|t| t.0).unwrap_or(0))
+    }
+
+
+    #[instrument(skip(self), level = "debug")]
     pub async fn select_server_label_and_properties(&self, id: &Uuid) -> Result<Option<(String, HashMap<String, String>)>, DatabaseError> {
         //#[query(select_server_label_and_properties = "SELECT label, properties FROM servers WHERE id = ?;")]
         Ok(select_one::<(String, Option<HashMap<String, String>>), _>(&self.queries.select_server_label_and_properties, &self.session, (id, )).await?.map(|(s, m)| (s, m.unwrap_or_default())))
     }
 
     #[instrument(skip(self), level = "debug")]
-    pub async fn select_server_label(&self, label: &Uuid) -> Result<Option<String>, DatabaseError> {
+    pub async fn select_server_label(&self, uuid: &Uuid) -> Result<Option<String>, DatabaseError> {
         //#[query(select_server_label = "SELECT label FROM servers WHERE id = ?;")]
-        Ok(select_one::<(String, ), _>(&self.queries.select_server_label, &self.session, (label, )).await?.map(|t| t.0))
+        Ok(select_one::<(String, ), _>(&self.queries.select_server_label, &self.session, (uuid, )).await?.map(|t| t.0))
     }
 
     #[instrument(skip(self), level = "debug")]
@@ -90,6 +111,11 @@ impl Database {
         Ok(select_one::<(String, Option<HashMap<String, String>>), _>(&self.queries.select_server_kind_and_properties, &self.session, (id, )).await?.map(|(t, tt)| (t, tt.unwrap_or_default())))
     }
 
+    #[instrument(skip(self), level = "debug")]
+    pub async fn select_server_kind_object(&self, kind: &str) -> Result<Option<ServerKind>, DatabaseError> {
+        //#[query(select_server_kind_object = "SELECT name, image, permissions, autoscale FROM servers_kinds WHERE name = ?;")]
+        select_one(&self.queries.select_server_kind_object, &self.session, (kind, )).await
+    }
 
     #[instrument(skip(self), level = "debug")]
     pub async fn update_server_key(&self, id: &Uuid, key: &Uuid) -> Result<(), DatabaseError> {

@@ -2,13 +2,12 @@ use std::collections::HashMap;
 use tracing::*;
 use uuid::Uuid;
 use crate::Database;
-use crate::database::{DatabaseError, execute, Group, select_iter, select_one};
+use crate::database::{DatabaseError, execute, select_iter, select_one};
 use scylla::FromRow;
 use serde::Serialize;
-use warp::query;
 use crate::database::bans::DbBan;
+use crate::structures::players::PlayerInfo;
 use crate::web::login::{ProxyLoginPlayerInfo, ServerLoginPlayerInfo};
-use crate::web::players::PlayerInfo;
 
 #[derive(Serialize, Debug, Default, FromRow)]
 pub struct DbProxyPlayerInfo {
@@ -94,11 +93,26 @@ pub struct DbPlayerInfo {
     pub ban: Option<Uuid>,
 }
 
+#[derive(Debug, FromRow)]
+pub struct Group {
+    pub name: String,
+    pub power: i32,
+    prefix: Option<String>,
+    suffix: Option<String>,
+    pub permissions: Option<Vec<String>>,
+}
+
 impl Database {
     #[instrument(skip(self), level = "debug")]
     pub async fn select_online_players_reduced_info(&self) -> Result<Vec<ReducedPlayerInfo>, DatabaseError> {
         //#[query(select_online_players_reduced_info = "SELECT uuid, username, session, proxy, server FROM players_by_session;")]
         select_iter(&self.queries.select_online_players_reduced_info, &self.session, ()).await
+    }
+
+    #[instrument(skip(self), level = "debug")]
+    pub async fn select_all_players_with_waiting_move_to(&self, kind: &str, limit: i32) -> Result<Vec<ReducedPlayerInfo>, DatabaseError> {
+        //#[query(select_all_players_with_waiting_move_to = "SELECT uuid, username, session, proxy, server FROM players_by_waiting_move_to WHERE waiting_move_to = ? LIMIT ?;")]
+        select_iter(&self.queries.select_all_players_with_waiting_move_to, &self.session, (kind, limit)).await
     }
 
     #[instrument(skip(self), level = "debug")]
@@ -131,6 +145,26 @@ impl Database {
         select_one(&self.queries.select_player_info, &self.session, (uuid, )).await
     }
 
+
+    #[instrument(skip(self), level = "debug")]
+    pub async fn select_player_group_object(&self, name: &str) -> Result<Option<Group>, DatabaseError> {
+        //#[query(select_player_group_obj = "SELECT name,power,prefix,suffix,permissions FROM groups WHERE name = ?;")]
+        select_one(&self.queries.select_player_group_obj, &self.session, (name, )).await
+    }
+
+
+    #[instrument(skip(self), level = "debug")]
+    pub async fn select_player_groups_objects(&self, names: &Vec<String>) -> Result<Vec<Group>, DatabaseError> {
+        let mut groups = Vec::new();
+        for name in names {
+            match self.select_player_group_object(name).await? {
+                None => warn!("Player group not found {}", name),
+                Some(group) => groups.push(group)
+            }
+        }
+        Ok(groups)
+    }
+
     #[instrument(skip(self), level = "debug")]
     pub async fn select_player_info_by_name(&self, name: &str) -> Result<Option<DbPlayerInfo>, DatabaseError> {
         //#[query(select_player_info_by_name = "SELECT uuid, username, groups, locale, prefix, suffix, currency, premium_currency, proxy, server, blocked, inventory, properties, ban FROM players_by_username WHERE username = ?;")]
@@ -158,15 +192,21 @@ impl Database {
     }
 
     #[instrument(skip(self), level = "debug")]
-    pub async fn update_player_online_sever_info(&self, player: &Uuid, server: Uuid) -> Result<(), DatabaseError> {
-        //#[query(update_player_server_online_info = "UPDATE players SET server = ? WHERE uuid = ?;")]
-        execute(&self.queries.update_player_server_online_info, &self.session, (server, player)).await
+    pub async fn update_player_server_and_null_waiting_move_to(&self, player: &Uuid, server: Uuid) -> Result<(), DatabaseError> {
+        //#[query(update_player_server_and_null_waiting_move_to = "UPDATE players SET server = ?, waiting_move_to = null WHERE uuid = ?;")]
+        execute(&self.queries.update_player_server_and_null_waiting_move_to, &self.session, (server, player)).await
+    }
+
+    #[instrument(skip(self), level = "debug")]
+    pub async fn set_player_waiting_move_to(&self, player: &Uuid, kind: &str) -> Result<(), DatabaseError> {
+        //#[query(set_player_waiting_move_to = "UPDATE players SET waiting_move_to = ? WHERE uuid = ?;")]
+        execute(&self.queries.set_player_waiting_move_to, &self.session, (kind, player)).await
     }
 
 
     #[instrument(skip(self), level = "debug")]
     pub async fn close_player_session(&self, player: &Uuid) -> Result<(), DatabaseError> {
-        //#[query(close_player_session = "UPDATE players SET proxy = null, server = null, session = null WHERE uuid = ?;")]
+        //#[query(close_player_session = "UPDATE players SET proxy = null, server = null, session = null, waiting_move_to = null WHERE uuid = ?;")]
         execute(&self.queries.close_player_session, &self.session, (player, )).await
     }
 
@@ -214,9 +254,9 @@ impl Database {
 }
 
 impl DbProxyPlayerInfo {
-    pub fn build_proxy_login_player_info(self, db: &Database) -> ProxyLoginPlayerInfo {
+    pub async fn build_proxy_login_player_info(self, db: &Database) -> Result<ProxyLoginPlayerInfo, DatabaseError> {
         let raw_groups = self.groups.unwrap_or(vec!["Default".to_string()]);
-        let groups: Vec<&Group> = raw_groups.iter().filter_map(|x| db.cache.groups.get(x)).collect();
+        let groups: Vec<Group> = db.select_player_groups_objects(&raw_groups).await?;
         let power = groups.iter().map(|grp| grp.power).max().unwrap_or(0);
         let mut permissions: Vec<String> = groups.into_iter().filter_map(|grp| grp.permissions.clone()).flatten().collect();
 
@@ -226,7 +266,7 @@ impl DbProxyPlayerInfo {
             permissions.extend(user_permissions);
         }
 
-        if let Some(kind_permissions) = &db.get_cached_kind("proxy").map(|kind| kind.permissions.as_ref()).flatten() {
+        if let Some(kind_permissions) = &db.select_server_kind_object("proxy").await?.map(|kind| kind.permissions).flatten() {
             kind_permissions.iter().filter(|&(group, _kpermissions)| raw_groups.contains(group)).for_each(|(_group, kpermissions)| permissions.extend(kpermissions.clone()));
         }
 
@@ -239,20 +279,20 @@ impl DbProxyPlayerInfo {
         }).collect();
 
 
-        ProxyLoginPlayerInfo {
+        Ok(ProxyLoginPlayerInfo {
             power,
             permissions,
             locale: self.locale.unwrap_or("fr".to_string()),
             properties: self.properties.unwrap_or_default(),
-        }
+        })
     }
 }
 
 impl DbServerPlayerInfo {
-    pub fn build_server_login_player_info(self, db: &Database, kind: &str) -> ServerLoginPlayerInfo {
+    pub async fn build_server_login_player_info(self, db: &Database, kind: &str) -> Result<ServerLoginPlayerInfo, DatabaseError> {
         let raw_groups = self.groups.unwrap_or(vec!["Default".to_string()]);
-        let groups: Vec<&Group> = raw_groups.iter().filter_map(|x| db.cache.groups.get(x)).collect();
-        let power = groups.iter().map(|&grp| grp.power).max().unwrap_or(0);
+        let groups: Vec<Group> = db.select_player_groups_objects(&raw_groups).await?;
+        let power = groups.iter().map(|grp| grp.power).max().unwrap_or(0);
         let mut permissions: Vec<String> = groups.iter().filter_map(|grp| grp.permissions.clone()).flatten().collect();
 
         permissions.push(format!("power.{}", power));
@@ -261,7 +301,7 @@ impl DbServerPlayerInfo {
             permissions.extend(user_permissions);
         }
 
-        if let Some(kind_permissions) = &db.get_cached_kind(kind).map(|kind| kind.permissions.as_ref()).flatten() {
+        if let Some(kind_permissions) = &db.select_server_kind_object(kind).await?.map(|kind| kind.permissions).flatten() {
             kind_permissions.iter().filter(|&(group, _kpermissions)| raw_groups.contains(group)).for_each(|(_group, kpermissions)| permissions.extend(kpermissions.clone()));
         }
 
@@ -276,17 +316,17 @@ impl DbServerPlayerInfo {
         let prefix = if let Some(prefix) = self.prefix {
             Some(prefix)
         } else {
-            groups.iter().filter(|&&grp| grp.prefix.is_some()).max_by(|&&g1, &&g2| g1.power.cmp(&g2.power)).map(|&grp| grp.prefix.clone()).flatten()
+            groups.iter().filter(|&grp| grp.prefix.is_some()).max_by(|&g1, &g2| g1.power.cmp(&g2.power)).map(|grp| grp.prefix.clone()).flatten()
         };
 
         let suffix = if let Some(suffix) = self.suffix {
             Some(suffix)
         } else {
-            groups.iter().filter(|&&grp| grp.suffix.is_some()).max_by(|&&g1, &&g2| g1.power.cmp(&g2.power)).map(|&grp| grp.suffix.clone()).flatten()
+            groups.iter().filter(|&grp| grp.suffix.is_some()).max_by(|&g1, &g2| g1.power.cmp(&g2.power)).map(|grp| grp.suffix.clone()).flatten()
         };
 
 
-        ServerLoginPlayerInfo {
+        Ok(ServerLoginPlayerInfo {
             session: self.session,
             proxy: self.proxy,
             prefix,
@@ -299,15 +339,15 @@ impl DbServerPlayerInfo {
             blocked: self.blocked.unwrap_or_default(),
             inventory: self.inventory.unwrap_or_default(),
             properties: self.properties.unwrap_or_default(),
-        }
+        })
     }
 }
 
 
 impl DbPlayerInfo {
     pub async fn build_player_info(self, db: &Database) -> Result<PlayerInfo, DatabaseError> {
-        let raw_groups = self.groups.unwrap_or(vec!["Default".to_string()]);
-        let groups: Vec<&Group> = raw_groups.iter().filter_map(|x| db.cache.groups.get(x)).collect();
+        let groups: Vec<Group> = db.select_player_groups_objects(&self.groups.unwrap_or(vec!["Default".to_string()])).await?;
+
         let power = groups.iter().map(|grp| grp.power).max().unwrap_or(0);
 
         let ban = match self.ban {

@@ -7,6 +7,7 @@ use warp::reject::Reject;
 use warp::{Rejection, Reply};
 use warp::reply::{Response, with_status};
 use crate::database::DatabaseError;
+use crate::kubernetes::autoscale::ScalingError;
 use crate::messenger::MessengerError;
 
 pub async fn handle_rejection(err: Rejection) -> Result<Response, Rejection> {
@@ -23,8 +24,6 @@ pub async fn handle_rejection(err: Rejection) -> Result<Response, Rejection> {
 
 #[derive(Error, Debug)]
 pub enum ApiError {
-    // #[error("An internal server error occurred : {0}")]
-    // Failure(String),
     #[error("You are not authorized to use this endpoint")]
     Authorization,
     #[error("An internal server error occurred : {0}")]
@@ -38,7 +37,11 @@ pub enum ApiError {
     #[error("Could not parse int : {0}")]
     ParsingInt(#[from] ParseIntError),
     #[error("Kubernetes error : {0}")]
-    Kubernetes(#[from] kube::Error)
+    Kubernetes(#[from] kube::Error),
+    #[error("Server error : {0}")]
+    Serde(#[from] serde_json::Error),
+    #[error(transparent)]
+    Scaling(#[from] ScalingError)
 }
 
 

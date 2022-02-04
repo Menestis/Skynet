@@ -1,7 +1,14 @@
+use scylla::FromRow;
 use tracing::{instrument, warn};
 use uuid::Uuid;
 use crate::Database;
-use crate::database::DatabaseError;
+use crate::database::{DatabaseError, select_one};
+
+#[derive(Debug, FromRow)]
+pub struct ApiGroup {
+    pub name: String,
+    pub permissions: Option<Vec<String>>,
+}
 
 impl Database {
     #[instrument(skip(self), level = "debug")]
@@ -31,11 +38,17 @@ impl Database {
             Some(group) => group
         };
 
-        let group = match self.cache.api_groups.get(&group) {
+        let group = match self.select_api_group(&group).await? {
             None => return Ok(false),
             Some(group) => group
         };
 
         Ok(group.permissions.as_ref().map(|perms| perms.contains(&permission.to_string())).unwrap_or(false))
+    }
+
+    #[instrument(skip(self), level = "debug")]
+    pub async fn select_api_group(&self, name: &str) -> Result<Option<ApiGroup>, DatabaseError> {
+        //#[query(select_api_group = "SELECT name, permissions FROM api_groups WHERE name = ?;")]
+        select_one(&self.queries.select_api_group, &self.session, (name, )).await
     }
 }

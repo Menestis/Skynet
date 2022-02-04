@@ -80,7 +80,6 @@ impl MessageBuilder {
         }
     }
 
-
     pub fn line_break(self) -> MessageBuilder {
         self.component("\n".to_string()).close()
     }

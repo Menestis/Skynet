@@ -1,17 +1,19 @@
 use std::collections::HashMap;
-use std::net::IpAddr;
 use std::sync::Arc;
 use chrono::Duration;
-use kube::Error::Api;
 use reqwest::StatusCode;
 use warp::{Filter, path, Rejection, Reply, reply};
 use crate::AppData;
-use tracing::{instrument};
+use tracing::instrument;
 use uuid::{Uuid};
 use warp::body::json;
 use crate::web::rejections::ApiError;
 use crate::web::{with_auth, with_data};
 use serde::{Serialize, Deserialize};
+use crate::database::servers::ServerKind;
+use crate::kubernetes::autoscale;
+use crate::kubernetes::autoscale::Autoscale;
+use crate::log::debug;
 use crate::messenger::servers_events::ServerEvent;
 
 pub fn filter(data: Arc<AppData>) -> impl Filter<Extract=impl Reply, Error=Rejection> + Clone {
@@ -37,12 +39,12 @@ struct PlayerStats {
 
 #[instrument(skip(data, request))]
 async fn post_stats(uuid: Uuid, data: Arc<AppData>, request: PlayerStats) -> Result<impl Reply, Rejection> {
-    let kind = match data.db.select_server_kind(&request.server).await.map_err(ApiError::from)?.map(|kind| data.db.get_cached_kind(&kind)).flatten() {
+    let kind = match data.db.select_server_kind(&request.server).await.map_err(ApiError::from)? {
         None => return Ok(StatusCode::NOT_FOUND.into_response()),
         Some(kind) => kind
     };
 
-    data.db.insert_stats(&uuid, &request.session, &request.server, &kind.name, &request.stats).await.map_err(ApiError::from)?;
+    data.db.insert_stats(&uuid, &request.session, &request.server, &kind, &request.stats).await.map_err(ApiError::from)?;
 
     Ok(reply().into_response())
 }
@@ -87,19 +89,71 @@ async fn move_player(uuid: Uuid, data: Arc<AppData>, request: PlayerMove) -> Res
             }
         }
         PlayerMove::ServerKind { kind } => {
-            if data.db.get_cached_kind(&kind).is_none() {
-                return Ok(reply::with_status("Requested server kind does not exist", StatusCode::NOT_FOUND).into_response());
+            let srv_kind = match data.db.select_server_kind_object(&kind).await.map_err(ApiError::from)? {
+                None => return Ok(reply::with_status("Requested server kind does not exist", StatusCode::NOT_FOUND).into_response()),
+                Some(kind) => kind
+            };
+
+            if !move_player_to_server_kind(data.clone(), &uuid, &srv_kind).await? {
+                return Ok(reply::json(&false).into_response());
             }
-            data.msgr.send_event(&ServerEvent::MovePlayerToAvailable {
-                proxy,
-                kind,
-                player: uuid,
-            }).await.map_err(ApiError::from)?;
         }
     }
 
 
-    Ok(reply::reply().into_response())
+    Ok(reply::json(&true).into_response())
+}
+
+
+pub async fn move_player_to_server_kind(data: Arc<AppData>, uuid: &Uuid, kind: &ServerKind) -> Result<bool, Rejection> {
+    let servers = data.db.select_all_servers_by_kind(&kind.name).await.map_err(ApiError::from)?;
+    let autoscale = kind.autoscale.as_ref().map(|t| serde_json::from_str::<Autoscale>(t)).transpose().map_err(ApiError::from)?;
+
+    for srv in servers {
+        if srv.state != "Waiting" && srv.state != "Idle" {
+            continue;
+        }
+        let slots = if let Some(slots) = srv.properties.as_ref().map(|t| t.get("slots")).flatten().map(|t| t.parse::<i64>()).transpose().map_err(ApiError::from)? {
+            slots
+        } else if let Some(Autoscale::Simple { slots, .. }) = &autoscale {
+            *slots
+        } else {
+            100
+        };
+
+        let players = data.db.select_player_count_by_server(&srv.id).await.map_err(ApiError::from)?;
+        if players >= slots {
+            continue;
+        }
+
+        let proxy = match data.db.select_online_player_proxy(&uuid).await.map_err(ApiError::from)? {
+            None => return Ok(false),
+            Some(proxy) => proxy
+        };
+
+        data.msgr.send_event(&ServerEvent::MovePlayer {
+            proxy,
+            server: srv.id.clone(),
+            player: uuid.clone(),
+        }).await.map_err(ApiError::from)?;
+
+        return Ok(true);
+    }
+
+    if let Some(autoscale) = autoscale {
+        if data.db.select_all_players_with_waiting_move_to(&kind.name, 1).await.map_err(ApiError::from)?.len() == 1 {
+            debug!("Server already scaling : {}", kind.name);
+            data.db.set_player_waiting_move_to(uuid, &kind.name).await.map_err(ApiError::from)?;
+            return Ok(true)
+        };
+
+        autoscale::create_autoscale_server(data.clone(), &kind, &autoscale).await.map_err(ApiError::from)?;
+        data.db.set_player_waiting_move_to(uuid, &kind.name).await.map_err(ApiError::from)?;
+
+        Ok(true)
+    } else {
+        Ok(false)
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -146,36 +200,6 @@ async fn ban_player(uuid: Uuid, data: Arc<AppData>, request: PlayerBan) -> Resul
 #[instrument(skip(data))]
 async fn get_online(data: Arc<AppData>) -> Result<impl Reply, Rejection> {
     Ok(reply::json(&data.db.select_online_players_reduced_info().await.map_err(ApiError::from)?).into_response())
-}
-
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct PlayerInfo {
-    pub uuid: Uuid,
-    pub username: String,
-    pub power: i32,
-    pub locale: String,
-    pub prefix: Option<String>,
-    pub suffix: Option<String>,
-    pub currency: i32,
-    pub premium_currency: i32,
-    pub proxy: Option<Uuid>,
-    pub server: Option<Uuid>,
-    pub blocked: Vec<Uuid>,
-    pub inventory: HashMap<String, i32>,
-    pub properties: HashMap<String, String>,
-    pub ban: Option<Ban>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Ban {
-    pub id: Uuid,
-    pub start: String,
-    pub end: Option<String>,
-    pub issuer: Option<Uuid>,
-    pub reason: Option<String>,
-    pub ip: Option<IpAddr>,
-    pub target: Option<Uuid>,
 }
 
 
@@ -257,7 +281,7 @@ async fn update_player_groups(uuid: Uuid, data: Arc<AppData>, request: PlayerGro
         }
     }
 
-    if !request.is_empty(){
+    if !request.is_empty() {
         if let Some(server) = data.db.select_online_player_server(&uuid).await.map_err(ApiError::from)? {
             data.msgr.send_event(&ServerEvent::InvalidatePlayer { server, uuid }).await.map_err(ApiError::from)?;
         }
@@ -276,8 +300,8 @@ async fn player_inventory_transaction(uuid: Uuid, data: Arc<AppData>, request: P
     };
 
     for (item, count) in &request {
-        if *inv.get(item).unwrap_or(&0) + count < 0{
-            return Ok(reply::json(&false).into_response())
+        if *inv.get(item).unwrap_or(&0) + count < 0 {
+            return Ok(reply::json(&false).into_response());
         }
     }
 
@@ -285,7 +309,7 @@ async fn player_inventory_transaction(uuid: Uuid, data: Arc<AppData>, request: P
         data.db.set_player_inventory_item(&uuid, item, *inv.get(item.as_str()).unwrap_or(&0) + count).await.map_err(ApiError::from)?;
     }
 
-    if !request.is_empty(){
+    if !request.is_empty() {
         if let Some(server) = data.db.select_online_player_server(&uuid).await.map_err(ApiError::from)? {
             data.msgr.send_event(&ServerEvent::InvalidatePlayer { server, uuid }).await.map_err(ApiError::from)?;
         }

@@ -6,7 +6,7 @@ use serde_json::{json, Value};
 use crate::Kubernetes;
 
 impl Kubernetes {
-    pub async fn create_pod(&self, kind: &str, image: &str, name: &str, properties: HashMap<String, String>) -> Result<(), Error> {
+    pub async fn create_pod(&self, kind: &str, image: &str, name: &str, properties: HashMap<String, String>, env: HashMap<String, String>) -> Result<(), Error> {
         let adress = env::var("SKYNET_EXTERNAL_ADDRESS").unwrap_or("http://skynet.skynet:8080".to_string());
         let amqp_adress = env::var("AMQP_ADDRESS").unwrap();
         let mut value = json!({
@@ -51,6 +51,14 @@ impl Kubernetes {
         });
         for (k, v) in properties {
             value["metadata"]["labels"][format!("skynet-prop/{}", k)] = Value::String(v);
+        }
+        let env_values = &mut value["spec"]["containers"][0]["env"].as_array_mut().unwrap();
+
+        for (k, v) in env {
+            let mut env_val = serde_json::map::Map::new();
+            env_val.insert("name".to_string(), Value::String(k));
+            env_val.insert("value".to_string(), Value::String(v));
+            env_values.push(Value::Object(env_val))
         }
 
         let pod = serde_json::from_value(value).unwrap();

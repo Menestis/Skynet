@@ -1,6 +1,6 @@
 use std::sync::Arc;
 use warp::{Filter, path, Rejection, Reply, reply};
-use crate::AppData;
+use crate::{AppData, join};
 use tracing::*;
 use crate::web::{with_auth, with_data};
 use serde::{Serialize, Deserialize};
@@ -19,10 +19,11 @@ struct ProxyPingResponse {
 
 #[instrument(skip(data))]
 async fn ping(data: Arc<AppData>) -> Result<impl Reply, Rejection> {
-    let settings = data.db.get_cached_settings();
+    let (slots, motd) = join!(data.db.select_setting("slots"), data.db.select_setting("motd"));
+
 
     Ok(reply::json(&ProxyPingResponse {
-        slots: settings.get("slots").map(|s| s.parse::<i32>()).transpose().map_err(ApiError::from)?.unwrap_or_default(),
-        motd: settings.get("motd").map(|t| t.clone()).unwrap_or("".to_string()),
+        slots: slots.map_err(ApiError::from)?.map(|s| s.parse::<i32>()).transpose().map_err(ApiError::from)?.unwrap_or_default(),
+        motd: motd.map_err(ApiError::from)?.map(|t| t.clone()).unwrap_or("".to_string()),
     }))
 }

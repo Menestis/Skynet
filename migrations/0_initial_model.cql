@@ -19,10 +19,10 @@ CREATE TABLE api_groups
 
 INSERT INTO api_groups(name, permissions)
 VALUES ('proxy',
-        {'proxy-login', 'proxy-pre-login', 'proxy-close-session', 'get-online-players', 'proxy-ping', 'move-player', 'ban-player', 'get-all-servers', 'get-player',  'player-transaction', 'update-player-groups', 'player-inventory-transaction'});
+        {'proxy-login', 'proxy-pre-login', 'proxy-close-session', 'get-online-players', 'proxy-ping', 'move-player', 'ban-player', 'get-all-servers', 'get-player',  'player-transaction', 'update-player-groups', 'player-inventory-transaction', 'set-server-state'});
 
 INSERT INTO api_groups(name, permissions)
-VALUES ('server', {'server-login', 'player-stats', 'move-player', 'create-server', 'delete-server', 'get-all-servers', 'player-inventory-transaction'});
+VALUES ('server', {'server-login', 'player-stats', 'move-player', 'create-server', 'delete-server', 'get-all-servers', 'player-inventory-transaction', 'set-server-state'});
 
 CREATE TABLE api_keys
 (

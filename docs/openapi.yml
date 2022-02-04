@@ -387,7 +387,7 @@ paths:
           content:
             application/json:
               schema:
-                type: booleanget-player
+                type: boolean
         404:
           description: Player not found
   /api/servers/{label}/register:
@@ -406,6 +406,29 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Server"
+        404:
+          description: not found
+  /api/servers/{uuid}/setstate:
+    post:
+      tags: [ "Server" ]
+      security:
+        - auth: [ "set-server-state" ]
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        200:
+          description: OK
         404:
           description: not found
   /api/proxy/ping:
@@ -539,6 +562,10 @@ paths:
       responses:
         200:
           description: OK
+          content:
+            application/json:
+              schema:
+                type: boolean
         404:
           description: Player or server does not exist
   /api/players/{uuid}/ban:

@@ -27,9 +27,6 @@ pub enum ServerEvent {
         kind: String,
         properties: HashMap<String, String>,
     },
-    /*    UpdateProxyConfig {
-            //TODO
-        },*/
     MovePlayer {
         #[serde(skip)]
         proxy: Uuid,
@@ -38,12 +35,6 @@ pub enum ServerEvent {
     },
     AdminMovePlayer {
         server: Uuid,
-        player: Uuid,
-    },
-    MovePlayerToAvailable {
-        #[serde(skip)]
-        proxy: Uuid,
-        kind: String,
         player: Uuid,
     },
     DisconnectPlayer {
@@ -67,10 +58,8 @@ impl ServerEvent {
             NewRoute { .. } => "proxy.servers.routes.new".to_string(),
             DeleteRoute { .. } => "proxy.servers.routes.delete".to_string(),
             ServerStarted { .. } => "proxy.servers.routes.started".to_string(),
-            //ServerEvent::UpdateProxyConfig { .. } => "disabled".to_string(),
             MovePlayer { proxy, .. } => proxy.to_string(),
             AdminMovePlayer { server, .. } => server.to_string(),
-            MovePlayerToAvailable { proxy, .. } => proxy.to_string(),
             DisconnectPlayer { proxy, .. } => proxy.to_string(),
             InvalidatePlayer { server, .. } => server.to_string(),
         }
@@ -80,8 +69,7 @@ impl ServerEvent {
         match self {
             MovePlayer { .. } |
             AdminMovePlayer { .. } |
-            MovePlayerToAvailable { .. } |
-            DisconnectPlayer { .. } | 
+            DisconnectPlayer { .. } |
             InvalidatePlayer { .. } => true,
             _ => false
         }

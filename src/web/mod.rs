@@ -46,7 +46,7 @@ async fn check_authorization(key: String, permission: String, data: Arc<AppData>
     if key.starts_with("Server ") {
         let key = Uuid::parse_str(key.trim_start_matches("Server ")).map_err(ApiError::from)?;
 
-        if data.db.get_cached_api_group("server").map(|grp| grp.permissions.as_ref()).flatten().map(|perms| perms.contains(&permission)).unwrap_or(false)
+        if data.db.select_api_group("server").await.map_err(ApiError::from)?.map(|grp| grp.permissions).flatten().map(|perms| perms.contains(&permission)).unwrap_or(false)
             && data.db.select_server_kind_by_key(&key).await.map_err(ApiError::from)?.map(|t| t != "proxy").unwrap_or_default() {
             Ok(())
         } else {
@@ -54,7 +54,7 @@ async fn check_authorization(key: String, permission: String, data: Arc<AppData>
         }
     } else if key.starts_with("Proxy ") {
         let key = Uuid::parse_str(key.trim_start_matches("Proxy ")).map_err(ApiError::from)?;
-        if data.db.get_cached_api_group("proxy").map(|grp| grp.permissions.as_ref()).flatten().map(|perms| perms.contains(&permission)).unwrap_or(false)
+        if data.db.select_api_group("proxy").await.map_err(ApiError::from)?.map(|grp| grp.permissions).flatten().map(|perms| perms.contains(&permission)).unwrap_or(false)
             && data.db.select_server_kind_by_key(&key).await.map_err(ApiError::from)?.map(|t| t == "proxy").unwrap_or_default() {
             Ok(())
         } else {

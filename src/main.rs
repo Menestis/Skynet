@@ -25,17 +25,8 @@ mod messenger;
 mod kubernetes;
 mod web;
 mod utils;
+mod structures;
 
-pub struct AppData {
-    _uuid: Uuid,
-    db: Arc<Database>,
-    msgr: Arc<Messenger>,
-    k8s: Arc<Kubernetes>,
-    client: Client,
-    proxy_check_api_key: String,
-    shutdown_sender: mpsc::Sender<()>,
-    shutdown_receiver: watch::Receiver<bool>,
-}
 
 
 #[tokio::main]
@@ -52,7 +43,7 @@ async fn main() -> anyhow::Result<()> {
     let (shutdown_task, s, r) = shutdown();
 
     let data = Arc::new(AppData {
-        _uuid: uuid,
+        uuid,
         db,
         msgr,
         k8s,
@@ -72,6 +63,24 @@ async fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
+pub struct AppData {
+    pub uuid: Uuid,
+    pub db: Arc<Database>,
+    pub msgr: Arc<Messenger>,
+    pub k8s: Arc<Kubernetes>,
+    pub client: Client,
+    pub proxy_check_api_key: String,
+    pub shutdown_sender: mpsc::Sender<()>,
+    pub shutdown_receiver: watch::Receiver<bool>,
+}
+
+impl AppData {
+    pub async fn shutdown(&self) {
+        if let Err(err) = self.shutdown_sender.send(()).await {
+            error!("Could not shutdown app : {}", err)
+        }
+    }
+}
 
 fn init_logs() {
     tracing_subscriber::fmt()
@@ -100,13 +109,4 @@ async fn shutdown_task(mut r: Receiver<()>, s: Sender<bool>) {
     }
 
     s.send_replace(true);
-}
-
-
-impl AppData {
-    pub async fn shutdown(&self) {
-        if let Err(err) = self.shutdown_sender.send(()).await {
-            error!("Could not shutdown app : {}", err)
-        }
-    }
 }

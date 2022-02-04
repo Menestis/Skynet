@@ -25,10 +25,6 @@ async fn register(hostname: String, data: Arc<AppData>) -> Result<impl Reply, Re
     data.db.update_server_key(&srv.id, &key).await.map_err(ApiError::from)?;
     data.db.update_server_state(&srv.id, "Started").await.map_err(ApiError::from)?;
 
-
-    crate::utils::property_handler::handle_property_actions(&data, &srv).await?;
-
-
     data.msgr.send_event(&ServerEvent::ServerStarted {
         addr: srv.ip,
         id: srv.id.clone(),

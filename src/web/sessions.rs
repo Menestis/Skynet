@@ -12,9 +12,6 @@ pub fn filter(data: Arc<AppData>) -> impl Filter<Extract=impl Reply, Error=Rejec
     warp::delete().and(path!("api"/"players"/Uuid/"session")).and(with_auth(data.clone(), "proxy-close-session")).and(with_data(data.clone())).and_then(close_session)
 }
 
-////////////////////
-//     Close      //
-////////////////////
 
 #[instrument(skip(data))]
 async fn close_session(uuid: Uuid, data: Arc<AppData>) -> Result<impl Reply, Rejection> {

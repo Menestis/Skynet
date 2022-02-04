@@ -80,7 +80,7 @@ async fn proxy_login(uuid: Uuid, data: Arc<AppData>, request: ProxyLoginRequest)
     let info = match option {
         None => {
             data.db.insert_player(&uuid, &request.username, None).await.map_err(ApiError::from)?;
-            DbProxyPlayerInfo::default().build_proxy_login_player_info(&data.db)
+            DbProxyPlayerInfo::default().build_proxy_login_player_info(&data.db).await.map_err(ApiError::from)?
         }
         Some(info) if info.ban.is_some() => {
             let builder = MessageBuilder::new()
@@ -103,7 +103,7 @@ async fn proxy_login(uuid: Uuid, data: Arc<AppData>, request: ProxyLoginRequest)
             return Ok(reply::json(&ProxyLoginResponse::Denied { message: builder.close() }));
         }
         Some(info) => {
-            info.build_proxy_login_player_info(&data.db)
+            info.build_proxy_login_player_info(&data.db).await.map_err(ApiError::from)?
         }
     };
 
@@ -223,12 +223,12 @@ pub struct ServerLoginPlayerInfo {
 
 #[instrument(skip(data))]
 async fn login(uuid: Uuid, data: Arc<AppData>, server: Uuid) -> Result<impl Reply, Rejection> {
-    let (kind, props) = match data.db.select_server_kind_and_properties(&server).await.map_err(ApiError::from)?.map(|(kind, props)| (data.db.get_cached_kind(&kind), props)) {
+    let (kind, props) = match data.db.select_server_kind_and_properties(&server).await.map_err(ApiError::from)? {
         None => return Ok(StatusCode::NOT_FOUND.into_response()),
         Some(kind) => kind
     };
 
-    let kind = match kind {
+    let server_kind = match data.db.select_server_kind_object(&kind).await.map_err(ApiError::from)? {
         None => return Ok(StatusCode::NOT_FOUND.into_response()),
         Some(kind) => kind
     };
@@ -258,10 +258,10 @@ async fn login(uuid: Uuid, data: Arc<AppData>, server: Uuid) -> Result<impl Repl
     }
 
 
-    let info = player.build_server_login_player_info(&data.db, &kind.name);
+    let info = player.build_server_login_player_info(&data.db, &server_kind.name).await.map_err(ApiError::from)?;
 
 
-    data.db.update_player_online_sever_info(&uuid, server).await.map_err(ApiError::from)?;
+    data.db.update_player_server_and_null_waiting_move_to(&uuid, server).await.map_err(ApiError::from)?;
 
     Ok(reply::json(&info).into_response())
 }

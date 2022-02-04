@@ -7,7 +7,7 @@ use uuid::Uuid;
 use crate::Database;
 use crate::database::{DatabaseError, execute, select_one};
 use scylla::FromRow;
-use crate::web::players::Ban;
+use crate::structures::players::Ban;
 
 #[derive(Debug, FromRow)]
 pub struct IpBan {
