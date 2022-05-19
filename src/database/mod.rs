@@ -2,6 +2,7 @@ use std::sync::Arc;
 use scylla::load_balancing::{RoundRobinPolicy, TokenAwarePolicy};
 use scylla::{FromRow, Session, SessionBuilder};
 use std::env::{var, VarError};
+use std::num::ParseIntError;
 use futures::{StreamExt};
 use scylla::transport::errors::{NewSessionError, QueryError};
 use scylla::transport::iterator::NextRowError;
@@ -21,7 +22,7 @@ pub mod sessions;
 pub mod stats;
 
 pub struct Database {
-    session: Session,
+    pub session: Session,
     queries: Queries,
 }
 
@@ -37,6 +38,8 @@ pub enum DatabaseError {
     NextRow(#[from] NextRowError),
     #[error(transparent)]
     FromRow(#[from] FromRowError),
+    #[error(transparent)]
+    ParsingInt(#[from] ParseIntError),
 }
 
 #[instrument(name = "database_init", fields(k = field::Empty, addr = field::Empty))]
@@ -63,6 +66,12 @@ impl Database {
     pub async fn select_setting(&self, key: &str) -> Result<Option<String>, DatabaseError> {
         //#[query(select_setting = "SELECT value FROM settings WHERE key = ?;")]
         Ok(select_one::<(String, ), _>(&self.queries.select_setting, &self.session, (key, )).await?.map(|t| t.0))
+    }
+
+    #[instrument(skip(self), level = "debug")]
+    pub async fn insert_setting(&self, key: &str, value: &str) -> Result<(), DatabaseError> {
+        //#[query(insert_setting = "INSERT INTO settings (key, value) VALUES (?, ?);")]
+        execute(&self.queries.insert_setting, &self.session, (key, value)).await
     }
 }
 

@@ -3,7 +3,8 @@ use std::net::IpAddr;
 use tracing::*;
 use uuid::Uuid;
 use crate::Database;
-use crate::database::{DatabaseError, execute, select_one};
+use crate::database::{DatabaseError, execute, select_iter, select_one};
+use itertools::Itertools;
 
 impl Database {
     #[instrument(skip(self), level = "debug")]
@@ -35,4 +36,30 @@ impl Database {
         //#[query(select_player_session = "SELECT session FROM players WHERE uuid = ?")]
         Ok(select_one::<(Option<Uuid>, ), _>(&self.queries.select_player_session, &self.session, (id, )).await?.map(|t| t.0).flatten())
     }
+
+    #[instrument(skip(self), level = "debug")]
+    pub async fn select_player_username(&self, id: &Uuid) -> Result<Option<String>, DatabaseError> {
+        //#[query(select_player_username = "SELECT username FROM players WHERE uuid = ?")]
+        Ok(select_one::<(Option<String>, ), _>(&self.queries.select_player_username, &self.session, (id, )).await?.map(|t| t.0).flatten())
+    }
+
+
+
+
+    #[instrument(skip(self), level = "debug")]
+    pub async fn select_all_player_sessions_ips(&self, player: &Uuid) -> Result<Vec<IpAddr>, DatabaseError> {
+        //#[query(select_all_player_sessions_ips = "SELECT ip FROM sessions_by_player WHERE player = ?")]
+        Ok(select_iter::<(Option<IpAddr>, ), _>(&self.queries.select_all_player_sessions_ips, &self.session, (player, )).await?.into_iter().filter_map(|x| x.0).dedup().collect())
+    }
+
+    #[instrument(skip(self), level = "debug")]
+    pub async fn select_players_with_session_ip(&self, ip: &IpAddr) -> Result<Vec<Uuid>, DatabaseError> {
+        //#[query(select_players_with_session_ip = "SELECT player FROM sessions_by_ip WHERE ip = ?")]
+        Ok(select_iter::<(Option<Uuid>, ), _>(&self.queries.select_players_with_session_ip, &self.session, (ip, )).await?.into_iter().filter_map(|x| x.0).dedup().collect())
+    }
+
+
+
+
+
 }

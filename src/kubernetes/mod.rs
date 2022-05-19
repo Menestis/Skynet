@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::env::var;
 use std::sync::{Arc, PoisonError, RwLock, RwLockWriteGuard};
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -11,7 +12,7 @@ use kube::runtime::Controller;
 use kube::runtime::controller::Context;
 use kube_leader_election::{LeaseLock, LeaseLockParams};
 use tokio::select;
-use tokio::sync::oneshot;
+use tokio::sync::{oneshot};
 use tokio::sync::oneshot::Sender;
 use tokio::time::sleep;
 use tracing::*;
@@ -33,10 +34,11 @@ pub struct Kubernetes {
     sender: RwLock<Option<Sender<()>>>,
     database: Arc<Database>,
     messenger: Arc<Messenger>,
+    online_player_count: Arc<tokio::sync::RwLock<HashMap<Uuid, i32>>>
 }
 
 #[instrument(name = "k8s_init", skip(database, messenger), fields(version = field::Empty))]
-pub async fn init(id: &Uuid, database: Arc<Database>, messenger: Arc<Messenger>) -> Result<Kubernetes, Error> {
+pub async fn init(id: &Uuid, database: Arc<Database>, messenger: Arc<Messenger>, online_player_count: Arc<tokio::sync::RwLock<HashMap<Uuid, i32>>>) -> Result<Kubernetes, Error> {
     let client = Client::try_default().await?;
     let info = client.apiserver_version().await?;
     Span::current().record("version", &format!("{}.{}", info.major, info.minor).as_str());
@@ -63,6 +65,7 @@ pub async fn init(id: &Uuid, database: Arc<Database>, messenger: Arc<Messenger>)
         sender: RwLock::new(None),
         database,
         messenger,
+        online_player_count
     })
 }
 
@@ -86,7 +89,7 @@ impl Kubernetes {
         }
     }
 
-    pub fn _is_leader(&self) -> bool {
+    pub fn is_leader(&self) -> bool {
         self.leader.load(Ordering::Relaxed)
     }
 
@@ -146,7 +149,7 @@ impl Kubernetes {
         let controller = Controller::new(self.pod_api.clone(), ListParams::default()
             .labels("managed_by == skynet,skynet/kind")).graceful_shutdown_on(async move { if let Err(err) = receiver.await { error!("{}",err) } });
 
-        tokio::spawn(controller.run(controller::reconcile, controller::on_error, Context::new((self.pod_api.clone(), self.database.clone(), self.messenger.clone()))).for_each(|res| async move {
+        tokio::spawn(controller.run(controller::reconcile, controller::on_error, Context::new((self.pod_api.clone(), self.database.clone(), self.messenger.clone(), self.online_player_count.clone()))).for_each(|res| async move {
             match res {
                 Ok(o) => trace!("Reconciled {}", o.0.name),
                 Err(e) => warn!("Reconcile failed: {:?}", e),

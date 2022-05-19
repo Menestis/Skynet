@@ -19,6 +19,7 @@ pub mod proxy;
 pub mod server;
 pub mod registration;
 pub mod players;
+pub mod stats;
 
 pub async fn create_task(addr: SocketAddr, data: Arc<AppData>) -> impl Future<Output=()> {
     let mut r = data.shutdown_receiver.clone();
@@ -32,6 +33,8 @@ pub async fn create_task(addr: SocketAddr, data: Arc<AppData>) -> impl Future<Ou
         .or(registration::filter(data.clone()))
         .or(players::filter(data.clone()))
         .or(status::filter(data.clone()))
+        .or(stats::filter(data.clone()))
+
         .recover(handle_rejection);
 
     warp::serve(routes).bind_with_graceful_shutdown(addr, async move { let _ = r.changed().await; }).1
@@ -40,8 +43,7 @@ pub async fn create_task(addr: SocketAddr, data: Arc<AppData>) -> impl Future<Ou
 fn with_auth(data: Arc<AppData>, permission: &'static str) -> impl Filter<Extract=(), Error=Rejection> + Clone {
     warp::header::<String>("Authorization").and(with_data(data.clone())).map(|uuid, data| (uuid, permission.to_string(), data)).untuple_one().and_then(check_authorization).untuple_one()
 }
-
-#[instrument(skip(data))]
+#[instrument(level = "debug", skip(data))]
 async fn check_authorization(key: String, permission: String, data: Arc<AppData>) -> Result<(), Rejection> {
     if key.starts_with("Server ") {
         let key = Uuid::parse_str(key.trim_start_matches("Server ")).map_err(ApiError::from)?;

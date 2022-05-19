@@ -1,10 +1,10 @@
 use std::collections::HashMap;
 use std::net::IpAddr;
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 #[serde(tag = "event")]
 pub enum ServerEvent {
     NewRoute {
@@ -47,13 +47,16 @@ pub enum ServerEvent {
         server: Uuid,
         uuid: Uuid,
     },
+    PlayerCountSync {
+        proxy: Uuid,
+        count: i32
+    },
 }
 
 
 impl ServerEvent {
     pub fn route(&self) -> String {
         use ServerEvent::*;
-
         match self {
             NewRoute { .. } => "proxy.servers.routes.new".to_string(),
             DeleteRoute { .. } => "proxy.servers.routes.delete".to_string(),
@@ -62,6 +65,7 @@ impl ServerEvent {
             AdminMovePlayer { server, .. } => server.to_string(),
             DisconnectPlayer { proxy, .. } => proxy.to_string(),
             InvalidatePlayer { server, .. } => server.to_string(),
+            PlayerCountSync { .. } => "skynet.playercount".to_string()
         }
     }
     pub fn direct(&self) -> bool {

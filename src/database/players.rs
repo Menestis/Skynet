@@ -193,7 +193,7 @@ impl Database {
 
     #[instrument(skip(self), level = "debug")]
     pub async fn update_player_server_and_null_waiting_move_to(&self, player: &Uuid, server: Uuid) -> Result<(), DatabaseError> {
-        //#[query(update_player_server_and_null_waiting_move_to = "UPDATE players SET server = ?, waiting_move_to = null WHERE uuid = ?;")]
+        //#[query(update_player_server_and_null_waiting_move_to = "UPDATE players USING TTL 86400 SET server = ?, waiting_move_to = null WHERE uuid = ?;")]
         execute(&self.queries.update_player_server_and_null_waiting_move_to, &self.session, (server, player)).await
     }
 

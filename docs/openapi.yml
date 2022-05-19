@@ -72,7 +72,7 @@ paths:
           application/json:
             schema:
               title: ProxyLoginRequest
-              required: [ username, version ]
+              required: [ username, version, proxy, ip ]
               type: object
               properties:
                 username:
@@ -444,12 +444,35 @@ paths:
               schema:
                 type: object
                 title: PingInfo
-                required: [ motd, slots ]
+                required: [ motd, slots, online ]
                 properties:
+                  online:
+                    type: integer
                   slots:
                     type: integer
                   motd:
                     type: string
+  /api/proxy/{uuid}/playercount:
+    post:
+      tags: [ "Proxy" ]
+      security:
+        - auth: [ "proxy-update-playercount" ]
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: integer
+      responses:
+        200:
+          description: OK
 
   ######################################
   /api/servers:
@@ -776,10 +799,10 @@ components:
           format: uuid
         start:
           type: string
-          format: date-time
+          #format: date-time
         end:
           type: string
-          format: date-time
+          #format: date-time
         issuer:
           type: string
           format: uuid

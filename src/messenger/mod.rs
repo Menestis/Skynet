@@ -9,7 +9,6 @@ use lapin::types::FieldTable;
 use lapin::uri::AMQPUri;
 use thiserror::Error;
 use tokio::select;
-use tokio_amqp::LapinTokioExt;
 use tracing::*;
 use uuid::Uuid;
 
@@ -18,6 +17,7 @@ use crate::AppData;
 pub mod receiver;
 pub mod sender;
 pub mod servers_events;
+pub mod online_count;
 
 pub struct Messenger {
     con: Connection,
@@ -46,7 +46,7 @@ pub async fn init(id: &Uuid) -> Result<Messenger, MessengerError> {
 
     let id_str = id.to_string();
 
-    let con = Connection::connect_uri(uri, ConnectionProperties::default().with_tokio().with_connection_name(id_str.clone().into())).await?;
+    let con = Connection::connect_uri(uri, ConnectionProperties::default().with_connection_name(id_str.clone().into())).await?;
 
     let channel = con.create_channel().await?;
 
@@ -123,8 +123,8 @@ impl Messenger {
     }
 
     async fn run(&self, mut consumer: Consumer, data: Arc<AppData>) {
-        while let Some(delivery) = consumer.next().await {
-            let (_channel, delivery) = match delivery {
+        while let Some(delivery_r) = consumer.next().await {
+            let delivery = match delivery_r {
                 Ok(s) => s,
                 Err(err) => {
                     warn!("Rabbitmq error : {}. Attempting recovery !", err);

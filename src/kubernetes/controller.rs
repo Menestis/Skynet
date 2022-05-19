@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::net::{AddrParseError, IpAddr};
 use std::str::FromStr;
-use std::sync::Arc;
+use std::sync::{Arc};
 use std::time::Duration;
 
 use k8s_openapi::api::core::v1::Pod;
@@ -9,6 +9,7 @@ use kube::{Api, Error, ResourceExt};
 use kube::api::{Patch, PatchParams};
 use kube::runtime::controller::{Context, ReconcilerAction};
 use serde_json::json;
+use tokio::sync::RwLock;
 use tracing::error;
 use uuid::Uuid;
 
@@ -35,8 +36,8 @@ pub enum K8sWorkerError {
 
 const FINALIZER: &str = "skynet/finalizer";
 
-pub async fn reconcile(pod: Pod, ctx: Context<(Api<Pod>, Arc<Database>, Arc<Messenger>)>) -> Result<ReconcilerAction, K8sWorkerError> {
-    let (pod_api, db, msgr) = ctx.get_ref();
+pub async fn reconcile(pod: Arc<Pod>, ctx: Context<(Api<Pod>, Arc<Database>, Arc<Messenger>, Arc<RwLock<HashMap<Uuid, i32>>>)>) -> Result<ReconcilerAction, K8sWorkerError> {
+    let (pod_api, db, msgr, online_player_count) = ctx.get_ref();
 
     let ip = pod.status.as_ref().map(|t| t.pod_ip.as_ref()).flatten();
     if !pod.finalizers().contains(&FINALIZER.to_string()) && !pod.labels().contains_key("skynet_id") && ip.is_some() {
@@ -93,6 +94,11 @@ pub async fn reconcile(pod: Pod, ctx: Context<(Api<Pod>, Arc<Database>, Arc<Mess
 
                 let server = db.select_server(&id).await?;
                 if let Some(server) = server{
+                    online_player_count.write().await.remove(&id);
+                    let online: i32 = online_player_count.read().await.values().sum();
+                    if let Err(e) = db.insert_setting("online_count", &online.to_string()).await{
+                        error!("{}", e);
+                    }
                     db.delete_server(&id).await?;
                     db.insert_server_log(&server.id, &server.description, &server.kind, &server.label, &server.properties.unwrap_or_default()).await?;
                 }
@@ -114,7 +120,7 @@ pub async fn reconcile(pod: Pod, ctx: Context<(Api<Pod>, Arc<Database>, Arc<Mess
     })
 }
 
-pub fn on_error(_error: &K8sWorkerError, _ctx: Context<(Api<Pod>, Arc<Database>, Arc<Messenger>)>) -> ReconcilerAction {
+pub fn on_error(_error: &K8sWorkerError, _ctx: Context<(Api<Pod>, Arc<Database>, Arc<Messenger>, Arc<RwLock<HashMap<Uuid, i32>>>)>) -> ReconcilerAction {
     ReconcilerAction {
         requeue_after: Some(Duration::from_secs(60)),
     }

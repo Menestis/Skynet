@@ -1,15 +1,18 @@
+#![recursion_limit = "1024"]
+
+use std::collections::HashMap;
 use std::env;
 use std::env::var;
 use std::future::Future;
 use std::net::SocketAddr;
 use std::str::FromStr;
-use std::sync::Arc;
+use std::sync::{Arc};
 
 use futures::join;
 use reqwest::Client;
 use tokio::signal;
 use tokio::signal::unix::SignalKind;
-use tokio::sync::{mpsc, watch};
+use tokio::sync::{mpsc, RwLock, watch};
 use tokio::sync::mpsc::Receiver;
 use tokio::sync::watch::Sender;
 use tracing::*;
@@ -35,10 +38,11 @@ async fn main() -> anyhow::Result<()> {
     let uuid = Uuid::new_v4();
     info!("Starting skynet : ServerId({})", uuid);
 
+    let online_player_count = Arc::new(RwLock::new(HashMap::new()));
 
     let db = Arc::new(database::init().await?);
     let msgr = Arc::new(messenger::init(&uuid).await?);
-    let k8s = Arc::new(kubernetes::init(&uuid, db.clone(), msgr.clone()).await?);
+    let k8s = Arc::new(kubernetes::init(&uuid, db.clone(), msgr.clone(), online_player_count.clone()).await?);
 
     let (shutdown_task, s, r) = shutdown();
 
@@ -51,6 +55,7 @@ async fn main() -> anyhow::Result<()> {
         proxy_check_api_key: var("PROXYCHECK_API_KEY")?,
         shutdown_sender: s,
         shutdown_receiver: r,
+        player_count: online_player_count
     });
 
     let addr = SocketAddr::from_str(&var("SKYNET_ADDRESS").unwrap_or("127.0.0.1:8888".to_string()))?;
@@ -72,6 +77,7 @@ pub struct AppData {
     pub proxy_check_api_key: String,
     pub shutdown_sender: mpsc::Sender<()>,
     pub shutdown_receiver: watch::Receiver<bool>,
+    pub player_count: Arc<RwLock<HashMap<Uuid, i32>>>,
 }
 
 impl AppData {

@@ -113,6 +113,20 @@ async fn proxy_login(uuid: Uuid, data: Arc<AppData>, request: ProxyLoginRequest)
 
     data.db.insert_session(&session, &request.version, &uuid, &request.ip).await.map_err(ApiError::from)?;
 
+    // if !data.k8s.is_leader() {
+    //     if let Err(e) = data.msgr.send_event(&ServerEvent::PlayerCountSync { proxy: request.proxy, count: request.online_count }).await {
+    //         error!("{}", e);
+    //     }
+    // } else {
+    //     data.player_count.write().await.insert(request.proxy, request.online_count);
+    //
+    //     let online: i32 = data.player_count.read().await.values().sum();
+    //
+    //     if let Err(e) = data.db.insert_setting("online_count", &online.to_string()).await {
+    //         error!("{}", e);
+    //     }
+    // }
+
     data.db.update_player_online_proxy_info(&uuid, request.proxy, &session, &request.username).await.map_err(ApiError::from)?;
 
     Ok(reply::json(&ProxyLoginResponse::Allowed { session, player_info: info }))

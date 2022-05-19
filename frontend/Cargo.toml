@@ -12,3 +12,4 @@ js-sys = "0.3.55"
 web-sys = "0.3.55"
 
 yew-router = "0.16"
+uuid = { version = "0.8.2", features = ["serde", "v4"] }

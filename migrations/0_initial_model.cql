@@ -19,10 +19,11 @@ CREATE TABLE api_groups
 
 INSERT INTO api_groups(name, permissions)
 VALUES ('proxy',
-        {'proxy-login', 'proxy-pre-login', 'proxy-close-session', 'get-online-players', 'proxy-ping', 'move-player', 'ban-player', 'get-all-servers', 'get-player',  'player-transaction', 'update-player-groups', 'player-inventory-transaction', 'set-server-state'});
+        {'proxy-login', 'proxy-pre-login', 'proxy-close-session', 'get-online-players', 'proxy-ping', 'move-player', 'ban-player', 'get-all-servers', 'get-player', 'player-transaction', 'update-player-groups', 'player-inventory-transaction', 'set-server-state', 'proxy-update-playercount'});
 
 INSERT INTO api_groups(name, permissions)
-VALUES ('server', {'server-login', 'player-stats', 'move-player', 'create-server', 'delete-server', 'get-all-servers', 'player-inventory-transaction', 'set-server-state'});
+VALUES ('server',
+        {'server-login', 'player-stats', 'move-player', 'create-server', 'delete-server', 'get-all-servers', 'player-transaction', 'player-inventory-transaction', 'set-server-state'});
 
 CREATE TABLE api_keys
 (
@@ -105,6 +106,14 @@ WHERE id IS NOT NULL
   AND player IS NOT NULL
 PRIMARY KEY ( player, id );
 
+
+CREATE MATERIALIZED VIEW sessions_by_ip AS
+SELECT *
+FROM sessions
+WHERE id IS NOT NULL
+  AND ip IS NOT NULL
+PRIMARY KEY ( ip, id );
+
 CREATE TABLE statistics
 (
     player      UUID,
@@ -117,52 +126,50 @@ CREATE TABLE statistics
     PRIMARY KEY ( player, session, timestamp, server_id, server_kind, key )
 );
 
-
-CREATE MATERIALIZED VIEW statistics_unknown_timestamp AS
+CREATE MATERIALIZED VIEW statistics_processable AS
 SELECT *
 FROM statistics
 WHERE player IS NOT NULL
-  AND session IS NOT NULL
-  AND server_kind IS NOT NULL
-  AND server_id IS NOT NULL
-  AND key IS NOT NULL
   AND timestamp IS NOT NULL
-PRIMARY KEY (player, session, server_kind, key, timestamp, server_id);
-
-
-CREATE MATERIALIZED VIEW statistics_by_server_kind AS
-SELECT *
-FROM statistics
-WHERE player IS NOT NULL
-  AND session IS NOT NULL
   AND server_kind IS NOT NULL
-  AND server_id IS NOT NULL
   AND key IS NOT NULL
-  AND timestamp IS NOT NULL
+  AND server_id IS NOT NULL
+  AND session IS NOT NULL
 PRIMARY KEY (player, server_kind, key, server_id, session, timestamp);
 
-CREATE MATERIALIZED VIEW statistics_by_key AS
-SELECT *
-FROM statistics
-WHERE player IS NOT NULL
-  AND session IS NOT NULL
-  AND server_kind IS NOT NULL
-  AND server_id IS NOT NULL
-  AND key IS NOT NULL
-  AND timestamp IS NOT NULL
-PRIMARY KEY (player, key, server_kind, session, timestamp, server_id);
 
-CREATE MATERIALIZED VIEW statistics_by_server_id AS
-SELECT *
-FROM statistics
-WHERE player IS NOT NULL
-  AND session IS NOT NULL
-  AND server_kind IS NOT NULL
-  AND server_id IS NOT NULL
-  AND key IS NOT NULL
-  AND timestamp IS NOT NULL
-PRIMARY KEY (server_id, player, key, session, timestamp, server_kind);
-
+-- CREATE MATERIALIZED VIEW statistics_by_player_and_server_kind AS
+-- SELECT *
+-- FROM statistics
+-- WHERE player IS NOT NULL
+--   AND session IS NOT NULL
+--   AND server_kind IS NOT NULL
+--   AND server_id IS NOT NULL
+--   AND key IS NOT NULL
+--   AND timestamp IS NOT NULL
+-- PRIMARY KEY (player, server_kind, key, server_id, session, timestamp);
+--
+-- CREATE MATERIALIZED VIEW statistics_by_key AS
+-- SELECT *
+-- FROM statistics
+-- WHERE player IS NOT NULL
+--   AND session IS NOT NULL
+--   AND server_kind IS NOT NULL
+--   AND server_id IS NOT NULL
+--   AND key IS NOT NULL
+--   AND timestamp IS NOT NULL
+-- PRIMARY KEY (player, key, server_kind, timestamp, session, server_id);
+--
+-- CREATE MATERIALIZED VIEW statistics_by_timestamp AS
+-- SELECT *
+-- FROM statistics
+-- WHERE player IS NOT NULL
+--   AND session IS NOT NULL
+--   AND server_kind IS NOT NULL
+--   AND server_id IS NOT NULL
+--   AND key IS NOT NULL
+--   AND timestamp IS NOT NULL
+-- PRIMARY KEY (timestamp, player, server_kind, key, session, server_id);
 
 CREATE TABLE anticheat_logs
 (

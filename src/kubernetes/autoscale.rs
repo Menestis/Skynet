@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 use std::num::ParseIntError;
 use std::sync::Arc;
-use kube::Error::Api;
 use thiserror::Error;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
@@ -12,7 +11,6 @@ use crate::database::DatabaseError;
 use crate::database::servers::{Server, ServerKind};
 use crate::messenger::MessengerError;
 use crate::messenger::servers_events::ServerEvent;
-use crate::web::rejections::ApiError;
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(tag = "type")]
@@ -103,7 +101,7 @@ pub async fn process_waiting(data: Arc<AppData>, server: Uuid) -> Result<(), Sca
 
         debug!("Autoscaling new burst server for kind : {}", kind);
 
-        create_autoscale_server(data.clone(), &kind_obj, &autoscale_opt.unwrap()).await.map_err(ApiError::from)?;
+        create_autoscale_server(data.clone(), &kind_obj, &autoscale_opt.unwrap()).await.map_err(ScalingError::from)?;
     }
     for pl in players {
         data.msgr.send_event(&ServerEvent::MovePlayer {

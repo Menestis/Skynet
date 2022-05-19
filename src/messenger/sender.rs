@@ -14,7 +14,7 @@ impl Messenger {
             "direct"
         } else {
             "events"
-        }, &event.route(), BasicPublishOptions::default(), data, BasicProperties::default()).await?.await?;
+        }, &event.route(), BasicPublishOptions::default(), &data, BasicProperties::default()).await?.await?;
         trace!("Got confirmation for event {} !", event.route());
         Ok(())
     }

@@ -22,3 +22,6 @@ build
 
 .idea/
 frontend/dist
+out/
+gen/
+templates/
