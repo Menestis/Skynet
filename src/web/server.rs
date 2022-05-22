@@ -16,6 +16,7 @@ pub fn filter(data: Arc<AppData>) -> impl Filter<Extract=impl Reply, Error=Rejec
     warp::post().and(path!("api"/"servers")).and(with_auth(data.clone(), "create-server")).and(with_data(data.clone())).and(json::<CreateServer>()).and_then(create_server)
         .or(warp::delete().and(path!("api"/"servers"/String)).and(with_auth(data.clone(), "delete-server")).and(with_data(data.clone())).and_then(delete_server))
         .or(warp::get().and(path!("api"/"servers")).and(with_auth(data.clone(), "get-all-servers")).and(with_data(data.clone())).and_then(get_all_servers))
+        .or(warp::get().and(path!("api"/"onlinecount")).and(with_auth(data.clone(), "get-onlinecount")).and(with_data(data.clone())).and_then(get_onlinecount))
         .or(warp::post().and(path!("api"/"servers"/Uuid/"setstate")).and(with_auth(data.clone(), "set-server-state")).and(json::<String>()).and(with_data(data.clone())).and_then(set_server_state))
 }
 
@@ -80,6 +81,11 @@ async fn delete_server(server: String, data: Arc<AppData>) -> Result<impl Reply,
 #[instrument(skip(data))]
 async fn get_all_servers(data: Arc<AppData>) -> Result<impl Reply, Rejection> {
     Ok(reply::json(&data.db.select_all_servers().await.map_err(ApiError::from)?))
+}
+
+#[instrument(skip(data))]
+async fn get_onlinecount(data: Arc<AppData>) -> Result<impl Reply, Rejection> {
+    Ok(reply::json(&data.db.select_setting("online_count").await.map_err(ApiError::from)?))
 }
 
 

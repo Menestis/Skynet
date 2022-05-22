@@ -23,7 +23,7 @@ VALUES ('proxy',
 
 INSERT INTO api_groups(name, permissions)
 VALUES ('server',
-        {'server-login', 'player-stats', 'move-player', 'create-server', 'delete-server', 'get-all-servers', 'player-transaction', 'player-inventory-transaction', 'set-server-state'});
+        {'server-login', 'player-stats', 'move-player', 'create-server', 'delete-server', 'get-all-servers', 'player-transaction', 'player-inventory-transaction', 'set-server-state', 'get-onlinecount'});
 
 CREATE TABLE api_keys
 (

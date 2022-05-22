@@ -475,6 +475,18 @@ paths:
           description: OK
 
   ######################################
+  /api/onlinecount:
+    get:
+      tags: [ "Server" ]
+      security:
+        - auth: [ "get-onlinecount" ]
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: integer
   /api/servers:
     get:
       tags: [ "Server" ]

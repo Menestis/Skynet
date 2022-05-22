@@ -8,8 +8,8 @@ edition = "2021"
 [dependencies]
 
 yew = "0.19.3"
-js-sys = "0.3.55"
-web-sys = "0.3.55"
+js-sys = "0.3.57"
+web-sys = "0.3.57"
 
-yew-router = "0.16"
-uuid = { version = "0.8.2", features = ["serde", "v4"] }
+yew-router = "0.16.0"
+uuid = { version = "1.0.0", features = ["serde", "v4"] }

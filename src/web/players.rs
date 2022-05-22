@@ -69,10 +69,13 @@ enum PlayerMove {
 
 #[instrument(skip(data))]
 async fn move_player(uuid: Uuid, data: Arc<AppData>, request: PlayerMove) -> Result<impl Reply, Rejection> {
+    //TODO select_online_player_proxy_and_discord, to check if discord is present
+    //TODO return enum on why move failed / worked
     let proxy = match data.db.select_online_player_proxy(&uuid).await.map_err(ApiError::from)? {
         None => return Ok(reply::with_status("Player is not online or does not exists", StatusCode::NOT_FOUND).into_response()),
         Some(proxy) => proxy
     };
+
 
     debug!("Got player proxy {}", proxy);
 

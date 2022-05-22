@@ -172,6 +172,9 @@ enum ProxyPreLoginResponse {
 
 #[instrument(skip(data))]
 async fn pre_login(ip: IpAddr, data: Arc<AppData>) -> Result<impl Reply, Rejection> {
+
+    //TODO if maintenance refuser connexion
+
     let builder = MessageBuilder::new()
         .component("SkyNet ".to_string()).with_color(Some(Color::DarkPurple)).close()
         .component("> ".to_string()).with_color(Some(Color::DarkGray)).close()
