@@ -31,7 +31,6 @@ mod utils;
 mod structures;
 
 
-
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     init_logs();
@@ -51,7 +50,7 @@ async fn main() -> anyhow::Result<()> {
         db,
         msgr,
         k8s,
-        client: reqwest::Client::new(),
+        client: Client::new(),
         proxy_check_api_key: var("PROXYCHECK_API_KEY")?,
         shutdown_sender: s,
         shutdown_receiver: r,

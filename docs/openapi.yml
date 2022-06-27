@@ -23,6 +23,34 @@ paths:
       responses:
         200:
           description: "The server is shutting-down"
+  /api/leaderboards:
+    post:
+      security:
+        - auth: [ "get-player" ]
+      tags: [ "Stats" ]
+      responses:
+        200:
+          description: "Leaderboards have been generated"
+  /api/leaderboards/{name}:
+    post:
+      security:
+        - auth: [ "get-player" ]
+      tags: [ "Stats" ]
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: "Requested leaderboard"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Leaderboard"
+        404:
+          description: "Not found"
   /api/players:
     get:
       security:
@@ -302,6 +330,8 @@ paths:
                     type: object
                     additionalProperties:
                       type: string
+                  discord_id:
+                    type: string
   /api/players/{uuid}/stats:
     post:
       security:
@@ -690,8 +720,58 @@ paths:
                 type: boolean
         404:
           description: Player does not exist
+  /api/discord/link/{uuid}:
+    get:
+      security:
+        - auth: [ "create-discord-link" ]
+      tags: [ "Discord", "Player" ]
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: OK
+        404:
+          description: Player does not exist
+  /api/discord/link/{code}:
+    post:
+      security:
+        - auth: [ "complete-discord-link" ]
+      tags: [ "Discord", "Player" ]
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
+              description: "DiscordID"
+        required: true
+      responses:
+        200:
+          description: OK
+        404:
+          description: Pending link does not exist
 components:
   schemas:
+    Leaderboard:
+      type: object
+      required: ["label", "leaderboard"]
+      properties:
+        label:
+          type: string
+        leaderboard:
+          type: array
+          items:
+            type: string
     Message:
       type: array
       items:
@@ -802,6 +882,8 @@ components:
         properties:
           additionalProperties:
             type: string
+        discord_id:
+          type: string
     Ban:
       type: object
       required: [ id, start ]

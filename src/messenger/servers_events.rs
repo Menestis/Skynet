@@ -49,7 +49,12 @@ pub enum ServerEvent {
     },
     PlayerCountSync {
         proxy: Uuid,
-        count: i32
+        count: i32,
+    },
+    InvalidateLeaderBoard {
+        name: String,
+        label: String,
+        leaderboard: Vec<String>
     },
 }
 
@@ -65,7 +70,8 @@ impl ServerEvent {
             AdminMovePlayer { server, .. } => server.to_string(),
             DisconnectPlayer { proxy, .. } => proxy.to_string(),
             InvalidatePlayer { server, .. } => server.to_string(),
-            PlayerCountSync { .. } => "skynet.playercount".to_string()
+            PlayerCountSync { .. } => "skynet.playercount".to_string(),
+            InvalidateLeaderBoard { name, .. } => format!("leaderboard.invalidate.{}", name)
         }
     }
     pub fn direct(&self) -> bool {

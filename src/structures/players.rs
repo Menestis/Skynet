@@ -19,6 +19,7 @@ pub struct PlayerInfo {
     pub inventory: HashMap<String, i32>,
     pub properties: HashMap<String, String>,
     pub ban: Option<Ban>,
+    pub discord_id: Option<String>
 }
 
 #[derive(Debug, Serialize, Deserialize)]

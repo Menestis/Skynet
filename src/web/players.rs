@@ -2,11 +2,10 @@ use std::collections::HashMap;
 use std::net::IpAddr;
 use std::sync::Arc;
 use chrono::Duration;
-use kube::Error::Api;
 use reqwest::StatusCode;
 use warp::{Filter, path, Rejection, Reply, reply};
 use crate::{AppData, Database};
-use tracing::{info, instrument};
+use tracing::instrument;
 use uuid::{Uuid};
 use warp::body::json;
 use crate::web::rejections::ApiError;
@@ -233,8 +232,6 @@ async fn ban_player(uuid: Uuid, data: Arc<AppData>, request: PlayerBan) -> Resul
 
             return Ok(reply::json(&BanIpResult{ players, ips }).into_response());
         }
-
-        return Ok(reply().into_response());
     } else if request.unban {
         data.db.remove_player_ban(&uuid).await.map_err(ApiError::from)?;
         return Ok(reply().into_response());

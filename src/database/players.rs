@@ -32,6 +32,8 @@ pub struct DbServerPlayerInfo {
     pub proxy: Uuid,
     pub session: Uuid,
 
+    pub discord_id: Option<String>,
+
     pub locale: Option<String>,
 
     pub groups: Option<Vec<String>>,
@@ -73,6 +75,7 @@ pub struct DbFullPlayerInfo {
     pub username: String,
     pub prefix: Option<String>,
     pub suffix: Option<String>,
+    pub discord_id: Option<String>
 }
 
 #[derive(Serialize, Debug, FromRow)]
@@ -91,6 +94,7 @@ pub struct DbPlayerInfo {
     pub inventory: Option<HashMap<String, i32>>,
     pub properties: Option<HashMap<String, String>>,
     pub ban: Option<Uuid>,
+    pub discord_id: Option<String>
 }
 
 #[derive(Debug, FromRow)]
@@ -135,13 +139,13 @@ impl Database {
 
     #[instrument(skip(self), level = "debug")]
     pub async fn select_server_player_info(&self, uuid: &Uuid) -> Result<Option<DbServerPlayerInfo>, DatabaseError> {
-        //#[query(select_server_player_info = "SELECT prefix, suffix, proxy, session, locale, groups, permissions, currency, premium_currency, blocked, inventory, properties FROM players WHERE uuid = ?;")]
+        //#[query(select_server_player_info = "SELECT prefix, suffix, proxy, session, discord_id, locale, groups, permissions, currency, premium_currency, blocked, inventory, properties FROM players WHERE uuid = ?;")]
         select_one(&self.queries.select_server_player_info, &self.session, (uuid, )).await
     }
 
     #[instrument(skip(self), level = "debug")]
     pub async fn select_player_info(&self, uuid: &Uuid) -> Result<Option<DbPlayerInfo>, DatabaseError> {
-        //#[query(select_player_info = "SELECT uuid, username, groups, locale, prefix, suffix, currency, premium_currency, proxy, server, blocked, inventory, properties, ban FROM players WHERE uuid = ?;")]
+        //#[query(select_player_info = "SELECT uuid, username, groups, locale, prefix, suffix, currency, premium_currency, proxy, server, blocked, inventory, properties, ban, discord_id FROM players WHERE uuid = ?;")]
         select_one(&self.queries.select_player_info, &self.session, (uuid, )).await
     }
 
@@ -167,13 +171,13 @@ impl Database {
 
     #[instrument(skip(self), level = "debug")]
     pub async fn select_player_info_by_name(&self, name: &str) -> Result<Option<DbPlayerInfo>, DatabaseError> {
-        //#[query(select_player_info_by_name = "SELECT uuid, username, groups, locale, prefix, suffix, currency, premium_currency, proxy, server, blocked, inventory, properties, ban FROM players_by_username WHERE username = ?;")]
+        //#[query(select_player_info_by_name = "SELECT uuid, username, groups, locale, prefix, suffix, currency, premium_currency, proxy, server, blocked, inventory, properties, ban, discord_id FROM players_by_username WHERE username = ?;")]
         select_one(&self.queries.select_player_info_by_name, &self.session, (name, )).await
     }
 
     #[instrument(skip(self), level = "debug")]
     pub async fn select_full_player_info(&self, uuid: &Uuid) -> Result<Option<DbFullPlayerInfo>, DatabaseError> {
-        //#[query(select_full_player_info = "SELECT uuid, ban, ban_reason, blocked, currency, premium_currency, friends, groups, inventory, locale, permissions, proxy, server, session, username, prefix, suffix FROM players WHERE uuid = ?")]
+        //#[query(select_full_player_info = "SELECT uuid, ban, ban_reason, blocked, currency, premium_currency, friends, groups, inventory, locale, permissions, proxy, server, session, username, prefix, suffix, discord_id FROM players WHERE uuid = ?")]
         select_one(&self.queries.select_full_player_info, &self.session, (uuid, )).await
     }
 
@@ -221,6 +225,13 @@ impl Database {
         //#[query(set_player_currencies = "UPDATE players SET currency = ?, premium_currency = ? WHERE uuid = ?;")]
         execute(&self.queries.set_player_currencies, &self.session, (currency, premium_currency, player)).await
     }
+
+    #[instrument(skip(self), level = "debug")]
+    pub async fn set_player_discord_id(&self, player: &Uuid, discord_id: &str) -> Result<(), DatabaseError> {
+        //#[query(set_player_discord_id = "UPDATE players SET discord_id = ? WHERE uuid = ?;")]
+        execute(&self.queries.set_player_discord_id, &self.session, (discord_id, player)).await
+    }
+
 
     #[instrument(skip(self), level = "debug")]
     pub async fn add_player_group(&self, player: &Uuid, group: &str) -> Result<(), DatabaseError> {
@@ -370,6 +381,7 @@ impl DbPlayerInfo {
             inventory: self.inventory.unwrap_or_default(),
             properties: self.properties.unwrap_or_default(),
             ban: ban.map(DbBan::into),
+            discord_id: self.discord_id
         })
     }
 }

@@ -20,6 +20,11 @@ pub mod server;
 pub mod registration;
 pub mod players;
 pub mod stats;
+pub mod discord;
+
+//TODO broadcast message to all srvs
+//TODO webhooks management
+//TODO mutes
 
 pub async fn create_task(addr: SocketAddr, data: Arc<AppData>) -> impl Future<Output=()> {
     let mut r = data.shutdown_receiver.clone();
@@ -34,6 +39,7 @@ pub async fn create_task(addr: SocketAddr, data: Arc<AppData>) -> impl Future<Ou
         .or(players::filter(data.clone()))
         .or(status::filter(data.clone()))
         .or(stats::filter(data.clone()))
+        .or(discord::filter(data.clone()))
 
         .recover(handle_rejection);
 
@@ -43,6 +49,7 @@ pub async fn create_task(addr: SocketAddr, data: Arc<AppData>) -> impl Future<Ou
 fn with_auth(data: Arc<AppData>, permission: &'static str) -> impl Filter<Extract=(), Error=Rejection> + Clone {
     warp::header::<String>("Authorization").and(with_data(data.clone())).map(|uuid, data| (uuid, permission.to_string(), data)).untuple_one().and_then(check_authorization).untuple_one()
 }
+
 #[instrument(level = "debug", skip(data))]
 async fn check_authorization(key: String, permission: String, data: Arc<AppData>) -> Result<(), Rejection> {
     if key.starts_with("Server ") {
