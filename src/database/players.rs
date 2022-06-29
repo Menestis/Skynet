@@ -42,6 +42,8 @@ pub struct DbServerPlayerInfo {
     pub currency: i32,
     pub premium_currency: i32,
 
+    pub mute: Option<Uuid>,
+
     pub blocked: Option<Vec<Uuid>>,
     pub inventory: Option<HashMap<String, i32>>,
     pub properties: Option<HashMap<String, String>>,
@@ -75,7 +77,8 @@ pub struct DbFullPlayerInfo {
     pub username: String,
     pub prefix: Option<String>,
     pub suffix: Option<String>,
-    pub discord_id: Option<String>
+    pub discord_id: Option<String>,
+    pub mute: Option<Uuid>,
 }
 
 #[derive(Serialize, Debug, FromRow)]
@@ -94,7 +97,8 @@ pub struct DbPlayerInfo {
     pub inventory: Option<HashMap<String, i32>>,
     pub properties: Option<HashMap<String, String>>,
     pub ban: Option<Uuid>,
-    pub discord_id: Option<String>
+    pub discord_id: Option<String>,
+    pub mute: Option<Uuid>,
 }
 
 #[derive(Debug, FromRow)]
@@ -126,6 +130,12 @@ impl Database {
     }
 
     #[instrument(skip(self), level = "debug")]
+    pub async fn select_online_player_proxy_and_discord(&self, uuid: &Uuid) -> Result<(Option<Uuid>, Option<String>), DatabaseError> {
+        //#[query(select_player_proxy_and_discord = "SELECT proxy, discord_id FROM players WHERE uuid = ?")]
+        Ok(select_one(&self.queries.select_player_proxy_and_discord, &self.session, (uuid, )).await?.unwrap_or_default())
+    }
+
+    #[instrument(skip(self), level = "debug")]
     pub async fn select_online_player_server(&self, uuid: &Uuid) -> Result<Option<Uuid>, DatabaseError> {
         //#[query(select_player_server = "SELECT server FROM players WHERE uuid = ?")]
         Ok(select_one::<(Option<Uuid>, ), _>(&self.queries.select_player_server, &self.session, (uuid, )).await?.map(|t| t.0).flatten())
@@ -145,7 +155,7 @@ impl Database {
 
     #[instrument(skip(self), level = "debug")]
     pub async fn select_player_info(&self, uuid: &Uuid) -> Result<Option<DbPlayerInfo>, DatabaseError> {
-        //#[query(select_player_info = "SELECT uuid, username, groups, locale, prefix, suffix, currency, premium_currency, proxy, server, blocked, inventory, properties, ban, discord_id FROM players WHERE uuid = ?;")]
+        //#[query(select_player_info = "SELECT uuid, username, groups, locale, prefix, suffix, currency, premium_currency, proxy, server, blocked, inventory, properties, ban, discord_id, mute FROM players WHERE uuid = ?;")]
         select_one(&self.queries.select_player_info, &self.session, (uuid, )).await
     }
 
@@ -171,13 +181,13 @@ impl Database {
 
     #[instrument(skip(self), level = "debug")]
     pub async fn select_player_info_by_name(&self, name: &str) -> Result<Option<DbPlayerInfo>, DatabaseError> {
-        //#[query(select_player_info_by_name = "SELECT uuid, username, groups, locale, prefix, suffix, currency, premium_currency, proxy, server, blocked, inventory, properties, ban, discord_id FROM players_by_username WHERE username = ?;")]
+        //#[query(select_player_info_by_name = "SELECT uuid, username, groups, locale, prefix, suffix, currency, premium_currency, proxy, server, blocked, inventory, properties, ban, discord_id, mute FROM players_by_username WHERE username = ?;")]
         select_one(&self.queries.select_player_info_by_name, &self.session, (name, )).await
     }
 
     #[instrument(skip(self), level = "debug")]
     pub async fn select_full_player_info(&self, uuid: &Uuid) -> Result<Option<DbFullPlayerInfo>, DatabaseError> {
-        //#[query(select_full_player_info = "SELECT uuid, ban, ban_reason, blocked, currency, premium_currency, friends, groups, inventory, locale, permissions, proxy, server, session, username, prefix, suffix, discord_id FROM players WHERE uuid = ?")]
+        //#[query(select_full_player_info = "SELECT uuid, ban, ban_reason, blocked, currency, premium_currency, friends, groups, inventory, locale, permissions, proxy, server, session, username, prefix, suffix, discord_id, mute FROM players WHERE uuid = ?")]
         select_one(&self.queries.select_full_player_info, &self.session, (uuid, )).await
     }
 
@@ -337,6 +347,12 @@ impl DbServerPlayerInfo {
         };
 
 
+        let mute = match self.mute {
+            None => None,
+            Some(mute_id) => db.select_mute(mute_id).await?
+        };
+
+
         Ok(ServerLoginPlayerInfo {
             session: self.session,
             proxy: self.proxy,
@@ -350,6 +366,7 @@ impl DbServerPlayerInfo {
             blocked: self.blocked.unwrap_or_default(),
             inventory: self.inventory.unwrap_or_default(),
             properties: self.properties.unwrap_or_default(),
+            mute: mute.map(|t| t.into()),
         })
     }
 }
@@ -364,6 +381,11 @@ impl DbPlayerInfo {
         let ban = match self.ban {
             None => None,
             Some(ban_id) => db.select_ban(ban_id).await?
+        };
+
+        let mute = match self.mute {
+            None => None,
+            Some(mute_id) => db.select_mute(mute_id).await?
         };
 
         Ok(PlayerInfo {
@@ -381,7 +403,8 @@ impl DbPlayerInfo {
             inventory: self.inventory.unwrap_or_default(),
             properties: self.properties.unwrap_or_default(),
             ban: ban.map(DbBan::into),
-            discord_id: self.discord_id
+            discord_id: self.discord_id,
+            mute: mute.map(|t| t.into())
         })
     }
 }

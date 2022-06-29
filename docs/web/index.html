@@ -962,6 +962,33 @@ ul.nav-tabs {
     }
   }
 };
+    defs["Mute"] = {
+  "required" : [ "id", "start" ],
+  "type" : "object",
+  "properties" : {
+    "id" : {
+      "type" : "string",
+      "format" : "uuid"
+    },
+    "start" : {
+      "type" : "string"
+    },
+    "end" : {
+      "type" : "string"
+    },
+    "issuer" : {
+      "type" : "string",
+      "format" : "uuid"
+    },
+    "reason" : {
+      "type" : "string"
+    },
+    "target" : {
+      "type" : "string",
+      "format" : "uuid"
+    }
+  }
+};
     defs["OnlinePlayerInfo"] = {
   "required" : [ "proxy", "session", "username", "uuid" ],
   "type" : "object",
@@ -1087,6 +1114,9 @@ ul.nav-tabs {
     },
     "discord_id" : {
       "type" : "string"
+    },
+    "mute" : {
+      "$ref" : "#/components/schemas/Mute"
     }
   }
 };
@@ -1102,6 +1132,26 @@ ul.nav-tabs {
       "type" : "string"
     },
     "admin_move" : {
+      "type" : "boolean"
+    }
+  }
+};
+    defs["PlayerMute"] = {
+  "title" : "PlayerMute",
+  "type" : "object",
+  "properties" : {
+    "duration" : {
+      "type" : "integer",
+      "description" : "Duration in seconds"
+    },
+    "reason" : {
+      "type" : "string"
+    },
+    "issuer" : {
+      "type" : "string",
+      "format" : "uuid"
+    },
+    "unban" : {
       "type" : "boolean"
     }
   }
@@ -1317,6 +1367,9 @@ ul.nav-tabs {
     },
     "discord_id" : {
       "type" : "string"
+    },
+    "mute" : {
+      "$ref" : "#/components/schemas/Mute"
     }
   }
 };
@@ -1348,6 +1401,9 @@ ul.nav-tabs {
                     </li>
                     <li data-group="Discord" data-name="apiDiscordLinkUuidGet" class="">
                       <a href="#api-Discord-apiDiscordLinkUuidGet">apiDiscordLinkUuidGet</a>
+                    </li>
+                    <li data-group="Discord" data-name="apiDiscordWebhookNamePost" class="">
+                      <a href="#api-Discord-apiDiscordWebhookNamePost">apiDiscordWebhookNamePost</a>
                     </li>
                   <li class="nav-header" data-group="Login"><a href="#api-Login">API Methods - Login</a></li>
                     <li data-group="Login" data-name="apiPlayersIpProxyPreloginGet" class="">
@@ -1392,6 +1448,9 @@ ul.nav-tabs {
                     </li>
                     <li data-group="Player" data-name="apiPlayersUuidMovePost" class="">
                       <a href="#api-Player-apiPlayersUuidMovePost">apiPlayersUuidMovePost</a>
+                    </li>
+                    <li data-group="Player" data-name="apiPlayersUuidMutePost" class="">
+                      <a href="#api-Player-apiPlayersUuidMutePost">apiPlayersUuidMutePost</a>
                     </li>
                     <li data-group="Player" data-name="apiPlayersUuidStatsPost" class="">
                       <a href="#api-Player-apiPlayersUuidStatsPost">apiPlayersUuidStatsPost</a>
@@ -2197,6 +2256,7 @@ $(document).ready(function() {
                           <div class="tab-pane active" id="examples-Discord-apiDiscordLinkUuidGet-0-curl">
                             <pre class="prettyprint"><code class="language-bsh">curl -X GET \
 -H "Authorization: [[apiKey]]" \
+ -H "Accept: application/json" \
  "http://localhost:8888/api/discord/link/{uuid}"
 </code></pre>
                           </div>
@@ -2224,7 +2284,8 @@ public class DiscordApiExample {
         UUID uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // UUID | 
 
         try {
-            apiInstance.apiDiscordLinkUuidGet(uuid);
+            'String' result = apiInstance.apiDiscordLinkUuidGet(uuid);
+            System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling DiscordApi#apiDiscordLinkUuidGet");
             e.printStackTrace();
@@ -2243,7 +2304,8 @@ public class DiscordApiExample {
         UUID uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // UUID | 
 
         try {
-            apiInstance.apiDiscordLinkUuidGet(uuid);
+            'String' result = apiInstance.apiDiscordLinkUuidGet(uuid);
+            System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling DiscordApi#apiDiscordLinkUuidGet");
             e.printStackTrace();
@@ -2269,7 +2331,10 @@ DiscordApi *apiInstance = [[DiscordApi alloc] init];
 UUID *uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; //  (default to null)
 
 [apiInstance apiDiscordLinkUuidGetWith:uuid
-              completionHandler: ^(NSError* error) {
+              completionHandler: ^('String' output, NSError* error) {
+    if (output) {
+        NSLog(@"%@", output);
+    }
     if (error) {
         NSLog(@"Error: %@", error);
     }
@@ -2295,7 +2360,7 @@ var callback = function(error, data, response) {
   if (error) {
     console.error(error);
   } else {
-    console.log('API called successfully.');
+    console.log('API called successfully. Returned data: ' + data);
   }
 };
 api.apiDiscordLinkUuidGet(uuid, callback);
@@ -2328,7 +2393,8 @@ namespace Example
             var uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d;  // UUID |  (default to null)
 
             try {
-                apiInstance.apiDiscordLinkUuidGet(uuid);
+                'String' result = apiInstance.apiDiscordLinkUuidGet(uuid);
+                Debug.WriteLine(result);
             } catch (Exception e) {
                 Debug.Print("Exception when calling DiscordApi.apiDiscordLinkUuidGet: " + e.Message );
             }
@@ -2352,7 +2418,8 @@ $api_instance = new OpenAPITools\Client\Api\DiscordApi();
 $uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // UUID | 
 
 try {
-    $api_instance->apiDiscordLinkUuidGet($uuid);
+    $result = $api_instance->apiDiscordLinkUuidGet($uuid);
+    print_r($result);
 } catch (Exception $e) {
     echo 'Exception when calling DiscordApi->apiDiscordLinkUuidGet: ', $e->getMessage(), PHP_EOL;
 }
@@ -2374,7 +2441,8 @@ my $api_instance = WWW::OPenAPIClient::DiscordApi->new();
 my $uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; # UUID | 
 
 eval {
-    $api_instance->apiDiscordLinkUuidGet(uuid => $uuid);
+    my $result = $api_instance->apiDiscordLinkUuidGet(uuid => $uuid);
+    print Dumper($result);
 };
 if ($@) {
     warn "Exception when calling DiscordApi->apiDiscordLinkUuidGet: $@\n";
@@ -2398,7 +2466,8 @@ api_instance = openapi_client.DiscordApi()
 uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d # UUID |  (default to null)
 
 try:
-    api_instance.api_discord_link_uuid_get(uuid)
+    api_response = api_instance.api_discord_link_uuid_get(uuid)
+    pprint(api_response)
 except ApiException as e:
     print("Exception when calling DiscordApi->apiDiscordLinkUuidGet: %s\n" % e)</code></pre>
                             </div>
@@ -2476,12 +2545,56 @@ pub fn main() {
 
 
                             <ul id="responses-detail-Discord-apiDiscordLinkUuidGet-200" class="nav nav-tabs nav-tabs-examples" >
+                                <li class="active">
+                                  <a data-toggle="tab" href="#responses-Discord-apiDiscordLinkUuidGet-200-schema">Schema</a>
+                                </li>
+
+
 
 
                             </ul>
 
 
                             <div class="tab-content" id="responses-Discord-apiDiscordLinkUuidGet-200-wrapper" style='margin-bottom: 10px;'>
+                                <div class="tab-pane active" id="responses-Discord-apiDiscordLinkUuidGet-200-schema">
+                                  <div id="responses-Discord-apiDiscordLinkUuidGet-schema-200" class="exampleStyle">
+                                    <script>
+                                      $(document).ready(function() {
+                                        var schemaWrapper = {
+  "description" : "OK",
+  "content" : {
+    "application/json" : {
+      "schema" : {
+        "type" : "string"
+      }
+    }
+  }
+};
+                                        var schema = findNode('schema',schemaWrapper).schema;
+                                        if (!schema) {
+                                          schema = schemaWrapper.schema;
+                                        }
+                                        if (schema.$ref != null) {
+                                          schema = defsParser.$refs.get(schema.$ref);
+                                        } else if (schema.items != null && schema.items.$ref != null) {
+                                            schema.items = defsParser.$refs.get(schema.items.$ref);
+                                        } else {
+                                          schemaWrapper.definitions = Object.assign({}, defs);
+                                          $RefParser.dereference(schemaWrapper).catch(function(err) {
+                                            console.log(err);
+                                          });
+                                        }
+
+                                        var view = new JSONSchemaView(schema, 3);
+                                        $('#responses-Discord-apiDiscordLinkUuidGet-200-schema-data').val(JSON.stringify(schema));
+                                        var result = $('#responses-Discord-apiDiscordLinkUuidGet-schema-200');
+                                        result.empty();
+                                        result.append(view.render());
+                                      });
+                                    </script>
+                                  </div>
+                                  <input id='responses-Discord-apiDiscordLinkUuidGet-200-schema-data' type='hidden' value=''></input>
+                                </div>
                             </div>
                             <h3 id="examples-Discord-apiDiscordLinkUuidGet-title-404"></h3>
                             <p id="examples-Discord-apiDiscordLinkUuidGet-description-404" class="marked"></p>
@@ -2504,6 +2617,408 @@ pub fn main() {
 
 
                             <div class="tab-content" id="responses-Discord-apiDiscordLinkUuidGet-404-wrapper" style='margin-bottom: 10px;'>
+                            </div>
+                        </article>
+                      </div>
+                      <hr>
+                    <div id="api-Discord-apiDiscordWebhookNamePost">
+                      <article id="api-Discord-apiDiscordWebhookNamePost-0" data-group="User" data-name="apiDiscordWebhookNamePost" data-version="0">
+                        <div class="pull-left">
+                          <h1>apiDiscordWebhookNamePost</h1>
+                          <p></p>
+                        </div>
+                        <div class="pull-right"></div>
+                        <div class="clearfix"></div>
+                        <p></p>
+                        <p class="marked"></p>
+                        <p></p>
+                        <br />
+                        <pre class="prettyprint language-html prettyprinted" data-type="post"><code><span class="pln">/api/discord/webhook/{name}</span></code></pre>
+                        <p>
+                          <h3>Usage and SDK Samples</h3>
+                        </p>
+                        <ul class="nav nav-tabs nav-tabs-examples">
+                          <li class="active"><a href="#examples-Discord-apiDiscordWebhookNamePost-0-curl">Curl</a></li>
+                          <li class=""><a href="#examples-Discord-apiDiscordWebhookNamePost-0-java">Java</a></li>
+                          <li class=""><a href="#examples-Discord-apiDiscordWebhookNamePost-0-android">Android</a></li>
+                          <!--<li class=""><a href="#examples-Discord-apiDiscordWebhookNamePost-0-groovy">Groovy</a></li>-->
+                          <li class=""><a href="#examples-Discord-apiDiscordWebhookNamePost-0-objc">Obj-C</a></li>
+                          <li class=""><a href="#examples-Discord-apiDiscordWebhookNamePost-0-javascript">JavaScript</a></li>
+                          <!--<li class=""><a href="#examples-Discord-apiDiscordWebhookNamePost-0-angular">Angular</a></li>-->
+                          <li class=""><a href="#examples-Discord-apiDiscordWebhookNamePost-0-csharp">C#</a></li>
+                          <li class=""><a href="#examples-Discord-apiDiscordWebhookNamePost-0-php">PHP</a></li>
+                          <li class=""><a href="#examples-Discord-apiDiscordWebhookNamePost-0-perl">Perl</a></li>
+                          <li class=""><a href="#examples-Discord-apiDiscordWebhookNamePost-0-python">Python</a></li>
+                          <li class=""><a href="#examples-Discord-apiDiscordWebhookNamePost-0-rust">Rust</a></li>
+                        </ul>
+
+                        <div class="tab-content">
+                          <div class="tab-pane active" id="examples-Discord-apiDiscordWebhookNamePost-0-curl">
+                            <pre class="prettyprint"><code class="language-bsh">curl -X POST \
+-H "Authorization: [[apiKey]]" \
+ -H "Content-Type: application/json" \
+ "http://localhost:8888/api/discord/webhook/{name}" \
+ -d ''
+</code></pre>
+                          </div>
+                          <div class="tab-pane" id="examples-Discord-apiDiscordWebhookNamePost-0-java">
+                            <pre class="prettyprint"><code class="language-java">import org.openapitools.client.*;
+import org.openapitools.client.auth.*;
+import org.openapitools.client.model.*;
+import org.openapitools.client.api.DiscordApi;
+
+import java.io.File;
+import java.util.*;
+
+public class DiscordApiExample {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        
+        // Configure API key authorization: auth
+        ApiKeyAuth auth = (ApiKeyAuth) defaultClient.getAuthentication("auth");
+        auth.setApiKey("YOUR API KEY");
+        // Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+        //auth.setApiKeyPrefix("Token");
+
+        // Create an instance of the API class
+        DiscordApi apiInstance = new DiscordApi();
+        String name = name_example; // String | 
+        String body = body_example; // String | 
+
+        try {
+            apiInstance.apiDiscordWebhookNamePost(name, body);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling DiscordApi#apiDiscordWebhookNamePost");
+            e.printStackTrace();
+        }
+    }
+}
+</code></pre>
+                          </div>
+
+                          <div class="tab-pane" id="examples-Discord-apiDiscordWebhookNamePost-0-android">
+                            <pre class="prettyprint"><code class="language-java">import org.openapitools.client.api.DiscordApi;
+
+public class DiscordApiExample {
+    public static void main(String[] args) {
+        DiscordApi apiInstance = new DiscordApi();
+        String name = name_example; // String | 
+        String body = body_example; // String | 
+
+        try {
+            apiInstance.apiDiscordWebhookNamePost(name, body);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling DiscordApi#apiDiscordWebhookNamePost");
+            e.printStackTrace();
+        }
+    }
+}</code></pre>
+                          </div>
+  <!--
+  <div class="tab-pane" id="examples-Discord-apiDiscordWebhookNamePost-0-groovy">
+  <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+  </div> -->
+                            <div class="tab-pane" id="examples-Discord-apiDiscordWebhookNamePost-0-objc">
+                              <pre class="prettyprint"><code class="language-cpp">Configuration *apiConfig = [Configuration sharedConfig];
+
+// Configure API key authorization: (authentication scheme: auth)
+[apiConfig setApiKey:@"YOUR_API_KEY" forApiKeyIdentifier:@"Authorization"];
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//[apiConfig setApiKeyPrefix:@"Bearer" forApiKeyIdentifier:@"Authorization"];
+
+
+// Create an instance of the API class
+DiscordApi *apiInstance = [[DiscordApi alloc] init];
+String *name = name_example; //  (default to null)
+String *body = body_example; // 
+
+[apiInstance apiDiscordWebhookNamePostWith:name
+    body:body
+              completionHandler: ^(NSError* error) {
+    if (error) {
+        NSLog(@"Error: %@", error);
+    }
+}];
+</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Discord-apiDiscordWebhookNamePost-0-javascript">
+                              <pre class="prettyprint"><code class="language-js">var SkynetApi = require('skynet_api');
+var defaultClient = SkynetApi.ApiClient.instance;
+
+// Configure API key authorization: auth
+var auth = defaultClient.authentications['auth'];
+auth.apiKey = "YOUR API KEY";
+// Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+//auth.apiKeyPrefix['Authorization'] = "Token";
+
+// Create an instance of the API class
+var api = new SkynetApi.DiscordApi()
+var name = name_example; // {String} 
+var body = body_example; // {String} 
+
+var callback = function(error, data, response) {
+  if (error) {
+    console.error(error);
+  } else {
+    console.log('API called successfully.');
+  }
+};
+api.apiDiscordWebhookNamePost(name, body, callback);
+</code></pre>
+                            </div>
+
+                            <!--<div class="tab-pane" id="examples-Discord-apiDiscordWebhookNamePost-0-angular">
+              <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+            </div>-->
+                            <div class="tab-pane" id="examples-Discord-apiDiscordWebhookNamePost-0-csharp">
+                              <pre class="prettyprint"><code class="language-cs">using System;
+using System.Diagnostics;
+using Org.OpenAPITools.Api;
+using Org.OpenAPITools.Client;
+using Org.OpenAPITools.Model;
+
+namespace Example
+{
+    public class apiDiscordWebhookNamePostExample
+    {
+        public void main()
+        {
+            // Configure API key authorization: auth
+            Configuration.Default.ApiKey.Add("Authorization", "YOUR_API_KEY");
+            // Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+            // Configuration.Default.ApiKeyPrefix.Add("Authorization", "Bearer");
+
+            // Create an instance of the API class
+            var apiInstance = new DiscordApi();
+            var name = name_example;  // String |  (default to null)
+            var body = body_example;  // String | 
+
+            try {
+                apiInstance.apiDiscordWebhookNamePost(name, body);
+            } catch (Exception e) {
+                Debug.Print("Exception when calling DiscordApi.apiDiscordWebhookNamePost: " + e.Message );
+            }
+        }
+    }
+}
+</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Discord-apiDiscordWebhookNamePost-0-php">
+                              <pre class="prettyprint"><code class="language-php"><&#63;php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+// Configure API key authorization: auth
+OpenAPITools\Client\Configuration::getDefaultConfiguration()->setApiKey('Authorization', 'YOUR_API_KEY');
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+// OpenAPITools\Client\Configuration::getDefaultConfiguration()->setApiKeyPrefix('Authorization', 'Bearer');
+
+// Create an instance of the API class
+$api_instance = new OpenAPITools\Client\Api\DiscordApi();
+$name = name_example; // String | 
+$body = body_example; // String | 
+
+try {
+    $api_instance->apiDiscordWebhookNamePost($name, $body);
+} catch (Exception $e) {
+    echo 'Exception when calling DiscordApi->apiDiscordWebhookNamePost: ', $e->getMessage(), PHP_EOL;
+}
+?></code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Discord-apiDiscordWebhookNamePost-0-perl">
+                              <pre class="prettyprint"><code class="language-perl">use Data::Dumper;
+use WWW::OPenAPIClient::Configuration;
+use WWW::OPenAPIClient::DiscordApi;
+
+# Configure API key authorization: auth
+$WWW::OPenAPIClient::Configuration::api_key->{'Authorization'} = 'YOUR_API_KEY';
+# uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+#$WWW::OPenAPIClient::Configuration::api_key_prefix->{'Authorization'} = "Bearer";
+
+# Create an instance of the API class
+my $api_instance = WWW::OPenAPIClient::DiscordApi->new();
+my $name = name_example; # String | 
+my $body = WWW::OPenAPIClient::Object::String->new(); # String | 
+
+eval {
+    $api_instance->apiDiscordWebhookNamePost(name => $name, body => $body);
+};
+if ($@) {
+    warn "Exception when calling DiscordApi->apiDiscordWebhookNamePost: $@\n";
+}</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Discord-apiDiscordWebhookNamePost-0-python">
+                              <pre class="prettyprint"><code class="language-python">from __future__ import print_statement
+import time
+import openapi_client
+from openapi_client.rest import ApiException
+from pprint import pprint
+
+# Configure API key authorization: auth
+openapi_client.configuration.api_key['Authorization'] = 'YOUR_API_KEY'
+# Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+# openapi_client.configuration.api_key_prefix['Authorization'] = 'Bearer'
+
+# Create an instance of the API class
+api_instance = openapi_client.DiscordApi()
+name = name_example # String |  (default to null)
+body = body_example # String | 
+
+try:
+    api_instance.api_discord_webhook_name_post(name, body)
+except ApiException as e:
+    print("Exception when calling DiscordApi->apiDiscordWebhookNamePost: %s\n" % e)</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Discord-apiDiscordWebhookNamePost-0-rust">
+                              <pre class="prettyprint"><code class="language-rust">extern crate DiscordApi;
+
+pub fn main() {
+    let name = name_example; // String
+    let body = body_example; // String
+
+    let mut context = DiscordApi::Context::default();
+    let result = client.apiDiscordWebhookNamePost(name, body, &context).wait();
+
+    println!("{:?}", result);
+}
+</code></pre>
+                            </div>
+                          </div>
+
+                          <h2>Scopes</h2>
+                          <table>
+                            
+                          </table>
+
+                          <h2>Parameters</h2>
+
+                            <div class="methodsubtabletitle">Path parameters</div>
+                            <table id="methodsubtable">
+                                <tr>
+                                  <th width="150px">Name</th>
+                                  <th>Description</th>
+                                </tr>
+                                  <tr><td style="width:150px;">name*</td>
+<td>
+
+
+    <div id="d2e199_apiDiscordWebhookNamePost_name">
+        <div class="json-schema-view">
+            <div class="primitive">
+                <span class="type">
+                    String
+                </span>
+
+            </div>
+                <div class="inner required">
+                    Required
+                </div>
+        </div>
+    </div>
+</td>
+</tr>
+
+                            </table>
+
+
+                            <div class="methodsubtabletitle">Body parameters</div>
+                            <table id="methodsubtable">
+                              <tr>
+                                <th width="150px">Name</th>
+                                <th>Description</th>
+                              </tr>
+                                <tr><td style="width:150px;">body <span style="color:red;">*</span></td>
+<td>
+<p class="marked"></p>
+<script>
+$(document).ready(function() {
+  var schemaWrapper = {
+  "content" : {
+    "application/json" : {
+      "schema" : {
+        "type" : "string",
+        "description" : "Message to send, or json of discord message"
+      }
+    }
+  },
+  "required" : true
+};
+
+  var schema = findNode('schema',schemaWrapper).schema;
+  if (!schema) {
+    schema = schemaWrapper.schema;
+  }
+  if (schema.$ref != null) {
+    schema = defsParser.$refs.get(schema.$ref);
+  } else {
+    schemaWrapper.definitions = Object.assign({}, defs);
+    $RefParser.dereference(schemaWrapper).catch(function(err) {
+      console.log(err);
+    });
+  }
+
+  var view = new JSONSchemaView(schema,2,{isBodyParam: true});
+  var result = $('#d2e199_apiDiscordWebhookNamePost_body');
+  result.empty();
+  result.append(view.render());
+});
+</script>
+<div id="d2e199_apiDiscordWebhookNamePost_body"></div>
+</td>
+</tr>
+
+                            </table>
+
+
+
+                          <h2>Responses</h2>
+                            <h3 id="examples-Discord-apiDiscordWebhookNamePost-title-200"></h3>
+                            <p id="examples-Discord-apiDiscordWebhookNamePost-description-200" class="marked"></p>
+                            <script>
+                              var responseDiscord200_description = `OK`;
+                              var responseDiscord200_description_break = responseDiscord200_description.indexOf('\n');
+                              if (responseDiscord200_description_break == -1) {
+                                $("#examples-Discord-apiDiscordWebhookNamePost-title-200").text("Status: 200 - " + responseDiscord200_description);
+                              } else {
+                                $("#examples-Discord-apiDiscordWebhookNamePost-title-200").text("Status: 200 - " + responseDiscord200_description.substring(0, responseDiscord200_description_break));
+                                $("#examples-Discord-apiDiscordWebhookNamePost-description-200").html(responseDiscord200_description.substring(responseDiscord200_description_break));
+                              }
+                            </script>
+
+
+                            <ul id="responses-detail-Discord-apiDiscordWebhookNamePost-200" class="nav nav-tabs nav-tabs-examples" >
+
+
+                            </ul>
+
+
+                            <div class="tab-content" id="responses-Discord-apiDiscordWebhookNamePost-200-wrapper" style='margin-bottom: 10px;'>
+                            </div>
+                            <h3 id="examples-Discord-apiDiscordWebhookNamePost-title-404"></h3>
+                            <p id="examples-Discord-apiDiscordWebhookNamePost-description-404" class="marked"></p>
+                            <script>
+                              var responseDiscord404_description = `Pending link does not exist`;
+                              var responseDiscord404_description_break = responseDiscord404_description.indexOf('\n');
+                              if (responseDiscord404_description_break == -1) {
+                                $("#examples-Discord-apiDiscordWebhookNamePost-title-404").text("Status: 404 - " + responseDiscord404_description);
+                              } else {
+                                $("#examples-Discord-apiDiscordWebhookNamePost-title-404").text("Status: 404 - " + responseDiscord404_description.substring(0, responseDiscord404_description_break));
+                                $("#examples-Discord-apiDiscordWebhookNamePost-description-404").html(responseDiscord404_description.substring(responseDiscord404_description_break));
+                              }
+                            </script>
+
+
+                            <ul id="responses-detail-Discord-apiDiscordWebhookNamePost-404" class="nav nav-tabs nav-tabs-examples" >
+
+
+                            </ul>
+
+
+                            <div class="tab-content" id="responses-Discord-apiDiscordWebhookNamePost-404-wrapper" style='margin-bottom: 10px;'>
                             </div>
                         </article>
                       </div>
@@ -5026,6 +5541,7 @@ $(document).ready(function() {
                           <div class="tab-pane active" id="examples-Player-apiDiscordLinkUuidGet-0-curl">
                             <pre class="prettyprint"><code class="language-bsh">curl -X GET \
 -H "Authorization: [[apiKey]]" \
+ -H "Accept: application/json" \
  "http://localhost:8888/api/discord/link/{uuid}"
 </code></pre>
                           </div>
@@ -5053,7 +5569,8 @@ public class PlayerApiExample {
         UUID uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // UUID | 
 
         try {
-            apiInstance.apiDiscordLinkUuidGet(uuid);
+            'String' result = apiInstance.apiDiscordLinkUuidGet(uuid);
+            System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling PlayerApi#apiDiscordLinkUuidGet");
             e.printStackTrace();
@@ -5072,7 +5589,8 @@ public class PlayerApiExample {
         UUID uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // UUID | 
 
         try {
-            apiInstance.apiDiscordLinkUuidGet(uuid);
+            'String' result = apiInstance.apiDiscordLinkUuidGet(uuid);
+            System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling PlayerApi#apiDiscordLinkUuidGet");
             e.printStackTrace();
@@ -5098,7 +5616,10 @@ PlayerApi *apiInstance = [[PlayerApi alloc] init];
 UUID *uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; //  (default to null)
 
 [apiInstance apiDiscordLinkUuidGetWith:uuid
-              completionHandler: ^(NSError* error) {
+              completionHandler: ^('String' output, NSError* error) {
+    if (output) {
+        NSLog(@"%@", output);
+    }
     if (error) {
         NSLog(@"Error: %@", error);
     }
@@ -5124,7 +5645,7 @@ var callback = function(error, data, response) {
   if (error) {
     console.error(error);
   } else {
-    console.log('API called successfully.');
+    console.log('API called successfully. Returned data: ' + data);
   }
 };
 api.apiDiscordLinkUuidGet(uuid, callback);
@@ -5157,7 +5678,8 @@ namespace Example
             var uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d;  // UUID |  (default to null)
 
             try {
-                apiInstance.apiDiscordLinkUuidGet(uuid);
+                'String' result = apiInstance.apiDiscordLinkUuidGet(uuid);
+                Debug.WriteLine(result);
             } catch (Exception e) {
                 Debug.Print("Exception when calling PlayerApi.apiDiscordLinkUuidGet: " + e.Message );
             }
@@ -5181,7 +5703,8 @@ $api_instance = new OpenAPITools\Client\Api\PlayerApi();
 $uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // UUID | 
 
 try {
-    $api_instance->apiDiscordLinkUuidGet($uuid);
+    $result = $api_instance->apiDiscordLinkUuidGet($uuid);
+    print_r($result);
 } catch (Exception $e) {
     echo 'Exception when calling PlayerApi->apiDiscordLinkUuidGet: ', $e->getMessage(), PHP_EOL;
 }
@@ -5203,7 +5726,8 @@ my $api_instance = WWW::OPenAPIClient::PlayerApi->new();
 my $uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; # UUID | 
 
 eval {
-    $api_instance->apiDiscordLinkUuidGet(uuid => $uuid);
+    my $result = $api_instance->apiDiscordLinkUuidGet(uuid => $uuid);
+    print Dumper($result);
 };
 if ($@) {
     warn "Exception when calling PlayerApi->apiDiscordLinkUuidGet: $@\n";
@@ -5227,7 +5751,8 @@ api_instance = openapi_client.PlayerApi()
 uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d # UUID |  (default to null)
 
 try:
-    api_instance.api_discord_link_uuid_get(uuid)
+    api_response = api_instance.api_discord_link_uuid_get(uuid)
+    pprint(api_response)
 except ApiException as e:
     print("Exception when calling PlayerApi->apiDiscordLinkUuidGet: %s\n" % e)</code></pre>
                             </div>
@@ -5305,12 +5830,56 @@ pub fn main() {
 
 
                             <ul id="responses-detail-Player-apiDiscordLinkUuidGet-200" class="nav nav-tabs nav-tabs-examples" >
+                                <li class="active">
+                                  <a data-toggle="tab" href="#responses-Player-apiDiscordLinkUuidGet-200-schema">Schema</a>
+                                </li>
+
+
 
 
                             </ul>
 
 
                             <div class="tab-content" id="responses-Player-apiDiscordLinkUuidGet-200-wrapper" style='margin-bottom: 10px;'>
+                                <div class="tab-pane active" id="responses-Player-apiDiscordLinkUuidGet-200-schema">
+                                  <div id="responses-Player-apiDiscordLinkUuidGet-schema-200" class="exampleStyle">
+                                    <script>
+                                      $(document).ready(function() {
+                                        var schemaWrapper = {
+  "description" : "OK",
+  "content" : {
+    "application/json" : {
+      "schema" : {
+        "type" : "string"
+      }
+    }
+  }
+};
+                                        var schema = findNode('schema',schemaWrapper).schema;
+                                        if (!schema) {
+                                          schema = schemaWrapper.schema;
+                                        }
+                                        if (schema.$ref != null) {
+                                          schema = defsParser.$refs.get(schema.$ref);
+                                        } else if (schema.items != null && schema.items.$ref != null) {
+                                            schema.items = defsParser.$refs.get(schema.items.$ref);
+                                        } else {
+                                          schemaWrapper.definitions = Object.assign({}, defs);
+                                          $RefParser.dereference(schemaWrapper).catch(function(err) {
+                                            console.log(err);
+                                          });
+                                        }
+
+                                        var view = new JSONSchemaView(schema, 3);
+                                        $('#responses-Player-apiDiscordLinkUuidGet-200-schema-data').val(JSON.stringify(schema));
+                                        var result = $('#responses-Player-apiDiscordLinkUuidGet-schema-200');
+                                        result.empty();
+                                        result.append(view.render());
+                                      });
+                                    </script>
+                                  </div>
+                                  <input id='responses-Player-apiDiscordLinkUuidGet-200-schema-data' type='hidden' value=''></input>
+                                </div>
                             </div>
                             <h3 id="examples-Player-apiDiscordLinkUuidGet-title-404"></h3>
                             <p id="examples-Player-apiDiscordLinkUuidGet-description-404" class="marked"></p>
@@ -7747,7 +8316,7 @@ public class PlayerApiExample {
         PlayerMove playerMove = ; // PlayerMove | 
 
         try {
-            'Boolean' result = apiInstance.apiPlayersUuidMovePost(uuid, playerMove);
+            'String' result = apiInstance.apiPlayersUuidMovePost(uuid, playerMove);
             System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling PlayerApi#apiPlayersUuidMovePost");
@@ -7768,7 +8337,7 @@ public class PlayerApiExample {
         PlayerMove playerMove = ; // PlayerMove | 
 
         try {
-            'Boolean' result = apiInstance.apiPlayersUuidMovePost(uuid, playerMove);
+            'String' result = apiInstance.apiPlayersUuidMovePost(uuid, playerMove);
             System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling PlayerApi#apiPlayersUuidMovePost");
@@ -7797,7 +8366,7 @@ PlayerMove *playerMove = ; //
 
 [apiInstance apiPlayersUuidMovePostWith:uuid
     playerMove:playerMove
-              completionHandler: ^('Boolean' output, NSError* error) {
+              completionHandler: ^('String' output, NSError* error) {
     if (output) {
         NSLog(@"%@", output);
     }
@@ -7861,7 +8430,7 @@ namespace Example
             var playerMove = new PlayerMove(); // PlayerMove | 
 
             try {
-                'Boolean' result = apiInstance.apiPlayersUuidMovePost(uuid, playerMove);
+                'String' result = apiInstance.apiPlayersUuidMovePost(uuid, playerMove);
                 Debug.WriteLine(result);
             } catch (Exception e) {
                 Debug.Print("Exception when calling PlayerApi.apiPlayersUuidMovePost: " + e.Message );
@@ -8083,7 +8652,8 @@ $(document).ready(function() {
   "content" : {
     "application/json" : {
       "schema" : {
-        "type" : "boolean"
+        "type" : "string",
+        "enum" : [ "Ok", "Failed", "PlayerOffline", "MissingServer", "MissingServerKind", "UnlinkedPlayer" ]
       }
     }
   }
@@ -8114,27 +8684,414 @@ $(document).ready(function() {
                                   <input id='responses-Player-apiPlayersUuidMovePost-200-schema-data' type='hidden' value=''></input>
                                 </div>
                             </div>
-                            <h3 id="examples-Player-apiPlayersUuidMovePost-title-404"></h3>
-                            <p id="examples-Player-apiPlayersUuidMovePost-description-404" class="marked"></p>
+                        </article>
+                      </div>
+                      <hr>
+                    <div id="api-Player-apiPlayersUuidMutePost">
+                      <article id="api-Player-apiPlayersUuidMutePost-0" data-group="User" data-name="apiPlayersUuidMutePost" data-version="0">
+                        <div class="pull-left">
+                          <h1>apiPlayersUuidMutePost</h1>
+                          <p></p>
+                        </div>
+                        <div class="pull-right"></div>
+                        <div class="clearfix"></div>
+                        <p></p>
+                        <p class="marked"></p>
+                        <p></p>
+                        <br />
+                        <pre class="prettyprint language-html prettyprinted" data-type="post"><code><span class="pln">/api/players/{uuid}/mute</span></code></pre>
+                        <p>
+                          <h3>Usage and SDK Samples</h3>
+                        </p>
+                        <ul class="nav nav-tabs nav-tabs-examples">
+                          <li class="active"><a href="#examples-Player-apiPlayersUuidMutePost-0-curl">Curl</a></li>
+                          <li class=""><a href="#examples-Player-apiPlayersUuidMutePost-0-java">Java</a></li>
+                          <li class=""><a href="#examples-Player-apiPlayersUuidMutePost-0-android">Android</a></li>
+                          <!--<li class=""><a href="#examples-Player-apiPlayersUuidMutePost-0-groovy">Groovy</a></li>-->
+                          <li class=""><a href="#examples-Player-apiPlayersUuidMutePost-0-objc">Obj-C</a></li>
+                          <li class=""><a href="#examples-Player-apiPlayersUuidMutePost-0-javascript">JavaScript</a></li>
+                          <!--<li class=""><a href="#examples-Player-apiPlayersUuidMutePost-0-angular">Angular</a></li>-->
+                          <li class=""><a href="#examples-Player-apiPlayersUuidMutePost-0-csharp">C#</a></li>
+                          <li class=""><a href="#examples-Player-apiPlayersUuidMutePost-0-php">PHP</a></li>
+                          <li class=""><a href="#examples-Player-apiPlayersUuidMutePost-0-perl">Perl</a></li>
+                          <li class=""><a href="#examples-Player-apiPlayersUuidMutePost-0-python">Python</a></li>
+                          <li class=""><a href="#examples-Player-apiPlayersUuidMutePost-0-rust">Rust</a></li>
+                        </ul>
+
+                        <div class="tab-content">
+                          <div class="tab-pane active" id="examples-Player-apiPlayersUuidMutePost-0-curl">
+                            <pre class="prettyprint"><code class="language-bsh">curl -X POST \
+-H "Authorization: [[apiKey]]" \
+ -H "Content-Type: application/json" \
+ "http://localhost:8888/api/players/{uuid}/mute" \
+ -d '{
+  &quot;duration&quot; : 0,
+  &quot;reason&quot; : &quot;reason&quot;,
+  &quot;unban&quot; : true,
+  &quot;issuer&quot; : &quot;046b6c7f-0b8a-43b9-b35d-6489e6daee91&quot;
+}'
+</code></pre>
+                          </div>
+                          <div class="tab-pane" id="examples-Player-apiPlayersUuidMutePost-0-java">
+                            <pre class="prettyprint"><code class="language-java">import org.openapitools.client.*;
+import org.openapitools.client.auth.*;
+import org.openapitools.client.model.*;
+import org.openapitools.client.api.PlayerApi;
+
+import java.io.File;
+import java.util.*;
+
+public class PlayerApiExample {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        
+        // Configure API key authorization: auth
+        ApiKeyAuth auth = (ApiKeyAuth) defaultClient.getAuthentication("auth");
+        auth.setApiKey("YOUR API KEY");
+        // Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+        //auth.setApiKeyPrefix("Token");
+
+        // Create an instance of the API class
+        PlayerApi apiInstance = new PlayerApi();
+        UUID uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // UUID | 
+        PlayerMute playerMute = ; // PlayerMute | 
+
+        try {
+            apiInstance.apiPlayersUuidMutePost(uuid, playerMute);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling PlayerApi#apiPlayersUuidMutePost");
+            e.printStackTrace();
+        }
+    }
+}
+</code></pre>
+                          </div>
+
+                          <div class="tab-pane" id="examples-Player-apiPlayersUuidMutePost-0-android">
+                            <pre class="prettyprint"><code class="language-java">import org.openapitools.client.api.PlayerApi;
+
+public class PlayerApiExample {
+    public static void main(String[] args) {
+        PlayerApi apiInstance = new PlayerApi();
+        UUID uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // UUID | 
+        PlayerMute playerMute = ; // PlayerMute | 
+
+        try {
+            apiInstance.apiPlayersUuidMutePost(uuid, playerMute);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling PlayerApi#apiPlayersUuidMutePost");
+            e.printStackTrace();
+        }
+    }
+}</code></pre>
+                          </div>
+  <!--
+  <div class="tab-pane" id="examples-Player-apiPlayersUuidMutePost-0-groovy">
+  <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+  </div> -->
+                            <div class="tab-pane" id="examples-Player-apiPlayersUuidMutePost-0-objc">
+                              <pre class="prettyprint"><code class="language-cpp">Configuration *apiConfig = [Configuration sharedConfig];
+
+// Configure API key authorization: (authentication scheme: auth)
+[apiConfig setApiKey:@"YOUR_API_KEY" forApiKeyIdentifier:@"Authorization"];
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//[apiConfig setApiKeyPrefix:@"Bearer" forApiKeyIdentifier:@"Authorization"];
+
+
+// Create an instance of the API class
+PlayerApi *apiInstance = [[PlayerApi alloc] init];
+UUID *uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; //  (default to null)
+PlayerMute *playerMute = ; // 
+
+[apiInstance apiPlayersUuidMutePostWith:uuid
+    playerMute:playerMute
+              completionHandler: ^(NSError* error) {
+    if (error) {
+        NSLog(@"Error: %@", error);
+    }
+}];
+</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Player-apiPlayersUuidMutePost-0-javascript">
+                              <pre class="prettyprint"><code class="language-js">var SkynetApi = require('skynet_api');
+var defaultClient = SkynetApi.ApiClient.instance;
+
+// Configure API key authorization: auth
+var auth = defaultClient.authentications['auth'];
+auth.apiKey = "YOUR API KEY";
+// Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+//auth.apiKeyPrefix['Authorization'] = "Token";
+
+// Create an instance of the API class
+var api = new SkynetApi.PlayerApi()
+var uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // {UUID} 
+var playerMute = ; // {PlayerMute} 
+
+var callback = function(error, data, response) {
+  if (error) {
+    console.error(error);
+  } else {
+    console.log('API called successfully.');
+  }
+};
+api.apiPlayersUuidMutePost(uuid, playerMute, callback);
+</code></pre>
+                            </div>
+
+                            <!--<div class="tab-pane" id="examples-Player-apiPlayersUuidMutePost-0-angular">
+              <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+            </div>-->
+                            <div class="tab-pane" id="examples-Player-apiPlayersUuidMutePost-0-csharp">
+                              <pre class="prettyprint"><code class="language-cs">using System;
+using System.Diagnostics;
+using Org.OpenAPITools.Api;
+using Org.OpenAPITools.Client;
+using Org.OpenAPITools.Model;
+
+namespace Example
+{
+    public class apiPlayersUuidMutePostExample
+    {
+        public void main()
+        {
+            // Configure API key authorization: auth
+            Configuration.Default.ApiKey.Add("Authorization", "YOUR_API_KEY");
+            // Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+            // Configuration.Default.ApiKeyPrefix.Add("Authorization", "Bearer");
+
+            // Create an instance of the API class
+            var apiInstance = new PlayerApi();
+            var uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d;  // UUID |  (default to null)
+            var playerMute = new PlayerMute(); // PlayerMute | 
+
+            try {
+                apiInstance.apiPlayersUuidMutePost(uuid, playerMute);
+            } catch (Exception e) {
+                Debug.Print("Exception when calling PlayerApi.apiPlayersUuidMutePost: " + e.Message );
+            }
+        }
+    }
+}
+</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Player-apiPlayersUuidMutePost-0-php">
+                              <pre class="prettyprint"><code class="language-php"><&#63;php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+// Configure API key authorization: auth
+OpenAPITools\Client\Configuration::getDefaultConfiguration()->setApiKey('Authorization', 'YOUR_API_KEY');
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+// OpenAPITools\Client\Configuration::getDefaultConfiguration()->setApiKeyPrefix('Authorization', 'Bearer');
+
+// Create an instance of the API class
+$api_instance = new OpenAPITools\Client\Api\PlayerApi();
+$uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // UUID | 
+$playerMute = ; // PlayerMute | 
+
+try {
+    $api_instance->apiPlayersUuidMutePost($uuid, $playerMute);
+} catch (Exception $e) {
+    echo 'Exception when calling PlayerApi->apiPlayersUuidMutePost: ', $e->getMessage(), PHP_EOL;
+}
+?></code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Player-apiPlayersUuidMutePost-0-perl">
+                              <pre class="prettyprint"><code class="language-perl">use Data::Dumper;
+use WWW::OPenAPIClient::Configuration;
+use WWW::OPenAPIClient::PlayerApi;
+
+# Configure API key authorization: auth
+$WWW::OPenAPIClient::Configuration::api_key->{'Authorization'} = 'YOUR_API_KEY';
+# uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+#$WWW::OPenAPIClient::Configuration::api_key_prefix->{'Authorization'} = "Bearer";
+
+# Create an instance of the API class
+my $api_instance = WWW::OPenAPIClient::PlayerApi->new();
+my $uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; # UUID | 
+my $playerMute = WWW::OPenAPIClient::Object::PlayerMute->new(); # PlayerMute | 
+
+eval {
+    $api_instance->apiPlayersUuidMutePost(uuid => $uuid, playerMute => $playerMute);
+};
+if ($@) {
+    warn "Exception when calling PlayerApi->apiPlayersUuidMutePost: $@\n";
+}</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Player-apiPlayersUuidMutePost-0-python">
+                              <pre class="prettyprint"><code class="language-python">from __future__ import print_statement
+import time
+import openapi_client
+from openapi_client.rest import ApiException
+from pprint import pprint
+
+# Configure API key authorization: auth
+openapi_client.configuration.api_key['Authorization'] = 'YOUR_API_KEY'
+# Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+# openapi_client.configuration.api_key_prefix['Authorization'] = 'Bearer'
+
+# Create an instance of the API class
+api_instance = openapi_client.PlayerApi()
+uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d # UUID |  (default to null)
+playerMute =  # PlayerMute | 
+
+try:
+    api_instance.api_players_uuid_mute_post(uuid, playerMute)
+except ApiException as e:
+    print("Exception when calling PlayerApi->apiPlayersUuidMutePost: %s\n" % e)</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Player-apiPlayersUuidMutePost-0-rust">
+                              <pre class="prettyprint"><code class="language-rust">extern crate PlayerApi;
+
+pub fn main() {
+    let uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // UUID
+    let playerMute = ; // PlayerMute
+
+    let mut context = PlayerApi::Context::default();
+    let result = client.apiPlayersUuidMutePost(uuid, playerMute, &context).wait();
+
+    println!("{:?}", result);
+}
+</code></pre>
+                            </div>
+                          </div>
+
+                          <h2>Scopes</h2>
+                          <table>
+                            
+                          </table>
+
+                          <h2>Parameters</h2>
+
+                            <div class="methodsubtabletitle">Path parameters</div>
+                            <table id="methodsubtable">
+                                <tr>
+                                  <th width="150px">Name</th>
+                                  <th>Description</th>
+                                </tr>
+                                  <tr><td style="width:150px;">uuid*</td>
+<td>
+
+
+    <div id="d2e199_apiPlayersUuidMutePost_uuid">
+        <div class="json-schema-view">
+            <div class="primitive">
+                <span class="type">
+                    UUID
+                </span>
+                    <span class="format">
+                        (uuid)
+                    </span>
+
+            </div>
+                <div class="inner required">
+                    Required
+                </div>
+        </div>
+    </div>
+</td>
+</tr>
+
+                            </table>
+
+
+                            <div class="methodsubtabletitle">Body parameters</div>
+                            <table id="methodsubtable">
+                              <tr>
+                                <th width="150px">Name</th>
+                                <th>Description</th>
+                              </tr>
+                                <tr><td style="width:150px;">playerMute <span style="color:red;">*</span></td>
+<td>
+<p class="marked"></p>
+<script>
+$(document).ready(function() {
+  var schemaWrapper = {
+  "content" : {
+    "application/json" : {
+      "schema" : {
+        "$ref" : "#/components/schemas/PlayerMute"
+      }
+    }
+  },
+  "required" : true
+};
+
+  var schema = findNode('schema',schemaWrapper).schema;
+  if (!schema) {
+    schema = schemaWrapper.schema;
+  }
+  if (schema.$ref != null) {
+    schema = defsParser.$refs.get(schema.$ref);
+  } else {
+    schemaWrapper.definitions = Object.assign({}, defs);
+    $RefParser.dereference(schemaWrapper).catch(function(err) {
+      console.log(err);
+    });
+  }
+
+  var view = new JSONSchemaView(schema,2,{isBodyParam: true});
+  var result = $('#d2e199_apiPlayersUuidMutePost_playerMute');
+  result.empty();
+  result.append(view.render());
+});
+</script>
+<div id="d2e199_apiPlayersUuidMutePost_playerMute"></div>
+</td>
+</tr>
+
+                            </table>
+
+
+
+                          <h2>Responses</h2>
+                            <h3 id="examples-Player-apiPlayersUuidMutePost-title-200"></h3>
+                            <p id="examples-Player-apiPlayersUuidMutePost-description-200" class="marked"></p>
                             <script>
-                              var responsePlayer404_description = `Player or server does not exist`;
-                              var responsePlayer404_description_break = responsePlayer404_description.indexOf('\n');
-                              if (responsePlayer404_description_break == -1) {
-                                $("#examples-Player-apiPlayersUuidMovePost-title-404").text("Status: 404 - " + responsePlayer404_description);
+                              var responsePlayer200_description = `OK`;
+                              var responsePlayer200_description_break = responsePlayer200_description.indexOf('\n');
+                              if (responsePlayer200_description_break == -1) {
+                                $("#examples-Player-apiPlayersUuidMutePost-title-200").text("Status: 200 - " + responsePlayer200_description);
                               } else {
-                                $("#examples-Player-apiPlayersUuidMovePost-title-404").text("Status: 404 - " + responsePlayer404_description.substring(0, responsePlayer404_description_break));
-                                $("#examples-Player-apiPlayersUuidMovePost-description-404").html(responsePlayer404_description.substring(responsePlayer404_description_break));
+                                $("#examples-Player-apiPlayersUuidMutePost-title-200").text("Status: 200 - " + responsePlayer200_description.substring(0, responsePlayer200_description_break));
+                                $("#examples-Player-apiPlayersUuidMutePost-description-200").html(responsePlayer200_description.substring(responsePlayer200_description_break));
                               }
                             </script>
 
 
-                            <ul id="responses-detail-Player-apiPlayersUuidMovePost-404" class="nav nav-tabs nav-tabs-examples" >
+                            <ul id="responses-detail-Player-apiPlayersUuidMutePost-200" class="nav nav-tabs nav-tabs-examples" >
 
 
                             </ul>
 
 
-                            <div class="tab-content" id="responses-Player-apiPlayersUuidMovePost-404-wrapper" style='margin-bottom: 10px;'>
+                            <div class="tab-content" id="responses-Player-apiPlayersUuidMutePost-200-wrapper" style='margin-bottom: 10px;'>
+                            </div>
+                            <h3 id="examples-Player-apiPlayersUuidMutePost-title-404"></h3>
+                            <p id="examples-Player-apiPlayersUuidMutePost-description-404" class="marked"></p>
+                            <script>
+                              var responsePlayer404_description = `Player does not exist`;
+                              var responsePlayer404_description_break = responsePlayer404_description.indexOf('\n');
+                              if (responsePlayer404_description_break == -1) {
+                                $("#examples-Player-apiPlayersUuidMutePost-title-404").text("Status: 404 - " + responsePlayer404_description);
+                              } else {
+                                $("#examples-Player-apiPlayersUuidMutePost-title-404").text("Status: 404 - " + responsePlayer404_description.substring(0, responsePlayer404_description_break));
+                                $("#examples-Player-apiPlayersUuidMutePost-description-404").html(responsePlayer404_description.substring(responsePlayer404_description_break));
+                              }
+                            </script>
+
+
+                            <ul id="responses-detail-Player-apiPlayersUuidMutePost-404" class="nav nav-tabs nav-tabs-examples" >
+
+
+                            </ul>
+
+
+                            <div class="tab-content" id="responses-Player-apiPlayersUuidMutePost-404-wrapper" style='margin-bottom: 10px;'>
                             </div>
                         </article>
                       </div>

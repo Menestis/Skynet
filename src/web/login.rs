@@ -14,6 +14,7 @@ use serde::{Serialize, Deserialize};
 use warp::hyper::StatusCode;
 use crate::database::players::DbProxyPlayerInfo;
 use crate::log::debug;
+use crate::structures::players::Mute;
 use crate::utils::message::{Color, Message, MessageBuilder};
 use crate::utils::proxycheck;
 
@@ -173,7 +174,21 @@ enum ProxyPreLoginResponse {
 #[instrument(skip(data))]
 async fn pre_login(ip: IpAddr, data: Arc<AppData>) -> Result<impl Reply, Rejection> {
 
-    //TODO if maintenance refuser connexion
+    let maintenance = data.db.select_setting("maintenance").await.map_err(ApiError::from)?.map(|t1| t1 == "true").unwrap_or(false);
+    if maintenance {
+        let ips: Vec<IpAddr> = data.db.select_setting("maintenance_override").await.map_err(ApiError::from)?.map(|t2| serde_json::from_str(&t2)).transpose().map_err(ApiError::from)?.unwrap_or_default();
+        return if ips.contains(&ip) {
+            Ok(reply::json(&ProxyPreLoginResponse::Allowed))
+        }else {
+            Ok(reply::json(&ProxyPreLoginResponse::Denied(MessageBuilder::new()
+                .component("SkyNet ".to_string()).with_color(Some(Color::DarkPurple)).close()
+                .component("> ".to_string()).with_color(Some(Color::DarkGray)).close()
+                .component("Connection impossible...".to_string()).with_color(Some(Color::Red)).close()
+                .line_break()
+                .component("Le serveur est en maintenance, merci de réesayer plus tard".to_string()).close()
+                .close())))
+        }
+    }
 
     let builder = MessageBuilder::new()
         .component("SkyNet ".to_string()).with_color(Some(Color::DarkPurple)).close()
@@ -235,6 +250,7 @@ pub struct ServerLoginPlayerInfo {
     pub blocked: Vec<Uuid>,
     pub inventory: HashMap<String, i32>,
     pub properties: HashMap<String, String>,
+    pub mute: Option<Mute>,
 }
 
 

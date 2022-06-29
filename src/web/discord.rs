@@ -3,24 +3,25 @@ use rand::{Rng, thread_rng};
 use serde::Serialize;
 use warp::{Filter, path, Rejection, Reply, reply};
 use crate::AppData;
-use tracing::{ instrument};
+use tracing::{instrument};
 use uuid::Uuid;
 use warp::body::json;
 use warp::http::StatusCode;
+use crate::structures::discord::Message;
 use crate::web::{with_auth, with_data};
 use crate::web::rejections::ApiError;
 
 pub fn filter(data: Arc<AppData>) -> impl Filter<Extract=impl Reply, Error=Rejection> + Clone {
-
     warp::get().and(path!("api"/"discord"/"link"/Uuid)).and(with_auth(data.clone(), "create-discord-link")).and(with_data(data.clone())).and_then(create_link)
         .or(warp::post().and(path!("api"/"discord"/"link"/String)).and(with_auth(data.clone(), "complete-discord-link")).and(json::<String>()).and(with_data(data.clone())).and_then(complete_link))
+        .or(warp::post().and(path!("api"/"discord"/"webhook"/String)).and(with_auth(data.clone(), "webhook")).and(json::<String>()).and(with_data(data.clone())).and_then(call_webhook))
 }
 
 
 #[instrument(skip(data))]
 async fn create_link(uuid: Uuid, data: Arc<AppData>) -> Result<impl Reply, Rejection> {
-    if let None = data.db.select_player_username(&uuid).await.map_err(ApiError::from)?{
-        return Ok(StatusCode::NOT_FOUND.into_response())
+    if let None = data.db.select_player_username(&uuid).await.map_err(ApiError::from)? {
+        return Ok(StatusCode::NOT_FOUND.into_response());
     }
     let x: i32 = thread_rng().gen_range(1000..9999);
     data.db.insert_discord_link(&x.to_string(), &uuid).await.map_err(ApiError::from)?;
@@ -42,6 +43,28 @@ async fn complete_link(link: String, discord: String, data: Arc<AppData>) -> Res
     };
     data.db.delete_discord_link(&link).await.map_err(ApiError::from)?;
     data.db.set_player_discord_id(&uuid, &discord).await.map_err(ApiError::from)?;
+
+    Ok(warp::reply().into_response())
+}
+
+
+#[instrument(skip(data))]
+async fn call_webhook(webhook: String, msg: String, data: Arc<AppData>) -> Result<impl Reply, Rejection> {
+    let webhook  = match data.db.select_webhook(&webhook).await.map_err(ApiError::from)? {
+        None => return Ok(StatusCode::NOT_FOUND.into_response()),
+        Some(url) => url
+    };
+
+    let message = match serde_json::from_str(&msg) {
+        Ok(msg) => msg,
+        Err(_err) => {
+            let mut message = Message::new();
+            message.content(&msg);
+            message
+        }
+    };
+
+    data.client.post(webhook).json(&message).send().await.map_err(ApiError::from)?;
 
     Ok(warp::reply().into_response())
 }

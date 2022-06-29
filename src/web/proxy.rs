@@ -26,8 +26,6 @@ struct ProxyPingResponse {
 async fn ping(data: Arc<AppData>) -> Result<impl Reply, Rejection> {
     let (slots, motd, online) = join!(data.db.select_setting("slots"), data.db.select_setting("motd"), data.db.select_setting("online_count"));
 
-    //TODO if maintenance montrer mode maintenance
-
     Ok(reply::json(&ProxyPingResponse {
         online: online.map_err(ApiError::from)?.map(|x| x.parse::<i32>()).transpose().map_err(ApiError::from)?.unwrap_or_default(),
         slots: slots.map_err(ApiError::from)?.map(|s| s.parse::<i32>()).transpose().map_err(ApiError::from)?.unwrap_or_default(),

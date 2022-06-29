@@ -23,8 +23,6 @@ pub mod stats;
 pub mod discord;
 
 //TODO broadcast message to all srvs
-//TODO webhooks management
-//TODO mutes
 
 pub async fn create_task(addr: SocketAddr, data: Arc<AppData>) -> impl Future<Output=()> {
     let mut r = data.shutdown_receiver.clone();

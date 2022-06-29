@@ -24,6 +24,7 @@ pub fn filter(data: Arc<AppData>) -> impl Filter<Extract=impl Reply, Error=Rejec
     warp::post().and(path!("api"/"players"/Uuid/"stats")).and(with_auth(data.clone(), "player-stats")).and(with_data(data.clone())).and(json::<PlayerStats>()).and_then(post_stats)
         .or(warp::post().and(path!("api"/"players"/Uuid/"move")).and(with_auth(data.clone(), "move-player")).and(with_data(data.clone()).and(json::<PlayerMove>())).and_then(move_player))
         .or(warp::post().and(path!("api"/"players"/Uuid/"ban")).and(with_auth(data.clone(), "ban-player")).and(with_data(data.clone())).and(json::<PlayerBan>()).and_then(ban_player))
+        .or(warp::post().and(path!("api"/"players"/Uuid/"mute")).and(with_auth(data.clone(), "mute-player")).and(with_data(data.clone())).and(json::<PlayerMute>()).and_then(mute_player))
         .or(warp::post().and(path!("api"/"players"/Uuid/"disconnect")).and(with_auth(data.clone(), "disconnect-player")).and(with_data(data.clone())).and_then(disconnect_player))
         .or(warp::post().and(path!("api"/"players"/Uuid/"transaction")).and(with_auth(data.clone(), "player-transaction")).and(with_data(data.clone())).and(json::<PlayerTransaction>()).and_then(player_transaction))
         .or(warp::get().and(path!("api"/"players")).and(with_auth(data.clone(), "get-online-players")).and(with_data(data.clone())).and_then(get_online))
@@ -66,14 +67,27 @@ enum PlayerMove {
     },
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+enum PlayerMoveResponse {
+    Ok,
+    Failed,
+    PlayerOffline,
+    MissingServer,
+    MissingServerKind,
+    UnlinkedPlayer
+}
+
 #[instrument(skip(data))]
 async fn move_player(uuid: Uuid, data: Arc<AppData>, request: PlayerMove) -> Result<impl Reply, Rejection> {
-    //TODO select_online_player_proxy_and_discord, to check if discord is present
-    //TODO return enum on why move failed / worked
-    let proxy = match data.db.select_online_player_proxy(&uuid).await.map_err(ApiError::from)? {
-        None => return Ok(reply::with_status("Player is not online or does not exists", StatusCode::NOT_FOUND).into_response()),
-        Some(proxy) => proxy
+    let (proxy, discord) = data.db.select_online_player_proxy_and_discord(&uuid).await.map_err(ApiError::from)?;
+    let proxy = match proxy {
+        None => return Ok(reply::json(&PlayerMoveResponse::PlayerOffline).into_response()),
+        Some(t) => t
     };
+
+    if discord.is_none(){
+        return Ok(reply::json(&PlayerMoveResponse::UnlinkedPlayer).into_response())
+    }
 
 
     debug!("Got player proxy {}", proxy);
@@ -81,7 +95,7 @@ async fn move_player(uuid: Uuid, data: Arc<AppData>, request: PlayerMove) -> Res
     match request {
         PlayerMove::Server { server, admin_move } => {
             if data.db.select_server_kind(&server).await.map_err(ApiError::from)?.is_none() {
-                return Ok(reply::with_status("Requested server does not exist", StatusCode::NOT_FOUND).into_response());
+                return Ok(reply::json(&PlayerMoveResponse::MissingServer).into_response());
             }
 
             if admin_move {
@@ -99,19 +113,19 @@ async fn move_player(uuid: Uuid, data: Arc<AppData>, request: PlayerMove) -> Res
         }
         PlayerMove::ServerKind { kind } => {
             let srv_kind = match data.db.select_server_kind_object(&kind).await.map_err(ApiError::from)? {
-                None => return Ok(reply::with_status("Requested server kind does not exist", StatusCode::NOT_FOUND).into_response()),
+                None => return Ok(reply::json(&PlayerMoveResponse::MissingServerKind).into_response()),
                 Some(kind) => kind
             };
             debug!("Got server kind {:?}", srv_kind);
 
             if !move_player_to_server_kind(data.clone(), &uuid, &srv_kind).await? {
-                return Ok(reply::json(&false).into_response());
+                return Ok(reply::json(&PlayerMoveResponse::Failed).into_response());
             }
         }
     }
 
 
-    Ok(reply::json(&true).into_response())
+    Ok(reply::json(&PlayerMoveResponse::Ok).into_response())
 }
 
 
@@ -242,6 +256,33 @@ async fn ban_player(uuid: Uuid, data: Arc<AppData>, request: PlayerBan) -> Resul
 
     if let Some(proxy) = data.db.select_online_player_proxy(&uuid).await.map_err(ApiError::from)? {
         data.msgr.send_event(&ServerEvent::DisconnectPlayer { proxy, player: uuid }).await.map_err(ApiError::from)?;
+    }
+
+
+    Ok(reply().into_response())
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct PlayerMute {
+    duration: Option<i32>,
+    reason: Option<String>,
+    issuer: Option<Uuid>,
+    #[serde(default)]
+    unmute: bool,
+}
+
+#[instrument(skip(data))]
+async fn mute_player(uuid: Uuid, data: Arc<AppData>, request: PlayerMute) -> Result<impl Reply, Rejection> {
+    if request.unmute {
+        data.db.remove_player_mute(&uuid).await.map_err(ApiError::from)?;
+        return Ok(reply().into_response());
+    } else {
+        let duration = request.duration.map(|t| Duration::seconds(t as i64));
+        data.db.insert_mute(&uuid, request.reason.as_ref(), request.issuer.as_ref(), duration.as_ref()).await.map_err(ApiError::from)?;
+    }
+
+    if let Some(server) = data.db.select_online_player_server(&uuid).await.map_err(ApiError::from)? {
+        data.msgr.send_event(&ServerEvent::InvalidatePlayer { server, uuid }).await.map_err(ApiError::from)?;
     }
 
 

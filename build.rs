@@ -8,6 +8,18 @@ pub fn main() {
     let out_dir = env::var("OUT_DIR").unwrap();
 
 
+    // let bindings = bindgen::Builder::default()
+    //     .header("libs/Murmur.hpp")
+    //     .generate()
+    //     .expect("Unable to generate bindings");
+    //
+    // let out_path = PathBuf::from("./src/mumble/bindings.rs");
+    // bindings
+    //     .write_to_file(out_path)
+    //     .expect("Couldn't write bindings!");
+    //
+
+
     let mut files = HashMap::new();
 
     explore_dir(fs::read_dir("./src").unwrap(), &mut files);

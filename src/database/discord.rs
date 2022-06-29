@@ -1,5 +1,6 @@
 use tracing::*;
 use uuid::Uuid;
+
 use crate::Database;
 use crate::database::{DatabaseError, execute, select_one};
 
@@ -20,6 +21,12 @@ impl Database {
     pub async fn select_discord_link(&self, code: &str) -> Result<Option<Uuid>, DatabaseError> {
         //#[query(select_discord_link = "SELECT uuid FROM discords_link WHERE code = ?;")]
         Ok(select_one::<(Uuid, ), _>(&self.queries.select_discord_link, &self.session, (code, )).await?.map(|t| t.0))
+    }
+
+    #[instrument(skip(self), level = "debug")]
+    pub async fn select_webhook(&self, name: &str) -> Result<Option<String>, DatabaseError> {
+        //#[query(select_webhook = "SELECT url FROM webhooks WHERE name = ?;")]
+        Ok(select_one::<(String, ), _>(&self.queries.select_webhook, &self.session, (name, )).await?.map(|t| t.0))
     }
 
 }

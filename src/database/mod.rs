@@ -20,7 +20,8 @@ pub mod servers;
 pub mod players;
 pub mod sessions;
 pub mod stats;
-pub mod discord_link;
+pub mod discord;
+pub mod mutes;
 
 pub struct Database {
     pub session: Session,

@@ -332,6 +332,8 @@ paths:
                       type: string
                   discord_id:
                     type: string
+                  mute:
+                    $ref: '#/components/schemas/Mute'
   /api/players/{uuid}/stats:
     post:
       security:
@@ -630,9 +632,8 @@ paths:
           content:
             application/json:
               schema:
-                type: boolean
-        404:
-          description: Player or server does not exist
+                type: string
+                enum: ["Ok", "Failed" , "PlayerOffline", "MissingServer" , "MissingServerKind", "UnlinkedPlayer"]
   /api/players/{uuid}/ban:
     post:
       security:
@@ -662,6 +663,41 @@ paths:
                   format: uuid
                 ip:
                   type: boolean
+                unban:
+                  type: boolean
+        required: true
+      responses:
+        200:
+          description: OK
+        404:
+          description: Player does not exist
+  /api/players/{uuid}/mute:
+    post:
+      security:
+        - auth: [ "mute-player" ]
+      tags: [ "Player" ]
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              title: PlayerMute
+              properties:
+                duration:
+                  description: Duration in seconds
+                  type: integer
+                reason:
+                  type: string
+                issuer:
+                  type: string
+                  format: uuid
                 unban:
                   type: boolean
         required: true
@@ -735,6 +771,10 @@ paths:
       responses:
         200:
           description: OK
+          content:
+            application/json:
+              schema:
+                type: string
         404:
           description: Player does not exist
   /api/discord/link/{code}:
@@ -754,6 +794,29 @@ paths:
             schema:
               type: string
               description: "DiscordID"
+        required: true
+      responses:
+        200:
+          description: OK
+        404:
+          description: Pending link does not exist
+  /api/discord/webhook/{name}:
+    post:
+      security:
+        - auth: [ "webhook" ]
+      tags: [ "Discord" ]
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
+              description: "Message to send, or json of discord message"
         required: true
       responses:
         200:
@@ -884,6 +947,8 @@ components:
             type: string
         discord_id:
           type: string
+        mute:
+          $ref: '#/components/schemas/Mute'
     Ban:
       type: object
       required: [ id, start ]
@@ -905,6 +970,27 @@ components:
         ip:
           type: string
           format: ipv4
+        target:
+          type: string
+          format: uuid
+    Mute:
+      type: object
+      required: [ id, start ]
+      properties:
+        id:
+          type: string
+          format: uuid
+        start:
+          type: string
+          #format: date-time
+        end:
+          type: string
+          #format: date-time
+        issuer:
+          type: string
+          format: uuid
+        reason:
+          type: string
         target:
           type: string
           format: uuid

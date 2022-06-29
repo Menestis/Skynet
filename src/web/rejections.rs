@@ -41,7 +41,9 @@ pub enum ApiError {
     #[error("Server error : {0}")]
     Serde(#[from] serde_json::Error),
     #[error(transparent)]
-    Scaling(#[from] ScalingError)
+    Scaling(#[from] ScalingError),
+    #[error(transparent)]
+    Reqwest(#[from] reqwest::Error)
 }
 
 

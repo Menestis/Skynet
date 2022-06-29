@@ -19,7 +19,8 @@ pub struct PlayerInfo {
     pub inventory: HashMap<String, i32>,
     pub properties: HashMap<String, String>,
     pub ban: Option<Ban>,
-    pub discord_id: Option<String>
+    pub discord_id: Option<String>,
+    pub mute: Option<Mute>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -30,5 +31,15 @@ pub struct Ban {
     pub issuer: Option<Uuid>,
     pub reason: Option<String>,
     pub ip: Option<IpAddr>,
+    pub target: Option<Uuid>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Mute {
+    pub id: Uuid,
+    pub start: String,
+    pub end: Option<String>,
+    pub issuer: Option<Uuid>,
+    pub reason: Option<String>,
     pub target: Option<Uuid>,
 }
