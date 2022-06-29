@@ -1,6 +1,7 @@
 use std::net::IpAddr;
 use std::ops::Add;
-use chrono::{Duration, Local, NaiveDateTime};
+use std::time::SystemTime;
+use chrono::{DateTime, Duration, Local, NaiveDateTime};
 use itertools::Itertools;
 use scylla::frame::value::Timestamp;
 use tracing::*;
@@ -30,7 +31,6 @@ impl Database {
         execute(&self.queries.insert_mute_log, &self.session, (uuid, end, target_uuid, target_ip, issuer, reason)).await?;
         Ok(uuid)
     }
-
 
 
     #[instrument(skip(self), level = "debug")]
@@ -70,7 +70,6 @@ impl Database {
     }
 
 
-
     #[instrument(skip(self), level = "debug")]
     pub async fn remove_player_mute(&self, uuid: &Uuid) -> Result<(), DatabaseError> {
         //#[query(remove_mute = "UPDATE players SET mute = null, mute_reason = null WHERE uuid = ?;")]
@@ -78,7 +77,7 @@ impl Database {
     }
 
     #[instrument(skip(self), level = "debug")]
-    pub async fn select_mute(&self, mute_id: Uuid) -> Result<Option<DbMute>, DatabaseError>{
+    pub async fn select_mute(&self, mute_id: Uuid) -> Result<Option<DbMute>, DatabaseError> {
         //#[query(select_mute_log = "SELECT id, start, end, issuer, reason, target FROM mutes_logs WHERE id = ?;")]
         select_one(&self.queries.select_mute_log, &self.session, (mute_id, )).await
     }
@@ -86,13 +85,15 @@ impl Database {
 
 impl Into<Mute> for DbMute {
     fn into(self) -> Mute {
-        Mute{
+        let time = DateTime::from(SystemTime::now());
+        Mute {
             id: self.id,
-            start: NaiveDateTime::from_timestamp(self.start.num_seconds(),0).to_string(),
-            end: self.end.map(|t| NaiveDateTime::from_timestamp(t.num_seconds(),0).to_string()),
+            start: NaiveDateTime::from_timestamp(self.start.num_seconds(), 0).to_string(),
+            end: self.end.map(|t| NaiveDateTime::from_timestamp(t.num_seconds(), 0).to_string()),
             issuer: self.issuer,
             reason: self.reason,
-            target: self.target
+            target: self.target,
+            remaining: self.end.map(|t| t.num_seconds() - time.timestamp()),
         }
     }
 }

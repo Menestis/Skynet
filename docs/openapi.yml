@@ -440,11 +440,58 @@ paths:
                 $ref: "#/components/schemas/Server"
         404:
           description: not found
+  /api/servers/broadcast:
+    post:
+      tags: [ "Server" ]
+      security:
+        - auth: [ "broadcast" ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              title: Broadcast
+              required: [ message ]
+              properties:
+                message:
+                  type: string
+                permission:
+                  type: string
+                server_kind:
+                  type: string
+      responses:
+        200:
+          description: OK
   /api/servers/{uuid}/setstate:
     post:
       tags: [ "Server" ]
       security:
         - auth: [ "set-server-state" ]
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+              enum: ["Idle", "Waiting", "Starting", "Playing"]
+      responses:
+        200:
+          description: OK
+        404:
+          description: not found
+  /api/servers/{uuid}/setdescription:
+    post:
+      tags: [ "Server" ]
+      security:
+        - auth: [ "set-server-description" ]
       parameters:
         - name: uuid
           in: path
@@ -883,6 +930,7 @@ components:
           type: string
         state:
           type: string
+          enum: ["Idle", "Waiting", "Starting", "Playing"]
         properties:
           type: object
           additionalProperties:
@@ -994,6 +1042,8 @@ components:
         target:
           type: string
           format: uuid
+        remaining:
+          type: integer
   responses:
     401:
       description: You are not authorized to acces this object

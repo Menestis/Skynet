@@ -4,7 +4,7 @@ VALUES ('proxy',
 
 INSERT INTO api_groups(name, permissions)
 VALUES ('server',
-        {'server-login', 'player-stats', 'move-player', 'create-server', 'delete-server', 'get-all-servers', 'player-transaction', 'player-inventory-transaction', 'set-server-state', 'get-onlinecount', 'get-stats', 'create-discord-link', 'webhook', 'mute-player'});
+        {'server-login', 'player-stats', 'move-player', 'create-server', 'delete-server', 'get-all-servers', 'player-transaction', 'player-inventory-transaction', 'set-server-state', 'get-onlinecount', 'get-stats', 'create-discord-link', 'webhook', 'mute-player', 'set-server-description', 'broadcast'});
 
 INSERT INTO api_groups(name, permissions)
 VALUES ('discord', {'complete-discord-link', 'get-onlinecount', 'get-stats'});

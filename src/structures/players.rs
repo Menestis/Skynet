@@ -42,4 +42,5 @@ pub struct Mute {
     pub issuer: Option<Uuid>,
     pub reason: Option<String>,
     pub target: Option<Uuid>,
+    pub remaining: Option<i64>
 }

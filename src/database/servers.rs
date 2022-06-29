@@ -128,4 +128,11 @@ impl Database {
         //#[query(update_server_state = "UPDATE servers SET state = ? WHERE id = ?;")]
         execute(&self.queries.update_server_state, &self.session, (state, id)).await
     }
+
+    #[instrument(skip(self), level = "debug")]
+    pub async fn update_server_description(&self, id: &Uuid, description: &str) -> Result<(), DatabaseError> {
+        //#[query(update_server_description = "UPDATE servers SET description = ? WHERE id = ?;")]
+        execute(&self.queries.update_server_description, &self.session, (description, id)).await
+    }
+
 }

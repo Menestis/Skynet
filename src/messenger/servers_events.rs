@@ -51,10 +51,19 @@ pub enum ServerEvent {
         proxy: Uuid,
         count: i32,
     },
+    PlayerCount {
+        count: i32,
+    },
     InvalidateLeaderBoard {
         name: String,
         label: String,
-        leaderboard: Vec<String>
+        leaderboard: Vec<String>,
+    },
+    Broadcast {
+        message: String,
+        permission: Option<String>,
+        #[serde(skip)]
+        server_kind: Option<String>,
     },
 }
 
@@ -70,8 +79,10 @@ impl ServerEvent {
             AdminMovePlayer { server, .. } => server.to_string(),
             DisconnectPlayer { proxy, .. } => proxy.to_string(),
             InvalidatePlayer { server, .. } => server.to_string(),
-            PlayerCountSync { .. } => "skynet.playercount".to_string(),
-            InvalidateLeaderBoard { name, .. } => format!("leaderboard.invalidate.{}", name)
+            PlayerCountSync { .. } => "skynet.playercountsync".to_string(),
+            InvalidateLeaderBoard { name, .. } => format!("leaderboard.invalidate.{}", name),
+            Broadcast { server_kind, .. } => if let Some(kind) = server_kind { format!("server.{}.broadcast", kind) } else { format!("proxy.broadcast") },
+            PlayerCount { .. } => "server.playercount".to_string()
         }
     }
     pub fn direct(&self) -> bool {

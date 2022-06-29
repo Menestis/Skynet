@@ -877,6 +877,22 @@ ul.nav-tabs {
     }
   }
 };
+    defs["Broadcast"] = {
+  "title" : "Broadcast",
+  "required" : [ "message" ],
+  "type" : "object",
+  "properties" : {
+    "message" : {
+      "type" : "string"
+    },
+    "permission" : {
+      "type" : "string"
+    },
+    "server_kind" : {
+      "type" : "string"
+    }
+  }
+};
     defs["CreateServer"] = {
   "title" : "CreateServer",
   "required" : [ "kind", "name" ],
@@ -986,6 +1002,9 @@ ul.nav-tabs {
     "target" : {
       "type" : "string",
       "format" : "uuid"
+    },
+    "remaining" : {
+      "type" : "integer"
     }
   }
 };
@@ -1299,7 +1318,8 @@ ul.nav-tabs {
       "type" : "string"
     },
     "state" : {
-      "type" : "string"
+      "type" : "string",
+      "enum" : [ "Idle", "Waiting", "Starting", "Playing" ]
     },
     "properties" : {
       "type" : "object",
@@ -1473,6 +1493,9 @@ ul.nav-tabs {
                     <li data-group="Server" data-name="apiOnlinecountGet" class="">
                       <a href="#api-Server-apiOnlinecountGet">apiOnlinecountGet</a>
                     </li>
+                    <li data-group="Server" data-name="apiServersBroadcastPost" class="">
+                      <a href="#api-Server-apiServersBroadcastPost">apiServersBroadcastPost</a>
+                    </li>
                     <li data-group="Server" data-name="apiServersGet" class="">
                       <a href="#api-Server-apiServersGet">apiServersGet</a>
                     </li>
@@ -1484,6 +1507,9 @@ ul.nav-tabs {
                     </li>
                     <li data-group="Server" data-name="apiServersPost" class="">
                       <a href="#api-Server-apiServersPost">apiServersPost</a>
+                    </li>
+                    <li data-group="Server" data-name="apiServersUuidSetdescriptionPost" class="">
+                      <a href="#api-Server-apiServersUuidSetdescriptionPost">apiServersUuidSetdescriptionPost</a>
                     </li>
                     <li data-group="Server" data-name="apiServersUuidSetstatePost" class="">
                       <a href="#api-Server-apiServersUuidSetstatePost">apiServersUuidSetstatePost</a>
@@ -11369,6 +11395,352 @@ pub fn main() {
                         </article>
                       </div>
                       <hr>
+                    <div id="api-Server-apiServersBroadcastPost">
+                      <article id="api-Server-apiServersBroadcastPost-0" data-group="User" data-name="apiServersBroadcastPost" data-version="0">
+                        <div class="pull-left">
+                          <h1>apiServersBroadcastPost</h1>
+                          <p></p>
+                        </div>
+                        <div class="pull-right"></div>
+                        <div class="clearfix"></div>
+                        <p></p>
+                        <p class="marked"></p>
+                        <p></p>
+                        <br />
+                        <pre class="prettyprint language-html prettyprinted" data-type="post"><code><span class="pln">/api/servers/broadcast</span></code></pre>
+                        <p>
+                          <h3>Usage and SDK Samples</h3>
+                        </p>
+                        <ul class="nav nav-tabs nav-tabs-examples">
+                          <li class="active"><a href="#examples-Server-apiServersBroadcastPost-0-curl">Curl</a></li>
+                          <li class=""><a href="#examples-Server-apiServersBroadcastPost-0-java">Java</a></li>
+                          <li class=""><a href="#examples-Server-apiServersBroadcastPost-0-android">Android</a></li>
+                          <!--<li class=""><a href="#examples-Server-apiServersBroadcastPost-0-groovy">Groovy</a></li>-->
+                          <li class=""><a href="#examples-Server-apiServersBroadcastPost-0-objc">Obj-C</a></li>
+                          <li class=""><a href="#examples-Server-apiServersBroadcastPost-0-javascript">JavaScript</a></li>
+                          <!--<li class=""><a href="#examples-Server-apiServersBroadcastPost-0-angular">Angular</a></li>-->
+                          <li class=""><a href="#examples-Server-apiServersBroadcastPost-0-csharp">C#</a></li>
+                          <li class=""><a href="#examples-Server-apiServersBroadcastPost-0-php">PHP</a></li>
+                          <li class=""><a href="#examples-Server-apiServersBroadcastPost-0-perl">Perl</a></li>
+                          <li class=""><a href="#examples-Server-apiServersBroadcastPost-0-python">Python</a></li>
+                          <li class=""><a href="#examples-Server-apiServersBroadcastPost-0-rust">Rust</a></li>
+                        </ul>
+
+                        <div class="tab-content">
+                          <div class="tab-pane active" id="examples-Server-apiServersBroadcastPost-0-curl">
+                            <pre class="prettyprint"><code class="language-bsh">curl -X POST \
+-H "Authorization: [[apiKey]]" \
+ -H "Content-Type: application/json" \
+ "http://localhost:8888/api/servers/broadcast" \
+ -d '{
+  &quot;server_kind&quot; : &quot;server_kind&quot;,
+  &quot;permission&quot; : &quot;permission&quot;,
+  &quot;message&quot; : &quot;message&quot;
+}'
+</code></pre>
+                          </div>
+                          <div class="tab-pane" id="examples-Server-apiServersBroadcastPost-0-java">
+                            <pre class="prettyprint"><code class="language-java">import org.openapitools.client.*;
+import org.openapitools.client.auth.*;
+import org.openapitools.client.model.*;
+import org.openapitools.client.api.ServerApi;
+
+import java.io.File;
+import java.util.*;
+
+public class ServerApiExample {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        
+        // Configure API key authorization: auth
+        ApiKeyAuth auth = (ApiKeyAuth) defaultClient.getAuthentication("auth");
+        auth.setApiKey("YOUR API KEY");
+        // Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+        //auth.setApiKeyPrefix("Token");
+
+        // Create an instance of the API class
+        ServerApi apiInstance = new ServerApi();
+        Broadcast broadcast = ; // Broadcast | 
+
+        try {
+            apiInstance.apiServersBroadcastPost(broadcast);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling ServerApi#apiServersBroadcastPost");
+            e.printStackTrace();
+        }
+    }
+}
+</code></pre>
+                          </div>
+
+                          <div class="tab-pane" id="examples-Server-apiServersBroadcastPost-0-android">
+                            <pre class="prettyprint"><code class="language-java">import org.openapitools.client.api.ServerApi;
+
+public class ServerApiExample {
+    public static void main(String[] args) {
+        ServerApi apiInstance = new ServerApi();
+        Broadcast broadcast = ; // Broadcast | 
+
+        try {
+            apiInstance.apiServersBroadcastPost(broadcast);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling ServerApi#apiServersBroadcastPost");
+            e.printStackTrace();
+        }
+    }
+}</code></pre>
+                          </div>
+  <!--
+  <div class="tab-pane" id="examples-Server-apiServersBroadcastPost-0-groovy">
+  <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+  </div> -->
+                            <div class="tab-pane" id="examples-Server-apiServersBroadcastPost-0-objc">
+                              <pre class="prettyprint"><code class="language-cpp">Configuration *apiConfig = [Configuration sharedConfig];
+
+// Configure API key authorization: (authentication scheme: auth)
+[apiConfig setApiKey:@"YOUR_API_KEY" forApiKeyIdentifier:@"Authorization"];
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//[apiConfig setApiKeyPrefix:@"Bearer" forApiKeyIdentifier:@"Authorization"];
+
+
+// Create an instance of the API class
+ServerApi *apiInstance = [[ServerApi alloc] init];
+Broadcast *broadcast = ; // 
+
+[apiInstance apiServersBroadcastPostWith:broadcast
+              completionHandler: ^(NSError* error) {
+    if (error) {
+        NSLog(@"Error: %@", error);
+    }
+}];
+</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Server-apiServersBroadcastPost-0-javascript">
+                              <pre class="prettyprint"><code class="language-js">var SkynetApi = require('skynet_api');
+var defaultClient = SkynetApi.ApiClient.instance;
+
+// Configure API key authorization: auth
+var auth = defaultClient.authentications['auth'];
+auth.apiKey = "YOUR API KEY";
+// Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+//auth.apiKeyPrefix['Authorization'] = "Token";
+
+// Create an instance of the API class
+var api = new SkynetApi.ServerApi()
+var broadcast = ; // {Broadcast} 
+
+var callback = function(error, data, response) {
+  if (error) {
+    console.error(error);
+  } else {
+    console.log('API called successfully.');
+  }
+};
+api.apiServersBroadcastPost(broadcast, callback);
+</code></pre>
+                            </div>
+
+                            <!--<div class="tab-pane" id="examples-Server-apiServersBroadcastPost-0-angular">
+              <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+            </div>-->
+                            <div class="tab-pane" id="examples-Server-apiServersBroadcastPost-0-csharp">
+                              <pre class="prettyprint"><code class="language-cs">using System;
+using System.Diagnostics;
+using Org.OpenAPITools.Api;
+using Org.OpenAPITools.Client;
+using Org.OpenAPITools.Model;
+
+namespace Example
+{
+    public class apiServersBroadcastPostExample
+    {
+        public void main()
+        {
+            // Configure API key authorization: auth
+            Configuration.Default.ApiKey.Add("Authorization", "YOUR_API_KEY");
+            // Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+            // Configuration.Default.ApiKeyPrefix.Add("Authorization", "Bearer");
+
+            // Create an instance of the API class
+            var apiInstance = new ServerApi();
+            var broadcast = new Broadcast(); // Broadcast | 
+
+            try {
+                apiInstance.apiServersBroadcastPost(broadcast);
+            } catch (Exception e) {
+                Debug.Print("Exception when calling ServerApi.apiServersBroadcastPost: " + e.Message );
+            }
+        }
+    }
+}
+</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Server-apiServersBroadcastPost-0-php">
+                              <pre class="prettyprint"><code class="language-php"><&#63;php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+// Configure API key authorization: auth
+OpenAPITools\Client\Configuration::getDefaultConfiguration()->setApiKey('Authorization', 'YOUR_API_KEY');
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+// OpenAPITools\Client\Configuration::getDefaultConfiguration()->setApiKeyPrefix('Authorization', 'Bearer');
+
+// Create an instance of the API class
+$api_instance = new OpenAPITools\Client\Api\ServerApi();
+$broadcast = ; // Broadcast | 
+
+try {
+    $api_instance->apiServersBroadcastPost($broadcast);
+} catch (Exception $e) {
+    echo 'Exception when calling ServerApi->apiServersBroadcastPost: ', $e->getMessage(), PHP_EOL;
+}
+?></code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Server-apiServersBroadcastPost-0-perl">
+                              <pre class="prettyprint"><code class="language-perl">use Data::Dumper;
+use WWW::OPenAPIClient::Configuration;
+use WWW::OPenAPIClient::ServerApi;
+
+# Configure API key authorization: auth
+$WWW::OPenAPIClient::Configuration::api_key->{'Authorization'} = 'YOUR_API_KEY';
+# uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+#$WWW::OPenAPIClient::Configuration::api_key_prefix->{'Authorization'} = "Bearer";
+
+# Create an instance of the API class
+my $api_instance = WWW::OPenAPIClient::ServerApi->new();
+my $broadcast = WWW::OPenAPIClient::Object::Broadcast->new(); # Broadcast | 
+
+eval {
+    $api_instance->apiServersBroadcastPost(broadcast => $broadcast);
+};
+if ($@) {
+    warn "Exception when calling ServerApi->apiServersBroadcastPost: $@\n";
+}</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Server-apiServersBroadcastPost-0-python">
+                              <pre class="prettyprint"><code class="language-python">from __future__ import print_statement
+import time
+import openapi_client
+from openapi_client.rest import ApiException
+from pprint import pprint
+
+# Configure API key authorization: auth
+openapi_client.configuration.api_key['Authorization'] = 'YOUR_API_KEY'
+# Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+# openapi_client.configuration.api_key_prefix['Authorization'] = 'Bearer'
+
+# Create an instance of the API class
+api_instance = openapi_client.ServerApi()
+broadcast =  # Broadcast | 
+
+try:
+    api_instance.api_servers_broadcast_post(broadcast)
+except ApiException as e:
+    print("Exception when calling ServerApi->apiServersBroadcastPost: %s\n" % e)</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Server-apiServersBroadcastPost-0-rust">
+                              <pre class="prettyprint"><code class="language-rust">extern crate ServerApi;
+
+pub fn main() {
+    let broadcast = ; // Broadcast
+
+    let mut context = ServerApi::Context::default();
+    let result = client.apiServersBroadcastPost(broadcast, &context).wait();
+
+    println!("{:?}", result);
+}
+</code></pre>
+                            </div>
+                          </div>
+
+                          <h2>Scopes</h2>
+                          <table>
+                            
+                          </table>
+
+                          <h2>Parameters</h2>
+
+
+
+                            <div class="methodsubtabletitle">Body parameters</div>
+                            <table id="methodsubtable">
+                              <tr>
+                                <th width="150px">Name</th>
+                                <th>Description</th>
+                              </tr>
+                                <tr><td style="width:150px;">broadcast <span style="color:red;">*</span></td>
+<td>
+<p class="marked"></p>
+<script>
+$(document).ready(function() {
+  var schemaWrapper = {
+  "content" : {
+    "application/json" : {
+      "schema" : {
+        "$ref" : "#/components/schemas/Broadcast"
+      }
+    }
+  },
+  "required" : true
+};
+
+  var schema = findNode('schema',schemaWrapper).schema;
+  if (!schema) {
+    schema = schemaWrapper.schema;
+  }
+  if (schema.$ref != null) {
+    schema = defsParser.$refs.get(schema.$ref);
+  } else {
+    schemaWrapper.definitions = Object.assign({}, defs);
+    $RefParser.dereference(schemaWrapper).catch(function(err) {
+      console.log(err);
+    });
+  }
+
+  var view = new JSONSchemaView(schema,2,{isBodyParam: true});
+  var result = $('#d2e199_apiServersBroadcastPost_broadcast');
+  result.empty();
+  result.append(view.render());
+});
+</script>
+<div id="d2e199_apiServersBroadcastPost_broadcast"></div>
+</td>
+</tr>
+
+                            </table>
+
+
+
+                          <h2>Responses</h2>
+                            <h3 id="examples-Server-apiServersBroadcastPost-title-200"></h3>
+                            <p id="examples-Server-apiServersBroadcastPost-description-200" class="marked"></p>
+                            <script>
+                              var responseServer200_description = `OK`;
+                              var responseServer200_description_break = responseServer200_description.indexOf('\n');
+                              if (responseServer200_description_break == -1) {
+                                $("#examples-Server-apiServersBroadcastPost-title-200").text("Status: 200 - " + responseServer200_description);
+                              } else {
+                                $("#examples-Server-apiServersBroadcastPost-title-200").text("Status: 200 - " + responseServer200_description.substring(0, responseServer200_description_break));
+                                $("#examples-Server-apiServersBroadcastPost-description-200").html(responseServer200_description.substring(responseServer200_description_break));
+                              }
+                            </script>
+
+
+                            <ul id="responses-detail-Server-apiServersBroadcastPost-200" class="nav nav-tabs nav-tabs-examples" >
+
+
+                            </ul>
+
+
+                            <div class="tab-content" id="responses-Server-apiServersBroadcastPost-200-wrapper" style='margin-bottom: 10px;'>
+                            </div>
+                        </article>
+                      </div>
+                      <hr>
                     <div id="api-Server-apiServersGet">
                       <article id="api-Server-apiServersGet-0" data-group="User" data-name="apiServersGet" data-version="0">
                         <div class="pull-left">
@@ -12875,6 +13247,410 @@ $(document).ready(function() {
                         </article>
                       </div>
                       <hr>
+                    <div id="api-Server-apiServersUuidSetdescriptionPost">
+                      <article id="api-Server-apiServersUuidSetdescriptionPost-0" data-group="User" data-name="apiServersUuidSetdescriptionPost" data-version="0">
+                        <div class="pull-left">
+                          <h1>apiServersUuidSetdescriptionPost</h1>
+                          <p></p>
+                        </div>
+                        <div class="pull-right"></div>
+                        <div class="clearfix"></div>
+                        <p></p>
+                        <p class="marked"></p>
+                        <p></p>
+                        <br />
+                        <pre class="prettyprint language-html prettyprinted" data-type="post"><code><span class="pln">/api/servers/{uuid}/setdescription</span></code></pre>
+                        <p>
+                          <h3>Usage and SDK Samples</h3>
+                        </p>
+                        <ul class="nav nav-tabs nav-tabs-examples">
+                          <li class="active"><a href="#examples-Server-apiServersUuidSetdescriptionPost-0-curl">Curl</a></li>
+                          <li class=""><a href="#examples-Server-apiServersUuidSetdescriptionPost-0-java">Java</a></li>
+                          <li class=""><a href="#examples-Server-apiServersUuidSetdescriptionPost-0-android">Android</a></li>
+                          <!--<li class=""><a href="#examples-Server-apiServersUuidSetdescriptionPost-0-groovy">Groovy</a></li>-->
+                          <li class=""><a href="#examples-Server-apiServersUuidSetdescriptionPost-0-objc">Obj-C</a></li>
+                          <li class=""><a href="#examples-Server-apiServersUuidSetdescriptionPost-0-javascript">JavaScript</a></li>
+                          <!--<li class=""><a href="#examples-Server-apiServersUuidSetdescriptionPost-0-angular">Angular</a></li>-->
+                          <li class=""><a href="#examples-Server-apiServersUuidSetdescriptionPost-0-csharp">C#</a></li>
+                          <li class=""><a href="#examples-Server-apiServersUuidSetdescriptionPost-0-php">PHP</a></li>
+                          <li class=""><a href="#examples-Server-apiServersUuidSetdescriptionPost-0-perl">Perl</a></li>
+                          <li class=""><a href="#examples-Server-apiServersUuidSetdescriptionPost-0-python">Python</a></li>
+                          <li class=""><a href="#examples-Server-apiServersUuidSetdescriptionPost-0-rust">Rust</a></li>
+                        </ul>
+
+                        <div class="tab-content">
+                          <div class="tab-pane active" id="examples-Server-apiServersUuidSetdescriptionPost-0-curl">
+                            <pre class="prettyprint"><code class="language-bsh">curl -X POST \
+-H "Authorization: [[apiKey]]" \
+ -H "Content-Type: application/json" \
+ "http://localhost:8888/api/servers/{uuid}/setdescription" \
+ -d ''
+</code></pre>
+                          </div>
+                          <div class="tab-pane" id="examples-Server-apiServersUuidSetdescriptionPost-0-java">
+                            <pre class="prettyprint"><code class="language-java">import org.openapitools.client.*;
+import org.openapitools.client.auth.*;
+import org.openapitools.client.model.*;
+import org.openapitools.client.api.ServerApi;
+
+import java.io.File;
+import java.util.*;
+
+public class ServerApiExample {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        
+        // Configure API key authorization: auth
+        ApiKeyAuth auth = (ApiKeyAuth) defaultClient.getAuthentication("auth");
+        auth.setApiKey("YOUR API KEY");
+        // Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+        //auth.setApiKeyPrefix("Token");
+
+        // Create an instance of the API class
+        ServerApi apiInstance = new ServerApi();
+        UUID uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // UUID | 
+        String body = body_example; // String | 
+
+        try {
+            apiInstance.apiServersUuidSetdescriptionPost(uuid, body);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling ServerApi#apiServersUuidSetdescriptionPost");
+            e.printStackTrace();
+        }
+    }
+}
+</code></pre>
+                          </div>
+
+                          <div class="tab-pane" id="examples-Server-apiServersUuidSetdescriptionPost-0-android">
+                            <pre class="prettyprint"><code class="language-java">import org.openapitools.client.api.ServerApi;
+
+public class ServerApiExample {
+    public static void main(String[] args) {
+        ServerApi apiInstance = new ServerApi();
+        UUID uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // UUID | 
+        String body = body_example; // String | 
+
+        try {
+            apiInstance.apiServersUuidSetdescriptionPost(uuid, body);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling ServerApi#apiServersUuidSetdescriptionPost");
+            e.printStackTrace();
+        }
+    }
+}</code></pre>
+                          </div>
+  <!--
+  <div class="tab-pane" id="examples-Server-apiServersUuidSetdescriptionPost-0-groovy">
+  <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+  </div> -->
+                            <div class="tab-pane" id="examples-Server-apiServersUuidSetdescriptionPost-0-objc">
+                              <pre class="prettyprint"><code class="language-cpp">Configuration *apiConfig = [Configuration sharedConfig];
+
+// Configure API key authorization: (authentication scheme: auth)
+[apiConfig setApiKey:@"YOUR_API_KEY" forApiKeyIdentifier:@"Authorization"];
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//[apiConfig setApiKeyPrefix:@"Bearer" forApiKeyIdentifier:@"Authorization"];
+
+
+// Create an instance of the API class
+ServerApi *apiInstance = [[ServerApi alloc] init];
+UUID *uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; //  (default to null)
+String *body = body_example; // 
+
+[apiInstance apiServersUuidSetdescriptionPostWith:uuid
+    body:body
+              completionHandler: ^(NSError* error) {
+    if (error) {
+        NSLog(@"Error: %@", error);
+    }
+}];
+</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Server-apiServersUuidSetdescriptionPost-0-javascript">
+                              <pre class="prettyprint"><code class="language-js">var SkynetApi = require('skynet_api');
+var defaultClient = SkynetApi.ApiClient.instance;
+
+// Configure API key authorization: auth
+var auth = defaultClient.authentications['auth'];
+auth.apiKey = "YOUR API KEY";
+// Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+//auth.apiKeyPrefix['Authorization'] = "Token";
+
+// Create an instance of the API class
+var api = new SkynetApi.ServerApi()
+var uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // {UUID} 
+var body = body_example; // {String} 
+
+var callback = function(error, data, response) {
+  if (error) {
+    console.error(error);
+  } else {
+    console.log('API called successfully.');
+  }
+};
+api.apiServersUuidSetdescriptionPost(uuid, body, callback);
+</code></pre>
+                            </div>
+
+                            <!--<div class="tab-pane" id="examples-Server-apiServersUuidSetdescriptionPost-0-angular">
+              <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+            </div>-->
+                            <div class="tab-pane" id="examples-Server-apiServersUuidSetdescriptionPost-0-csharp">
+                              <pre class="prettyprint"><code class="language-cs">using System;
+using System.Diagnostics;
+using Org.OpenAPITools.Api;
+using Org.OpenAPITools.Client;
+using Org.OpenAPITools.Model;
+
+namespace Example
+{
+    public class apiServersUuidSetdescriptionPostExample
+    {
+        public void main()
+        {
+            // Configure API key authorization: auth
+            Configuration.Default.ApiKey.Add("Authorization", "YOUR_API_KEY");
+            // Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+            // Configuration.Default.ApiKeyPrefix.Add("Authorization", "Bearer");
+
+            // Create an instance of the API class
+            var apiInstance = new ServerApi();
+            var uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d;  // UUID |  (default to null)
+            var body = body_example;  // String | 
+
+            try {
+                apiInstance.apiServersUuidSetdescriptionPost(uuid, body);
+            } catch (Exception e) {
+                Debug.Print("Exception when calling ServerApi.apiServersUuidSetdescriptionPost: " + e.Message );
+            }
+        }
+    }
+}
+</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Server-apiServersUuidSetdescriptionPost-0-php">
+                              <pre class="prettyprint"><code class="language-php"><&#63;php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+// Configure API key authorization: auth
+OpenAPITools\Client\Configuration::getDefaultConfiguration()->setApiKey('Authorization', 'YOUR_API_KEY');
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+// OpenAPITools\Client\Configuration::getDefaultConfiguration()->setApiKeyPrefix('Authorization', 'Bearer');
+
+// Create an instance of the API class
+$api_instance = new OpenAPITools\Client\Api\ServerApi();
+$uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // UUID | 
+$body = body_example; // String | 
+
+try {
+    $api_instance->apiServersUuidSetdescriptionPost($uuid, $body);
+} catch (Exception $e) {
+    echo 'Exception when calling ServerApi->apiServersUuidSetdescriptionPost: ', $e->getMessage(), PHP_EOL;
+}
+?></code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Server-apiServersUuidSetdescriptionPost-0-perl">
+                              <pre class="prettyprint"><code class="language-perl">use Data::Dumper;
+use WWW::OPenAPIClient::Configuration;
+use WWW::OPenAPIClient::ServerApi;
+
+# Configure API key authorization: auth
+$WWW::OPenAPIClient::Configuration::api_key->{'Authorization'} = 'YOUR_API_KEY';
+# uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+#$WWW::OPenAPIClient::Configuration::api_key_prefix->{'Authorization'} = "Bearer";
+
+# Create an instance of the API class
+my $api_instance = WWW::OPenAPIClient::ServerApi->new();
+my $uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; # UUID | 
+my $body = WWW::OPenAPIClient::Object::String->new(); # String | 
+
+eval {
+    $api_instance->apiServersUuidSetdescriptionPost(uuid => $uuid, body => $body);
+};
+if ($@) {
+    warn "Exception when calling ServerApi->apiServersUuidSetdescriptionPost: $@\n";
+}</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Server-apiServersUuidSetdescriptionPost-0-python">
+                              <pre class="prettyprint"><code class="language-python">from __future__ import print_statement
+import time
+import openapi_client
+from openapi_client.rest import ApiException
+from pprint import pprint
+
+# Configure API key authorization: auth
+openapi_client.configuration.api_key['Authorization'] = 'YOUR_API_KEY'
+# Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+# openapi_client.configuration.api_key_prefix['Authorization'] = 'Bearer'
+
+# Create an instance of the API class
+api_instance = openapi_client.ServerApi()
+uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d # UUID |  (default to null)
+body = body_example # String | 
+
+try:
+    api_instance.api_servers_uuid_setdescription_post(uuid, body)
+except ApiException as e:
+    print("Exception when calling ServerApi->apiServersUuidSetdescriptionPost: %s\n" % e)</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Server-apiServersUuidSetdescriptionPost-0-rust">
+                              <pre class="prettyprint"><code class="language-rust">extern crate ServerApi;
+
+pub fn main() {
+    let uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // UUID
+    let body = body_example; // String
+
+    let mut context = ServerApi::Context::default();
+    let result = client.apiServersUuidSetdescriptionPost(uuid, body, &context).wait();
+
+    println!("{:?}", result);
+}
+</code></pre>
+                            </div>
+                          </div>
+
+                          <h2>Scopes</h2>
+                          <table>
+                            
+                          </table>
+
+                          <h2>Parameters</h2>
+
+                            <div class="methodsubtabletitle">Path parameters</div>
+                            <table id="methodsubtable">
+                                <tr>
+                                  <th width="150px">Name</th>
+                                  <th>Description</th>
+                                </tr>
+                                  <tr><td style="width:150px;">uuid*</td>
+<td>
+
+
+    <div id="d2e199_apiServersUuidSetdescriptionPost_uuid">
+        <div class="json-schema-view">
+            <div class="primitive">
+                <span class="type">
+                    UUID
+                </span>
+                    <span class="format">
+                        (uuid)
+                    </span>
+
+            </div>
+                <div class="inner required">
+                    Required
+                </div>
+        </div>
+    </div>
+</td>
+</tr>
+
+                            </table>
+
+
+                            <div class="methodsubtabletitle">Body parameters</div>
+                            <table id="methodsubtable">
+                              <tr>
+                                <th width="150px">Name</th>
+                                <th>Description</th>
+                              </tr>
+                                <tr><td style="width:150px;">body <span style="color:red;">*</span></td>
+<td>
+<p class="marked"></p>
+<script>
+$(document).ready(function() {
+  var schemaWrapper = {
+  "content" : {
+    "application/json" : {
+      "schema" : {
+        "type" : "string"
+      }
+    }
+  },
+  "required" : true
+};
+
+  var schema = findNode('schema',schemaWrapper).schema;
+  if (!schema) {
+    schema = schemaWrapper.schema;
+  }
+  if (schema.$ref != null) {
+    schema = defsParser.$refs.get(schema.$ref);
+  } else {
+    schemaWrapper.definitions = Object.assign({}, defs);
+    $RefParser.dereference(schemaWrapper).catch(function(err) {
+      console.log(err);
+    });
+  }
+
+  var view = new JSONSchemaView(schema,2,{isBodyParam: true});
+  var result = $('#d2e199_apiServersUuidSetdescriptionPost_body');
+  result.empty();
+  result.append(view.render());
+});
+</script>
+<div id="d2e199_apiServersUuidSetdescriptionPost_body"></div>
+</td>
+</tr>
+
+                            </table>
+
+
+
+                          <h2>Responses</h2>
+                            <h3 id="examples-Server-apiServersUuidSetdescriptionPost-title-200"></h3>
+                            <p id="examples-Server-apiServersUuidSetdescriptionPost-description-200" class="marked"></p>
+                            <script>
+                              var responseServer200_description = `OK`;
+                              var responseServer200_description_break = responseServer200_description.indexOf('\n');
+                              if (responseServer200_description_break == -1) {
+                                $("#examples-Server-apiServersUuidSetdescriptionPost-title-200").text("Status: 200 - " + responseServer200_description);
+                              } else {
+                                $("#examples-Server-apiServersUuidSetdescriptionPost-title-200").text("Status: 200 - " + responseServer200_description.substring(0, responseServer200_description_break));
+                                $("#examples-Server-apiServersUuidSetdescriptionPost-description-200").html(responseServer200_description.substring(responseServer200_description_break));
+                              }
+                            </script>
+
+
+                            <ul id="responses-detail-Server-apiServersUuidSetdescriptionPost-200" class="nav nav-tabs nav-tabs-examples" >
+
+
+                            </ul>
+
+
+                            <div class="tab-content" id="responses-Server-apiServersUuidSetdescriptionPost-200-wrapper" style='margin-bottom: 10px;'>
+                            </div>
+                            <h3 id="examples-Server-apiServersUuidSetdescriptionPost-title-404"></h3>
+                            <p id="examples-Server-apiServersUuidSetdescriptionPost-description-404" class="marked"></p>
+                            <script>
+                              var responseServer404_description = `not found`;
+                              var responseServer404_description_break = responseServer404_description.indexOf('\n');
+                              if (responseServer404_description_break == -1) {
+                                $("#examples-Server-apiServersUuidSetdescriptionPost-title-404").text("Status: 404 - " + responseServer404_description);
+                              } else {
+                                $("#examples-Server-apiServersUuidSetdescriptionPost-title-404").text("Status: 404 - " + responseServer404_description.substring(0, responseServer404_description_break));
+                                $("#examples-Server-apiServersUuidSetdescriptionPost-description-404").html(responseServer404_description.substring(responseServer404_description_break));
+                              }
+                            </script>
+
+
+                            <ul id="responses-detail-Server-apiServersUuidSetdescriptionPost-404" class="nav nav-tabs nav-tabs-examples" >
+
+
+                            </ul>
+
+
+                            <div class="tab-content" id="responses-Server-apiServersUuidSetdescriptionPost-404-wrapper" style='margin-bottom: 10px;'>
+                            </div>
+                        </article>
+                      </div>
+                      <hr>
                     <div id="api-Server-apiServersUuidSetstatePost">
                       <article id="api-Server-apiServersUuidSetstatePost-0" data-group="User" data-name="apiServersUuidSetstatePost" data-version="0">
                         <div class="pull-left">
@@ -13197,7 +13973,8 @@ $(document).ready(function() {
   "content" : {
     "application/json" : {
       "schema" : {
-        "type" : "string"
+        "type" : "string",
+        "enum" : [ "Idle", "Waiting", "Starting", "Playing" ]
       }
     }
   },

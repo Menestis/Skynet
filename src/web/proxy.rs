@@ -6,6 +6,7 @@ use crate::web::{with_auth, with_data};
 use serde::{Serialize, Deserialize};
 use uuid::Uuid;
 use warp::body::json;
+use crate::messenger::online_count::process_online_count;
 use crate::messenger::servers_events::ServerEvent;
 use crate::web::rejections::ApiError;
 
@@ -36,19 +37,13 @@ async fn ping(data: Arc<AppData>) -> Result<impl Reply, Rejection> {
 #[instrument(skip(data))]
 async fn update_playercount(proxy: Uuid, count: i32, data: Arc<AppData>) -> Result<impl Reply, Rejection> {
 
-    //if !data.k8s.is_leader() {
-    if let Err(e) = data.msgr.send_event(&ServerEvent::PlayerCountSync { proxy, count}).await {
-        error!("{}", e);
+    if !data.k8s.is_leader() {
+        if let Err(e) = data.msgr.send_event(&ServerEvent::PlayerCountSync { proxy, count }).await {
+            error!("{}", e);
+        }
+    } else {
+        process_online_count(data, proxy, count).await;
     }
-    // } else {
-    //     data.player_count.write().await.insert(request.proxy, request.online_count);
-    //
-    //     let online: i32 = data.player_count.read().await.values().sum();
-    //
-    //     if let Err(e) = data.db.insert_setting("online_count", &online.to_string()).await {
-    //         error!("{}", e);
-    //     }
-    // }
 
 
     Ok(reply())

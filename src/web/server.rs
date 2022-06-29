@@ -10,6 +10,7 @@ use uuid::Uuid;
 use warp::body::json;
 use crate::kubernetes::autoscale;
 use crate::kubernetes::servers::generate_server_name;
+use crate::messenger::servers_events::ServerEvent;
 use crate::web::rejections::ApiError;
 
 pub fn filter(data: Arc<AppData>) -> impl Filter<Extract=impl Reply, Error=Rejection> + Clone {
@@ -18,6 +19,8 @@ pub fn filter(data: Arc<AppData>) -> impl Filter<Extract=impl Reply, Error=Rejec
         .or(warp::get().and(path!("api"/"servers")).and(with_auth(data.clone(), "get-all-servers")).and(with_data(data.clone())).and_then(get_all_servers))
         .or(warp::get().and(path!("api"/"onlinecount")).and(with_auth(data.clone(), "get-onlinecount")).and(with_data(data.clone())).and_then(get_onlinecount))
         .or(warp::post().and(path!("api"/"servers"/Uuid/"setstate")).and(with_auth(data.clone(), "set-server-state")).and(json::<String>()).and(with_data(data.clone())).and_then(set_server_state))
+        .or(warp::post().and(path!("api"/"servers"/"broadcast")).and(with_auth(data.clone(), "broadcast")).and(json::<Broadcast>()).and(with_data(data.clone())).and_then(broadcast))
+        .or(warp::post().and(path!("api"/"servers"/Uuid/"setdescription")).and(with_auth(data.clone(), "set-server-description")).and(json::<String>()).and(with_data(data.clone())).and_then(set_server_description))
 }
 
 
@@ -98,6 +101,33 @@ async fn set_server_state(uuid: Uuid, state: String, data: Arc<AppData>) -> Resu
     } else if state == "Waiting" {
         autoscale::process_waiting(data.clone(), uuid).await.map_err(ApiError::from)?;
     }
+    Ok(reply::reply().into_response())
+}
+
+#[instrument(skip(data))]
+async fn set_server_description(uuid: Uuid, state: String, data: Arc<AppData>) -> Result<impl Reply, Rejection> {
+    data.db.update_server_description(&uuid, &state).await.map_err(ApiError::from)?;
+
+    Ok(reply::reply().into_response())
+}
+
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct Broadcast {
+    message: String,
+    permission: Option<String>,
+    server_kind: Option<String>,
+}
+
+#[instrument(skip(data))]
+async fn broadcast(broadcast: Broadcast, data: Arc<AppData>) -> Result<impl Reply, Rejection> {
+
+    data.msgr.send_event(&ServerEvent::Broadcast {
+        message: broadcast.message,
+        permission: broadcast.permission,
+        server_kind: broadcast.server_kind
+    }).await.map_err(ApiError::from)?;
+
     Ok(reply::reply().into_response())
 }
 
