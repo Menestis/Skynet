@@ -23,7 +23,7 @@ struct ProxyPingResponse {
     motd: String,
 }
 
-#[instrument(skip(data))]
+//#[instrument(skip(data), level = "debug")]
 async fn ping(data: Arc<AppData>) -> Result<impl Reply, Rejection> {
     let (slots, motd, online) = join!(data.db.select_setting("slots"), data.db.select_setting("motd"), data.db.select_setting("online_count"));
 

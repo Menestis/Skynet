@@ -77,7 +77,7 @@ enum PlayerMoveResponse {
     UnlinkedPlayer
 }
 
-#[instrument(skip(data))]
+#[instrument(skip(data), level = "info")]
 async fn move_player(uuid: Uuid, data: Arc<AppData>, request: PlayerMove) -> Result<impl Reply, Rejection> {
     let (proxy, discord) = data.db.select_online_player_proxy_and_discord(&uuid).await.map_err(ApiError::from)?;
     let proxy = match proxy {

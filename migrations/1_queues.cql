@@ -10,13 +10,6 @@ WHERE uuid IS NOT NULL
   AND waiting_move_to IS NOT NULL
 PRIMARY KEY (waiting_move_to, uuid);
 
-CREATE MATERIALIZED VIEW players_by_server AS
-SELECT *
-FROM players
-WHERE uuid IS NOT NULL
-  AND server IS NOT NULL
-PRIMARY KEY (server, uuid);
-
 
 CREATE MATERIALIZED VIEW servers_by_kinds AS
 SELECT *

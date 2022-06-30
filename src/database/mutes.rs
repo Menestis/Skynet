@@ -45,12 +45,12 @@ impl Database {
         let mute = self.insert_mute_log(duration, Some(uuid), None, issuer, reason).await?;
         match duration {
             None => {
-                //#[query(insert_mute = "UPDATE players SET mute = ?, mute_reason = ? WHERE uuid = ?;")]
-                execute(&self.queries.insert_mute, &self.session, (mute, reason, uuid)).await?;
+                //#[query(insert_mute = "UPDATE players SET mute = ? WHERE uuid = ?;")]
+                execute(&self.queries.insert_mute, &self.session, (mute, uuid)).await?;
             }
             Some(duration) => {
-                //#[query(insert_mute_ttl = "UPDATE players USING TTL ? SET mute = ?, mute_reason = ? WHERE uuid = ?;")]
-                execute(&self.queries.insert_mute_ttl, &self.session, (duration.num_seconds() as i32, mute, reason, uuid)).await?;
+                //#[query(insert_mute_ttl = "UPDATE players USING TTL ? SET mute = ? WHERE uuid = ?;")]
+                execute(&self.queries.insert_mute_ttl, &self.session, (duration.num_seconds() as i32, mute, uuid)).await?;
             }
         }
         Ok(mute)
@@ -72,7 +72,7 @@ impl Database {
 
     #[instrument(skip(self), level = "debug")]
     pub async fn remove_player_mute(&self, uuid: &Uuid) -> Result<(), DatabaseError> {
-        //#[query(remove_mute = "UPDATE players SET mute = null, mute_reason = null WHERE uuid = ?;")]
+        //#[query(remove_mute = "UPDATE players SET mute = null WHERE uuid = ?;")]
         execute(&self.queries.remove_mute, &self.session, (uuid, )).await
     }
 
@@ -85,7 +85,7 @@ impl Database {
 
 impl Into<Mute> for DbMute {
     fn into(self) -> Mute {
-        let time = DateTime::from(SystemTime::now());
+        let time: DateTime<Local> = DateTime::from(SystemTime::now());
         Mute {
             id: self.id,
             start: NaiveDateTime::from_timestamp(self.start.num_seconds(), 0).to_string(),

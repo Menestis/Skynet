@@ -43,7 +43,7 @@ pub async fn init(id: &Uuid, database: Arc<Database>, messenger: Arc<Messenger>,
     let info = client.apiserver_version().await?;
     Span::current().record("version", &format!("{}.{}", info.major, info.minor).as_str());
 
-    let namespace = var("KUBERNETES_NAMESPACE").unwrap_or("skynet".to_string());
+    let namespace = var("KUBERNETES_NAMESPACE").unwrap_or("minecraft".to_string());
 
     let leadership = LeaseLock::new(
         client.clone(),

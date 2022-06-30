@@ -48,7 +48,7 @@ fn with_auth(data: Arc<AppData>, permission: &'static str) -> impl Filter<Extrac
     warp::header::<String>("Authorization").and(with_data(data.clone())).map(|uuid, data| (uuid, permission.to_string(), data)).untuple_one().and_then(check_authorization).untuple_one()
 }
 
-#[instrument(level = "debug", skip(data))]
+//#[instrument(level = "debug", skip(data))]
 async fn check_authorization(key: String, permission: String, data: Arc<AppData>) -> Result<(), Rejection> {
     if key.starts_with("Server ") {
         let key = Uuid::parse_str(key.trim_start_matches("Server ")).map_err(ApiError::from)?;

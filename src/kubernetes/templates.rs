@@ -29,7 +29,16 @@ impl Kubernetes {
                     {
                         "name": "minecraft",
                         "image": image,
-
+                        "resources": {
+                            "requests": {
+                                "memory": "2Gi",
+                                "cpu": "200m"
+                            },
+                            "limits": {
+                                "memory": "5Gi",
+                                "cpu": 2
+                            }
+                        },
                         "env": [
                             {
                               "name":"SKYNET_URL",
