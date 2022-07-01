@@ -367,6 +367,7 @@ impl DbServerPlayerInfo {
             inventory: self.inventory.unwrap_or_default(),
             properties: self.properties.unwrap_or_default(),
             mute: mute.map(|t| t.into()),
+            discord_id: self.discord_id
         })
     }
 }

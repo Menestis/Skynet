@@ -251,6 +251,7 @@ pub struct ServerLoginPlayerInfo {
     pub inventory: HashMap<String, i32>,
     pub properties: HashMap<String, String>,
     pub mute: Option<Mute>,
+    pub discord_id: Option<String>
 }
 
 
