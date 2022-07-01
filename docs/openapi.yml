@@ -951,7 +951,7 @@ components:
           type: string
         state:
           type: string
-          enum: ["Idle", "Waiting", "Starting", "Playing"]
+          enum: ["Idle", "Waiting", "Starting", "Started", "Playing"]
         properties:
           type: object
           additionalProperties:

@@ -149,7 +149,7 @@ impl Database {
 
     #[instrument(skip(self), level = "debug")]
     pub async fn select_server_player_info(&self, uuid: &Uuid) -> Result<Option<DbServerPlayerInfo>, DatabaseError> {
-        //#[query(select_server_player_info = "SELECT prefix, suffix, proxy, session, discord_id, locale, groups, permissions, currency, premium_currency, blocked, inventory, properties FROM players WHERE uuid = ?;")]
+        //#[query(select_server_player_info = "SELECT prefix, suffix, proxy, session, discord_id, locale, groups, permissions, currency, premium_currency, blocked, inventory, properties, mute FROM players WHERE uuid = ?;")]
         select_one(&self.queries.select_server_player_info, &self.session, (uuid, )).await
     }
 

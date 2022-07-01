@@ -61,6 +61,7 @@ pub async fn reconcile(pod: Arc<Pod>, ctx: Context<(Api<Pod>, Arc<Database>, Arc
             label: pod.name(),
             state: "Starting".to_string(),
             properties: Some(properties.clone()),
+            online: 0
         }).await?;
 
         if kind != "proxy" {
