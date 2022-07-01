@@ -932,7 +932,7 @@ components:
               type: boolean
     Server:
       type: object
-      required: [ id, description, ip, kind, label, state ]
+      required: [ id, description, ip, kind, label, state, online ]
       properties:
         id:
           type: string
@@ -956,6 +956,8 @@ components:
           type: object
           additionalProperties:
             type: string
+        online:
+          type: integer
     OnlinePlayerInfo:
       type: object
       required: [ uuid, username, session, proxy ]

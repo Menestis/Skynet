@@ -17,6 +17,7 @@ pub struct Server {
     pub label: String,
     pub properties: Option<HashMap<String, String>>,
     pub state: String,
+    pub online: i32
 }
 
 #[derive(Debug, FromRow)]
@@ -30,19 +31,19 @@ pub struct ServerKind {
 impl Database {
     #[instrument(skip(self), level = "debug")]
     pub async fn insert_server(&self, server: &Server) -> Result<(), DatabaseError> {
-        //#[query(insert_server = "INSERT INTO servers(id, description, ip, key, kind, label, properties, state) VALUES (?, ?, ?, ?, ?, ?, ?, ?);")]
+        //#[query(insert_server = "INSERT INTO servers(id, description, ip, key, kind, label, properties, state, online) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0);")]
         execute(&self.queries.insert_server, &self.session, (&server.id, &server.description, &server.ip, &server.key, &server.kind, &server.label, &server.properties, &server.state)).await
     }
 
     #[instrument(skip(self), level = "debug")]
     pub async fn select_all_servers(&self) -> Result<Vec<Server>, DatabaseError> {
-        //#[query(select_all_servers = "SELECT id, description, ip, key, kind, label, properties, state FROM servers;")]
+        //#[query(select_all_servers = "SELECT id, description, ip, key, kind, label, properties, state, online FROM servers;")]
         select_iter(&self.queries.select_all_servers, &self.session, ()).await
     }
 
     #[instrument(skip(self), level = "debug")]
     pub async fn select_all_servers_by_kind(&self, kind: &str) -> Result<Vec<Server>, DatabaseError> {
-        //#[query(select_all_servers_by_kind = "SELECT id, description, ip, key, kind, label, properties, state FROM servers_by_kinds WHERE kind = ?;")]
+        //#[query(select_all_servers_by_kind = "SELECT id, description, ip, key, kind, label, properties, state, online FROM servers_by_kinds WHERE kind = ?;")]
         select_iter(&self.queries.select_all_servers_by_kind, &self.session, (kind, )).await
     }
 
@@ -67,7 +68,7 @@ impl Database {
 
     #[instrument(skip(self), level = "debug")]
     pub async fn select_server(&self, id: &Uuid) -> Result<Option<Server>, DatabaseError> {
-        //#[query(select_server = "SELECT id, description, ip, key, kind, label, properties, state FROM servers WHERE id = ?;")]
+        //#[query(select_server = "SELECT id, description, ip, key, kind, label, properties, state, online FROM servers WHERE id = ?;")]
         select_one::<Server, _>(&self.queries.select_server, &self.session, (id, )).await
     }
 
@@ -94,7 +95,7 @@ impl Database {
 
     #[instrument(skip(self), level = "debug")]
     pub async fn select_server_by_label(&self, label: &str) -> Result<Option<Server>, DatabaseError> {
-        //#[query(select_server_by_label = "SELECT id, description, ip, key, kind, label, properties, state FROM servers_by_label WHERE label = ?;")]
+        //#[query(select_server_by_label = "SELECT id, description, ip, key, kind, label, properties, state, online FROM servers_by_label WHERE label = ?;")]
         select_one(&self.queries.select_server_by_label, &self.session, (label, )).await
     }
 

@@ -1293,7 +1293,7 @@ ul.nav-tabs {
   }
 };
     defs["Server"] = {
-  "required" : [ "description", "id", "ip", "kind", "label", "state" ],
+  "required" : [ "description", "id", "ip", "kind", "label", "online", "state" ],
   "type" : "object",
   "properties" : {
     "id" : {
@@ -1326,6 +1326,9 @@ ul.nav-tabs {
       "additionalProperties" : {
         "type" : "string"
       }
+    },
+    "online" : {
+      "type" : "integer"
     }
   }
 };
