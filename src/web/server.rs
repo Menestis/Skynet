@@ -21,6 +21,7 @@ pub fn filter(data: Arc<AppData>) -> impl Filter<Extract=impl Reply, Error=Rejec
         .or(warp::post().and(path!("api"/"servers"/Uuid/"setstate")).and(with_auth(data.clone(), "set-server-state")).and(json::<String>()).and(with_data(data.clone())).and_then(set_server_state))
         .or(warp::post().and(path!("api"/"servers"/"broadcast")).and(with_auth(data.clone(), "broadcast")).and(json::<Broadcast>()).and(with_data(data.clone())).and_then(broadcast))
         .or(warp::post().and(path!("api"/"servers"/Uuid/"setdescription")).and(with_auth(data.clone(), "set-server-description")).and(json::<String>()).and(with_data(data.clone())).and_then(set_server_description))
+        .or(warp::post().and(path!("api"/"servers"/Uuid/"playercount")).and(with_auth(data.clone(), "server-update-playercount")).and(json::<i32>()).and(with_data(data.clone())).and_then(update_playercount))
 }
 
 
@@ -92,6 +93,7 @@ async fn get_onlinecount(data: Arc<AppData>) -> Result<impl Reply, Rejection> {
 }
 
 
+//["Idle", "Waiting", "Starting", "Playing"]
 #[instrument(skip(data))]
 async fn set_server_state(uuid: Uuid, state: String, data: Arc<AppData>) -> Result<impl Reply, Rejection> {
     data.db.update_server_state(&uuid, &state).await.map_err(ApiError::from)?;
@@ -101,12 +103,14 @@ async fn set_server_state(uuid: Uuid, state: String, data: Arc<AppData>) -> Resu
     } else if state == "Waiting" {
         autoscale::process_waiting(data.clone(), uuid).await.map_err(ApiError::from)?;
     }
+    data.msgr.send_event(&ServerEvent::ServerStateUpdate { server: uuid, state }).await.map_err(ApiError::from)?;
     Ok(reply::reply().into_response())
 }
 
 #[instrument(skip(data))]
-async fn set_server_description(uuid: Uuid, state: String, data: Arc<AppData>) -> Result<impl Reply, Rejection> {
-    data.db.update_server_description(&uuid, &state).await.map_err(ApiError::from)?;
+async fn set_server_description(uuid: Uuid, description: String, data: Arc<AppData>) -> Result<impl Reply, Rejection> {
+    data.db.update_server_description(&uuid, &description).await.map_err(ApiError::from)?;
+    data.msgr.send_event(&ServerEvent::ServerDescriptionUpdate { server: uuid, description }).await.map_err(ApiError::from)?;
 
     Ok(reply::reply().into_response())
 }
@@ -121,14 +125,20 @@ pub struct Broadcast {
 
 #[instrument(skip(data))]
 async fn broadcast(broadcast: Broadcast, data: Arc<AppData>) -> Result<impl Reply, Rejection> {
-
     data.msgr.send_event(&ServerEvent::Broadcast {
         message: broadcast.message,
         permission: broadcast.permission,
-        server_kind: broadcast.server_kind
+        server_kind: broadcast.server_kind,
     }).await.map_err(ApiError::from)?;
 
     Ok(reply::reply().into_response())
 }
 
 
+#[instrument(skip(data))]
+async fn update_playercount(proxy: Uuid, count: i32, data: Arc<AppData>) -> Result<impl Reply, Rejection> {
+    data.db.update_server_playercount(&proxy, count).await.map_err(ApiError::from)?;
+    data.msgr.send_event(&ServerEvent::ServerCountUpdate { server: proxy, count }).await.map_err(ApiError::from)?;
+
+    Ok(reply())
+}

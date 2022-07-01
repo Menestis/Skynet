@@ -135,4 +135,12 @@ impl Database {
         execute(&self.queries.update_server_description, &self.session, (description, id)).await
     }
 
+    #[instrument(skip(self), level = "debug")]
+    pub async fn update_server_playercount(&self, id: &Uuid, count: i32) -> Result<(), DatabaseError> {
+        //#[query(update_server_playercount = "UPDATE servers SET online = ? WHERE id = ?;")]
+        execute(&self.queries.update_server_playercount, &self.session, (count, id)).await
+    }
+
+
+
 }

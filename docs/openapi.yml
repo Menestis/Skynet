@@ -510,6 +510,27 @@ paths:
           description: OK
         404:
           description: not found
+  /api/servers/{uuid}/playercount:
+    post:
+      tags: [ "Server" ]
+      security:
+        - auth: [ "server-update-playercount" ]
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: integer
+      responses:
+        200:
+          description: OK
   /api/proxy/ping:
     get:
       tags: [ "Proxy" ]

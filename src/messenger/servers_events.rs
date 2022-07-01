@@ -65,6 +65,18 @@ pub enum ServerEvent {
         #[serde(skip)]
         server_kind: Option<String>,
     },
+    ServerStateUpdate {
+        server: Uuid,
+        state: String
+    },
+    ServerDescriptionUpdate {
+        server: Uuid,
+        description: String
+    },
+    ServerCountUpdate {
+        server: Uuid,
+        count: i32
+    }
 }
 
 
@@ -82,7 +94,10 @@ impl ServerEvent {
             PlayerCountSync { .. } => "skynet.playercountsync".to_string(),
             InvalidateLeaderBoard { name, .. } => format!("leaderboard.invalidate.{}", name),
             Broadcast { server_kind, .. } => if let Some(kind) = server_kind { format!("server.{}.broadcast", kind) } else { format!("proxy.broadcast") },
-            PlayerCount { .. } => "server.playercount".to_string()
+            PlayerCount { .. } => "server.playercount".to_string(),
+            ServerStateUpdate { .. } => "server.update.state".to_string(),
+            ServerDescriptionUpdate { .. } => "server.update.description".to_string(),
+            ServerCountUpdate { .. } => "server.update.onlines".to_string()
         }
     }
     pub fn direct(&self) -> bool {

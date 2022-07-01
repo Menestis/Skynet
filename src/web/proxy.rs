@@ -37,6 +37,8 @@ async fn ping(data: Arc<AppData>) -> Result<impl Reply, Rejection> {
 #[instrument(skip(data))]
 async fn update_playercount(proxy: Uuid, count: i32, data: Arc<AppData>) -> Result<impl Reply, Rejection> {
 
+    data.db.update_server_playercount(&proxy, count).await.map_err(ApiError::from)?;
+
     if !data.k8s.is_leader() {
         if let Err(e) = data.msgr.send_event(&ServerEvent::PlayerCountSync { proxy, count }).await {
             error!("{}", e);
