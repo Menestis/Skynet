@@ -142,6 +142,13 @@ impl Database {
     }
 
     #[instrument(skip(self), level = "debug")]
+    pub async fn select_player_uuid_by_discord(&self, discord: &str) -> Result<Option<Uuid>, DatabaseError> {
+        //#[query(select_player_uuid_by_discord = "SELECT uuid FROM players_by_discord_id WHERE discord_id = ?")]
+        Ok(select_one::<(Option<Uuid>, ), _>(&self.queries.select_player_uuid_by_discord, &self.session, (discord, )).await?.map(|t| t.0).flatten())
+    }
+
+
+    #[instrument(skip(self), level = "debug")]
     pub async fn select_proxy_player_info(&self, uuid: &Uuid) -> Result<Option<DbProxyPlayerInfo>, DatabaseError> {
         //#[query(select_proxy_player_info = "SELECT locale, groups, permissions, properties, ban, ban_reason, TTL(ban) AS ban_ttl FROM players WHERE uuid = ?;")]
         select_one(&self.queries.select_proxy_player_info, &self.session, (uuid, )).await
@@ -237,7 +244,7 @@ impl Database {
     }
 
     #[instrument(skip(self), level = "debug")]
-    pub async fn set_player_discord_id(&self, player: &Uuid, discord_id: &str) -> Result<(), DatabaseError> {
+    pub async fn set_player_discord_id(&self, player: &Uuid, discord_id: Option<&str>) -> Result<(), DatabaseError> {
         //#[query(set_player_discord_id = "UPDATE players SET discord_id = ? WHERE uuid = ?;")]
         execute(&self.queries.set_player_discord_id, &self.session, (discord_id, player)).await
     }

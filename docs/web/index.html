@@ -1422,6 +1422,9 @@ ul.nav-tabs {
                     <li data-group="Discord" data-name="apiDiscordLinkCodePost" class="">
                       <a href="#api-Discord-apiDiscordLinkCodePost">apiDiscordLinkCodePost</a>
                     </li>
+                    <li data-group="Discord" data-name="apiDiscordLinkDiscordDelete" class="">
+                      <a href="#api-Discord-apiDiscordLinkDiscordDelete">apiDiscordLinkDiscordDelete</a>
+                    </li>
                     <li data-group="Discord" data-name="apiDiscordLinkUuidGet" class="">
                       <a href="#api-Discord-apiDiscordLinkUuidGet">apiDiscordLinkUuidGet</a>
                     </li>
@@ -1447,6 +1450,9 @@ ul.nav-tabs {
                   <li class="nav-header" data-group="Player"><a href="#api-Player">API Methods - Player</a></li>
                     <li data-group="Player" data-name="apiDiscordLinkCodePost" class="">
                       <a href="#api-Player-apiDiscordLinkCodePost">apiDiscordLinkCodePost</a>
+                    </li>
+                    <li data-group="Player" data-name="apiDiscordLinkDiscordDelete" class="">
+                      <a href="#api-Player-apiDiscordLinkDiscordDelete">apiDiscordLinkDiscordDelete</a>
                     </li>
                     <li data-group="Player" data-name="apiDiscordLinkUuidGet" class="">
                       <a href="#api-Player-apiDiscordLinkUuidGet">apiDiscordLinkUuidGet</a>
@@ -2249,6 +2255,349 @@ $(document).ready(function() {
 
 
                             <div class="tab-content" id="responses-Discord-apiDiscordLinkCodePost-404-wrapper" style='margin-bottom: 10px;'>
+                            </div>
+                        </article>
+                      </div>
+                      <hr>
+                    <div id="api-Discord-apiDiscordLinkDiscordDelete">
+                      <article id="api-Discord-apiDiscordLinkDiscordDelete-0" data-group="User" data-name="apiDiscordLinkDiscordDelete" data-version="0">
+                        <div class="pull-left">
+                          <h1>apiDiscordLinkDiscordDelete</h1>
+                          <p></p>
+                        </div>
+                        <div class="pull-right"></div>
+                        <div class="clearfix"></div>
+                        <p></p>
+                        <p class="marked"></p>
+                        <p></p>
+                        <br />
+                        <pre class="prettyprint language-html prettyprinted" data-type="delete"><code><span class="pln">/api/discord/link/{discord}</span></code></pre>
+                        <p>
+                          <h3>Usage and SDK Samples</h3>
+                        </p>
+                        <ul class="nav nav-tabs nav-tabs-examples">
+                          <li class="active"><a href="#examples-Discord-apiDiscordLinkDiscordDelete-0-curl">Curl</a></li>
+                          <li class=""><a href="#examples-Discord-apiDiscordLinkDiscordDelete-0-java">Java</a></li>
+                          <li class=""><a href="#examples-Discord-apiDiscordLinkDiscordDelete-0-android">Android</a></li>
+                          <!--<li class=""><a href="#examples-Discord-apiDiscordLinkDiscordDelete-0-groovy">Groovy</a></li>-->
+                          <li class=""><a href="#examples-Discord-apiDiscordLinkDiscordDelete-0-objc">Obj-C</a></li>
+                          <li class=""><a href="#examples-Discord-apiDiscordLinkDiscordDelete-0-javascript">JavaScript</a></li>
+                          <!--<li class=""><a href="#examples-Discord-apiDiscordLinkDiscordDelete-0-angular">Angular</a></li>-->
+                          <li class=""><a href="#examples-Discord-apiDiscordLinkDiscordDelete-0-csharp">C#</a></li>
+                          <li class=""><a href="#examples-Discord-apiDiscordLinkDiscordDelete-0-php">PHP</a></li>
+                          <li class=""><a href="#examples-Discord-apiDiscordLinkDiscordDelete-0-perl">Perl</a></li>
+                          <li class=""><a href="#examples-Discord-apiDiscordLinkDiscordDelete-0-python">Python</a></li>
+                          <li class=""><a href="#examples-Discord-apiDiscordLinkDiscordDelete-0-rust">Rust</a></li>
+                        </ul>
+
+                        <div class="tab-content">
+                          <div class="tab-pane active" id="examples-Discord-apiDiscordLinkDiscordDelete-0-curl">
+                            <pre class="prettyprint"><code class="language-bsh">curl -X DELETE \
+-H "Authorization: [[apiKey]]" \
+ "http://localhost:8888/api/discord/link/{discord}"
+</code></pre>
+                          </div>
+                          <div class="tab-pane" id="examples-Discord-apiDiscordLinkDiscordDelete-0-java">
+                            <pre class="prettyprint"><code class="language-java">import org.openapitools.client.*;
+import org.openapitools.client.auth.*;
+import org.openapitools.client.model.*;
+import org.openapitools.client.api.DiscordApi;
+
+import java.io.File;
+import java.util.*;
+
+public class DiscordApiExample {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        
+        // Configure API key authorization: auth
+        ApiKeyAuth auth = (ApiKeyAuth) defaultClient.getAuthentication("auth");
+        auth.setApiKey("YOUR API KEY");
+        // Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+        //auth.setApiKeyPrefix("Token");
+
+        // Create an instance of the API class
+        DiscordApi apiInstance = new DiscordApi();
+        String discord = discord_example; // String | 
+
+        try {
+            apiInstance.apiDiscordLinkDiscordDelete(discord);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling DiscordApi#apiDiscordLinkDiscordDelete");
+            e.printStackTrace();
+        }
+    }
+}
+</code></pre>
+                          </div>
+
+                          <div class="tab-pane" id="examples-Discord-apiDiscordLinkDiscordDelete-0-android">
+                            <pre class="prettyprint"><code class="language-java">import org.openapitools.client.api.DiscordApi;
+
+public class DiscordApiExample {
+    public static void main(String[] args) {
+        DiscordApi apiInstance = new DiscordApi();
+        String discord = discord_example; // String | 
+
+        try {
+            apiInstance.apiDiscordLinkDiscordDelete(discord);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling DiscordApi#apiDiscordLinkDiscordDelete");
+            e.printStackTrace();
+        }
+    }
+}</code></pre>
+                          </div>
+  <!--
+  <div class="tab-pane" id="examples-Discord-apiDiscordLinkDiscordDelete-0-groovy">
+  <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+  </div> -->
+                            <div class="tab-pane" id="examples-Discord-apiDiscordLinkDiscordDelete-0-objc">
+                              <pre class="prettyprint"><code class="language-cpp">Configuration *apiConfig = [Configuration sharedConfig];
+
+// Configure API key authorization: (authentication scheme: auth)
+[apiConfig setApiKey:@"YOUR_API_KEY" forApiKeyIdentifier:@"Authorization"];
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//[apiConfig setApiKeyPrefix:@"Bearer" forApiKeyIdentifier:@"Authorization"];
+
+
+// Create an instance of the API class
+DiscordApi *apiInstance = [[DiscordApi alloc] init];
+String *discord = discord_example; //  (default to null)
+
+[apiInstance apiDiscordLinkDiscordDeleteWith:discord
+              completionHandler: ^(NSError* error) {
+    if (error) {
+        NSLog(@"Error: %@", error);
+    }
+}];
+</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Discord-apiDiscordLinkDiscordDelete-0-javascript">
+                              <pre class="prettyprint"><code class="language-js">var SkynetApi = require('skynet_api');
+var defaultClient = SkynetApi.ApiClient.instance;
+
+// Configure API key authorization: auth
+var auth = defaultClient.authentications['auth'];
+auth.apiKey = "YOUR API KEY";
+// Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+//auth.apiKeyPrefix['Authorization'] = "Token";
+
+// Create an instance of the API class
+var api = new SkynetApi.DiscordApi()
+var discord = discord_example; // {String} 
+
+var callback = function(error, data, response) {
+  if (error) {
+    console.error(error);
+  } else {
+    console.log('API called successfully.');
+  }
+};
+api.apiDiscordLinkDiscordDelete(discord, callback);
+</code></pre>
+                            </div>
+
+                            <!--<div class="tab-pane" id="examples-Discord-apiDiscordLinkDiscordDelete-0-angular">
+              <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+            </div>-->
+                            <div class="tab-pane" id="examples-Discord-apiDiscordLinkDiscordDelete-0-csharp">
+                              <pre class="prettyprint"><code class="language-cs">using System;
+using System.Diagnostics;
+using Org.OpenAPITools.Api;
+using Org.OpenAPITools.Client;
+using Org.OpenAPITools.Model;
+
+namespace Example
+{
+    public class apiDiscordLinkDiscordDeleteExample
+    {
+        public void main()
+        {
+            // Configure API key authorization: auth
+            Configuration.Default.ApiKey.Add("Authorization", "YOUR_API_KEY");
+            // Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+            // Configuration.Default.ApiKeyPrefix.Add("Authorization", "Bearer");
+
+            // Create an instance of the API class
+            var apiInstance = new DiscordApi();
+            var discord = discord_example;  // String |  (default to null)
+
+            try {
+                apiInstance.apiDiscordLinkDiscordDelete(discord);
+            } catch (Exception e) {
+                Debug.Print("Exception when calling DiscordApi.apiDiscordLinkDiscordDelete: " + e.Message );
+            }
+        }
+    }
+}
+</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Discord-apiDiscordLinkDiscordDelete-0-php">
+                              <pre class="prettyprint"><code class="language-php"><&#63;php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+// Configure API key authorization: auth
+OpenAPITools\Client\Configuration::getDefaultConfiguration()->setApiKey('Authorization', 'YOUR_API_KEY');
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+// OpenAPITools\Client\Configuration::getDefaultConfiguration()->setApiKeyPrefix('Authorization', 'Bearer');
+
+// Create an instance of the API class
+$api_instance = new OpenAPITools\Client\Api\DiscordApi();
+$discord = discord_example; // String | 
+
+try {
+    $api_instance->apiDiscordLinkDiscordDelete($discord);
+} catch (Exception $e) {
+    echo 'Exception when calling DiscordApi->apiDiscordLinkDiscordDelete: ', $e->getMessage(), PHP_EOL;
+}
+?></code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Discord-apiDiscordLinkDiscordDelete-0-perl">
+                              <pre class="prettyprint"><code class="language-perl">use Data::Dumper;
+use WWW::OPenAPIClient::Configuration;
+use WWW::OPenAPIClient::DiscordApi;
+
+# Configure API key authorization: auth
+$WWW::OPenAPIClient::Configuration::api_key->{'Authorization'} = 'YOUR_API_KEY';
+# uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+#$WWW::OPenAPIClient::Configuration::api_key_prefix->{'Authorization'} = "Bearer";
+
+# Create an instance of the API class
+my $api_instance = WWW::OPenAPIClient::DiscordApi->new();
+my $discord = discord_example; # String | 
+
+eval {
+    $api_instance->apiDiscordLinkDiscordDelete(discord => $discord);
+};
+if ($@) {
+    warn "Exception when calling DiscordApi->apiDiscordLinkDiscordDelete: $@\n";
+}</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Discord-apiDiscordLinkDiscordDelete-0-python">
+                              <pre class="prettyprint"><code class="language-python">from __future__ import print_statement
+import time
+import openapi_client
+from openapi_client.rest import ApiException
+from pprint import pprint
+
+# Configure API key authorization: auth
+openapi_client.configuration.api_key['Authorization'] = 'YOUR_API_KEY'
+# Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+# openapi_client.configuration.api_key_prefix['Authorization'] = 'Bearer'
+
+# Create an instance of the API class
+api_instance = openapi_client.DiscordApi()
+discord = discord_example # String |  (default to null)
+
+try:
+    api_instance.api_discord_link_discord_delete(discord)
+except ApiException as e:
+    print("Exception when calling DiscordApi->apiDiscordLinkDiscordDelete: %s\n" % e)</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Discord-apiDiscordLinkDiscordDelete-0-rust">
+                              <pre class="prettyprint"><code class="language-rust">extern crate DiscordApi;
+
+pub fn main() {
+    let discord = discord_example; // String
+
+    let mut context = DiscordApi::Context::default();
+    let result = client.apiDiscordLinkDiscordDelete(discord, &context).wait();
+
+    println!("{:?}", result);
+}
+</code></pre>
+                            </div>
+                          </div>
+
+                          <h2>Scopes</h2>
+                          <table>
+                            
+                          </table>
+
+                          <h2>Parameters</h2>
+
+                            <div class="methodsubtabletitle">Path parameters</div>
+                            <table id="methodsubtable">
+                                <tr>
+                                  <th width="150px">Name</th>
+                                  <th>Description</th>
+                                </tr>
+                                  <tr><td style="width:150px;">discord*</td>
+<td>
+
+
+    <div id="d2e199_apiDiscordLinkDiscordDelete_discord">
+        <div class="json-schema-view">
+            <div class="primitive">
+                <span class="type">
+                    String
+                </span>
+
+            </div>
+                <div class="inner required">
+                    Required
+                </div>
+        </div>
+    </div>
+</td>
+</tr>
+
+                            </table>
+
+
+
+
+
+                          <h2>Responses</h2>
+                            <h3 id="examples-Discord-apiDiscordLinkDiscordDelete-title-200"></h3>
+                            <p id="examples-Discord-apiDiscordLinkDiscordDelete-description-200" class="marked"></p>
+                            <script>
+                              var responseDiscord200_description = `OK`;
+                              var responseDiscord200_description_break = responseDiscord200_description.indexOf('\n');
+                              if (responseDiscord200_description_break == -1) {
+                                $("#examples-Discord-apiDiscordLinkDiscordDelete-title-200").text("Status: 200 - " + responseDiscord200_description);
+                              } else {
+                                $("#examples-Discord-apiDiscordLinkDiscordDelete-title-200").text("Status: 200 - " + responseDiscord200_description.substring(0, responseDiscord200_description_break));
+                                $("#examples-Discord-apiDiscordLinkDiscordDelete-description-200").html(responseDiscord200_description.substring(responseDiscord200_description_break));
+                              }
+                            </script>
+
+
+                            <ul id="responses-detail-Discord-apiDiscordLinkDiscordDelete-200" class="nav nav-tabs nav-tabs-examples" >
+
+
+                            </ul>
+
+
+                            <div class="tab-content" id="responses-Discord-apiDiscordLinkDiscordDelete-200-wrapper" style='margin-bottom: 10px;'>
+                            </div>
+                            <h3 id="examples-Discord-apiDiscordLinkDiscordDelete-title-404"></h3>
+                            <p id="examples-Discord-apiDiscordLinkDiscordDelete-description-404" class="marked"></p>
+                            <script>
+                              var responseDiscord404_description = `Link not found`;
+                              var responseDiscord404_description_break = responseDiscord404_description.indexOf('\n');
+                              if (responseDiscord404_description_break == -1) {
+                                $("#examples-Discord-apiDiscordLinkDiscordDelete-title-404").text("Status: 404 - " + responseDiscord404_description);
+                              } else {
+                                $("#examples-Discord-apiDiscordLinkDiscordDelete-title-404").text("Status: 404 - " + responseDiscord404_description.substring(0, responseDiscord404_description_break));
+                                $("#examples-Discord-apiDiscordLinkDiscordDelete-description-404").html(responseDiscord404_description.substring(responseDiscord404_description_break));
+                              }
+                            </script>
+
+
+                            <ul id="responses-detail-Discord-apiDiscordLinkDiscordDelete-404" class="nav nav-tabs nav-tabs-examples" >
+
+
+                            </ul>
+
+
+                            <div class="tab-content" id="responses-Discord-apiDiscordLinkDiscordDelete-404-wrapper" style='margin-bottom: 10px;'>
                             </div>
                         </article>
                       </div>
@@ -5534,6 +5883,349 @@ $(document).ready(function() {
 
 
                             <div class="tab-content" id="responses-Player-apiDiscordLinkCodePost-404-wrapper" style='margin-bottom: 10px;'>
+                            </div>
+                        </article>
+                      </div>
+                      <hr>
+                    <div id="api-Player-apiDiscordLinkDiscordDelete">
+                      <article id="api-Player-apiDiscordLinkDiscordDelete-0" data-group="User" data-name="apiDiscordLinkDiscordDelete" data-version="0">
+                        <div class="pull-left">
+                          <h1>apiDiscordLinkDiscordDelete</h1>
+                          <p></p>
+                        </div>
+                        <div class="pull-right"></div>
+                        <div class="clearfix"></div>
+                        <p></p>
+                        <p class="marked"></p>
+                        <p></p>
+                        <br />
+                        <pre class="prettyprint language-html prettyprinted" data-type="delete"><code><span class="pln">/api/discord/link/{discord}</span></code></pre>
+                        <p>
+                          <h3>Usage and SDK Samples</h3>
+                        </p>
+                        <ul class="nav nav-tabs nav-tabs-examples">
+                          <li class="active"><a href="#examples-Player-apiDiscordLinkDiscordDelete-0-curl">Curl</a></li>
+                          <li class=""><a href="#examples-Player-apiDiscordLinkDiscordDelete-0-java">Java</a></li>
+                          <li class=""><a href="#examples-Player-apiDiscordLinkDiscordDelete-0-android">Android</a></li>
+                          <!--<li class=""><a href="#examples-Player-apiDiscordLinkDiscordDelete-0-groovy">Groovy</a></li>-->
+                          <li class=""><a href="#examples-Player-apiDiscordLinkDiscordDelete-0-objc">Obj-C</a></li>
+                          <li class=""><a href="#examples-Player-apiDiscordLinkDiscordDelete-0-javascript">JavaScript</a></li>
+                          <!--<li class=""><a href="#examples-Player-apiDiscordLinkDiscordDelete-0-angular">Angular</a></li>-->
+                          <li class=""><a href="#examples-Player-apiDiscordLinkDiscordDelete-0-csharp">C#</a></li>
+                          <li class=""><a href="#examples-Player-apiDiscordLinkDiscordDelete-0-php">PHP</a></li>
+                          <li class=""><a href="#examples-Player-apiDiscordLinkDiscordDelete-0-perl">Perl</a></li>
+                          <li class=""><a href="#examples-Player-apiDiscordLinkDiscordDelete-0-python">Python</a></li>
+                          <li class=""><a href="#examples-Player-apiDiscordLinkDiscordDelete-0-rust">Rust</a></li>
+                        </ul>
+
+                        <div class="tab-content">
+                          <div class="tab-pane active" id="examples-Player-apiDiscordLinkDiscordDelete-0-curl">
+                            <pre class="prettyprint"><code class="language-bsh">curl -X DELETE \
+-H "Authorization: [[apiKey]]" \
+ "http://localhost:8888/api/discord/link/{discord}"
+</code></pre>
+                          </div>
+                          <div class="tab-pane" id="examples-Player-apiDiscordLinkDiscordDelete-0-java">
+                            <pre class="prettyprint"><code class="language-java">import org.openapitools.client.*;
+import org.openapitools.client.auth.*;
+import org.openapitools.client.model.*;
+import org.openapitools.client.api.PlayerApi;
+
+import java.io.File;
+import java.util.*;
+
+public class PlayerApiExample {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        
+        // Configure API key authorization: auth
+        ApiKeyAuth auth = (ApiKeyAuth) defaultClient.getAuthentication("auth");
+        auth.setApiKey("YOUR API KEY");
+        // Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+        //auth.setApiKeyPrefix("Token");
+
+        // Create an instance of the API class
+        PlayerApi apiInstance = new PlayerApi();
+        String discord = discord_example; // String | 
+
+        try {
+            apiInstance.apiDiscordLinkDiscordDelete(discord);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling PlayerApi#apiDiscordLinkDiscordDelete");
+            e.printStackTrace();
+        }
+    }
+}
+</code></pre>
+                          </div>
+
+                          <div class="tab-pane" id="examples-Player-apiDiscordLinkDiscordDelete-0-android">
+                            <pre class="prettyprint"><code class="language-java">import org.openapitools.client.api.PlayerApi;
+
+public class PlayerApiExample {
+    public static void main(String[] args) {
+        PlayerApi apiInstance = new PlayerApi();
+        String discord = discord_example; // String | 
+
+        try {
+            apiInstance.apiDiscordLinkDiscordDelete(discord);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling PlayerApi#apiDiscordLinkDiscordDelete");
+            e.printStackTrace();
+        }
+    }
+}</code></pre>
+                          </div>
+  <!--
+  <div class="tab-pane" id="examples-Player-apiDiscordLinkDiscordDelete-0-groovy">
+  <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+  </div> -->
+                            <div class="tab-pane" id="examples-Player-apiDiscordLinkDiscordDelete-0-objc">
+                              <pre class="prettyprint"><code class="language-cpp">Configuration *apiConfig = [Configuration sharedConfig];
+
+// Configure API key authorization: (authentication scheme: auth)
+[apiConfig setApiKey:@"YOUR_API_KEY" forApiKeyIdentifier:@"Authorization"];
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//[apiConfig setApiKeyPrefix:@"Bearer" forApiKeyIdentifier:@"Authorization"];
+
+
+// Create an instance of the API class
+PlayerApi *apiInstance = [[PlayerApi alloc] init];
+String *discord = discord_example; //  (default to null)
+
+[apiInstance apiDiscordLinkDiscordDeleteWith:discord
+              completionHandler: ^(NSError* error) {
+    if (error) {
+        NSLog(@"Error: %@", error);
+    }
+}];
+</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Player-apiDiscordLinkDiscordDelete-0-javascript">
+                              <pre class="prettyprint"><code class="language-js">var SkynetApi = require('skynet_api');
+var defaultClient = SkynetApi.ApiClient.instance;
+
+// Configure API key authorization: auth
+var auth = defaultClient.authentications['auth'];
+auth.apiKey = "YOUR API KEY";
+// Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+//auth.apiKeyPrefix['Authorization'] = "Token";
+
+// Create an instance of the API class
+var api = new SkynetApi.PlayerApi()
+var discord = discord_example; // {String} 
+
+var callback = function(error, data, response) {
+  if (error) {
+    console.error(error);
+  } else {
+    console.log('API called successfully.');
+  }
+};
+api.apiDiscordLinkDiscordDelete(discord, callback);
+</code></pre>
+                            </div>
+
+                            <!--<div class="tab-pane" id="examples-Player-apiDiscordLinkDiscordDelete-0-angular">
+              <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+            </div>-->
+                            <div class="tab-pane" id="examples-Player-apiDiscordLinkDiscordDelete-0-csharp">
+                              <pre class="prettyprint"><code class="language-cs">using System;
+using System.Diagnostics;
+using Org.OpenAPITools.Api;
+using Org.OpenAPITools.Client;
+using Org.OpenAPITools.Model;
+
+namespace Example
+{
+    public class apiDiscordLinkDiscordDeleteExample
+    {
+        public void main()
+        {
+            // Configure API key authorization: auth
+            Configuration.Default.ApiKey.Add("Authorization", "YOUR_API_KEY");
+            // Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+            // Configuration.Default.ApiKeyPrefix.Add("Authorization", "Bearer");
+
+            // Create an instance of the API class
+            var apiInstance = new PlayerApi();
+            var discord = discord_example;  // String |  (default to null)
+
+            try {
+                apiInstance.apiDiscordLinkDiscordDelete(discord);
+            } catch (Exception e) {
+                Debug.Print("Exception when calling PlayerApi.apiDiscordLinkDiscordDelete: " + e.Message );
+            }
+        }
+    }
+}
+</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Player-apiDiscordLinkDiscordDelete-0-php">
+                              <pre class="prettyprint"><code class="language-php"><&#63;php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+// Configure API key authorization: auth
+OpenAPITools\Client\Configuration::getDefaultConfiguration()->setApiKey('Authorization', 'YOUR_API_KEY');
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+// OpenAPITools\Client\Configuration::getDefaultConfiguration()->setApiKeyPrefix('Authorization', 'Bearer');
+
+// Create an instance of the API class
+$api_instance = new OpenAPITools\Client\Api\PlayerApi();
+$discord = discord_example; // String | 
+
+try {
+    $api_instance->apiDiscordLinkDiscordDelete($discord);
+} catch (Exception $e) {
+    echo 'Exception when calling PlayerApi->apiDiscordLinkDiscordDelete: ', $e->getMessage(), PHP_EOL;
+}
+?></code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Player-apiDiscordLinkDiscordDelete-0-perl">
+                              <pre class="prettyprint"><code class="language-perl">use Data::Dumper;
+use WWW::OPenAPIClient::Configuration;
+use WWW::OPenAPIClient::PlayerApi;
+
+# Configure API key authorization: auth
+$WWW::OPenAPIClient::Configuration::api_key->{'Authorization'} = 'YOUR_API_KEY';
+# uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+#$WWW::OPenAPIClient::Configuration::api_key_prefix->{'Authorization'} = "Bearer";
+
+# Create an instance of the API class
+my $api_instance = WWW::OPenAPIClient::PlayerApi->new();
+my $discord = discord_example; # String | 
+
+eval {
+    $api_instance->apiDiscordLinkDiscordDelete(discord => $discord);
+};
+if ($@) {
+    warn "Exception when calling PlayerApi->apiDiscordLinkDiscordDelete: $@\n";
+}</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Player-apiDiscordLinkDiscordDelete-0-python">
+                              <pre class="prettyprint"><code class="language-python">from __future__ import print_statement
+import time
+import openapi_client
+from openapi_client.rest import ApiException
+from pprint import pprint
+
+# Configure API key authorization: auth
+openapi_client.configuration.api_key['Authorization'] = 'YOUR_API_KEY'
+# Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+# openapi_client.configuration.api_key_prefix['Authorization'] = 'Bearer'
+
+# Create an instance of the API class
+api_instance = openapi_client.PlayerApi()
+discord = discord_example # String |  (default to null)
+
+try:
+    api_instance.api_discord_link_discord_delete(discord)
+except ApiException as e:
+    print("Exception when calling PlayerApi->apiDiscordLinkDiscordDelete: %s\n" % e)</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Player-apiDiscordLinkDiscordDelete-0-rust">
+                              <pre class="prettyprint"><code class="language-rust">extern crate PlayerApi;
+
+pub fn main() {
+    let discord = discord_example; // String
+
+    let mut context = PlayerApi::Context::default();
+    let result = client.apiDiscordLinkDiscordDelete(discord, &context).wait();
+
+    println!("{:?}", result);
+}
+</code></pre>
+                            </div>
+                          </div>
+
+                          <h2>Scopes</h2>
+                          <table>
+                            
+                          </table>
+
+                          <h2>Parameters</h2>
+
+                            <div class="methodsubtabletitle">Path parameters</div>
+                            <table id="methodsubtable">
+                                <tr>
+                                  <th width="150px">Name</th>
+                                  <th>Description</th>
+                                </tr>
+                                  <tr><td style="width:150px;">discord*</td>
+<td>
+
+
+    <div id="d2e199_apiDiscordLinkDiscordDelete_discord">
+        <div class="json-schema-view">
+            <div class="primitive">
+                <span class="type">
+                    String
+                </span>
+
+            </div>
+                <div class="inner required">
+                    Required
+                </div>
+        </div>
+    </div>
+</td>
+</tr>
+
+                            </table>
+
+
+
+
+
+                          <h2>Responses</h2>
+                            <h3 id="examples-Player-apiDiscordLinkDiscordDelete-title-200"></h3>
+                            <p id="examples-Player-apiDiscordLinkDiscordDelete-description-200" class="marked"></p>
+                            <script>
+                              var responsePlayer200_description = `OK`;
+                              var responsePlayer200_description_break = responsePlayer200_description.indexOf('\n');
+                              if (responsePlayer200_description_break == -1) {
+                                $("#examples-Player-apiDiscordLinkDiscordDelete-title-200").text("Status: 200 - " + responsePlayer200_description);
+                              } else {
+                                $("#examples-Player-apiDiscordLinkDiscordDelete-title-200").text("Status: 200 - " + responsePlayer200_description.substring(0, responsePlayer200_description_break));
+                                $("#examples-Player-apiDiscordLinkDiscordDelete-description-200").html(responsePlayer200_description.substring(responsePlayer200_description_break));
+                              }
+                            </script>
+
+
+                            <ul id="responses-detail-Player-apiDiscordLinkDiscordDelete-200" class="nav nav-tabs nav-tabs-examples" >
+
+
+                            </ul>
+
+
+                            <div class="tab-content" id="responses-Player-apiDiscordLinkDiscordDelete-200-wrapper" style='margin-bottom: 10px;'>
+                            </div>
+                            <h3 id="examples-Player-apiDiscordLinkDiscordDelete-title-404"></h3>
+                            <p id="examples-Player-apiDiscordLinkDiscordDelete-description-404" class="marked"></p>
+                            <script>
+                              var responsePlayer404_description = `Link not found`;
+                              var responsePlayer404_description_break = responsePlayer404_description.indexOf('\n');
+                              if (responsePlayer404_description_break == -1) {
+                                $("#examples-Player-apiDiscordLinkDiscordDelete-title-404").text("Status: 404 - " + responsePlayer404_description);
+                              } else {
+                                $("#examples-Player-apiDiscordLinkDiscordDelete-title-404").text("Status: 404 - " + responsePlayer404_description.substring(0, responsePlayer404_description_break));
+                                $("#examples-Player-apiDiscordLinkDiscordDelete-description-404").html(responsePlayer404_description.substring(responsePlayer404_description_break));
+                              }
+                            </script>
+
+
+                            <ul id="responses-detail-Player-apiDiscordLinkDiscordDelete-404" class="nav nav-tabs nav-tabs-examples" >
+
+
+                            </ul>
+
+
+                            <div class="tab-content" id="responses-Player-apiDiscordLinkDiscordDelete-404-wrapper" style='margin-bottom: 10px;'>
                             </div>
                         </article>
                       </div>

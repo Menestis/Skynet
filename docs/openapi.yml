@@ -868,6 +868,22 @@ paths:
           description: OK
         404:
           description: Pending link does not exist
+  /api/discord/link/{discord}:
+    delete:
+      security:
+        - auth: [ "delete-discord-link" ]
+      tags: [ "Discord", "Player" ]
+      parameters:
+        - name: discord
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: OK
+        404:
+          description: Link not found
   /api/discord/webhook/{name}:
     post:
       security:

@@ -7,4 +7,4 @@ VALUES ('server',
         {'server-login', 'player-stats', 'move-player', 'create-server', 'delete-server', 'get-all-servers', 'player-transaction', 'player-inventory-transaction', 'set-server-state', 'get-onlinecount', 'get-stats', 'create-discord-link', 'webhook', 'mute-player', 'set-server-description', 'broadcast', 'server-update-playercount'});
 
 INSERT INTO api_groups(name, permissions)
-VALUES ('discord', {'complete-discord-link', 'get-onlinecount', 'get-stats'});
+VALUES ('discord', {'complete-discord-link', 'get-onlinecount', 'get-stats', 'delete-discord-link'});
