@@ -142,9 +142,9 @@ impl Database {
     }
 
     #[instrument(skip(self), level = "debug")]
-    pub async fn select_player_uuid_by_discord(&self, discord: &str) -> Result<Option<Uuid>, DatabaseError> {
+    pub async fn select_players_uuid_by_discord(&self, discord: &str) -> Result<Vec<Uuid>, DatabaseError> {
         //#[query(select_player_uuid_by_discord = "SELECT uuid FROM players_by_discord_id WHERE discord_id = ?")]
-        Ok(select_one::<(Option<Uuid>, ), _>(&self.queries.select_player_uuid_by_discord, &self.session, (discord, )).await?.map(|t| t.0).flatten())
+        Ok(select_iter::<(Option<Uuid>, ),_>(&self.queries.select_player_uuid_by_discord, &self.session, (discord, )).await?.iter().filter_map(|x| x.0).collect())
     }
 
 

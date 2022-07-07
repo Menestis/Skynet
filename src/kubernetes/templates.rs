@@ -36,7 +36,7 @@ impl Kubernetes {
                             },
                             "limits": {
                                 "memory": "5Gi",
-                                "cpu": "2"
+                                "cpu": "2000m"
                             }
                         },
                         "env": [
@@ -47,7 +47,7 @@ impl Kubernetes {
                             {
                               "name":"AMQP_ADDRESS",
                               "value": amqp_adress
-                            },
+                            }
                         ],
                         "ports": [
                             {

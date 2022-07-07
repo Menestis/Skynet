@@ -40,18 +40,17 @@ pub struct Leaderboard {
 
 #[instrument(skip(data))]
 async fn delete_link(discord: String, data: Arc<AppData>) -> Result<impl Reply, Rejection> {
-    let uuid = match data.db.select_player_uuid_by_discord(&discord).await.map_err(ApiError::from)? {
-        None => return Ok(reply().into_response()),
-        Some(uuid) => uuid
-    };
-    let (proxy, server) = join!(data.db.select_online_player_proxy(&uuid), data.db.select_online_player_server(&uuid));
+    let uuids = data.db.select_players_uuid_by_discord(&discord).await.map_err(ApiError::from)?;
+    for uuid in uuids {
+        let (proxy, server) = join!(data.db.select_online_player_proxy(&uuid), data.db.select_online_player_server(&uuid));
 
-    if let Some(proxy) = proxy.map_err(ApiError::from)? {
-        data.msgr.send_event(&ServerEvent::InvalidatePlayer { server: proxy, uuid }).await.map_err(ApiError::from)?;
-    };
-    if let Some(server) = server.map_err(ApiError::from)? {
-        data.msgr.send_event(&ServerEvent::InvalidatePlayer { server, uuid }).await.map_err(ApiError::from)?;
-    };
+        if let Some(proxy) = proxy.map_err(ApiError::from)? {
+            data.msgr.send_event(&ServerEvent::InvalidatePlayer { server: proxy, uuid }).await.map_err(ApiError::from)?;
+        };
+        if let Some(server) = server.map_err(ApiError::from)? {
+            data.msgr.send_event(&ServerEvent::InvalidatePlayer { server, uuid }).await.map_err(ApiError::from)?;
+        };
+    }
 
     Ok(warp::reply().into_response())
 }
