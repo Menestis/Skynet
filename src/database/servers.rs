@@ -26,6 +26,7 @@ pub struct ServerKind {
     pub image: String,
     pub permissions: Option<HashMap<String, Vec<String>>>,
     pub autoscale: Option<String>,
+    pub startup: Option<String>,
 }
 
 impl Database {
@@ -114,7 +115,7 @@ impl Database {
 
     #[instrument(skip(self), level = "debug")]
     pub async fn select_server_kind_object(&self, kind: &str) -> Result<Option<ServerKind>, DatabaseError> {
-        //#[query(select_server_kind_object = "SELECT name, image, permissions, autoscale FROM servers_kinds WHERE name = ?;")]
+        //#[query(select_server_kind_object = "SELECT name, image, permissions, autoscale, startup FROM servers_kinds WHERE name = ?;")]
         select_one(&self.queries.select_server_kind_object, &self.session, (kind, )).await
     }
 

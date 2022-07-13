@@ -31,11 +31,11 @@ impl Kubernetes {
                         "image": image,
                         "resources": {
                             "requests": {
-                                "memory": "2Gi",
-                                "cpu": "200m"
+                                "memory": properties.get("rmemory").unwrap_or(&"2Gi".to_string()),
+                                "cpu": "100m"
                             },
                             "limits": {
-                                "memory": "5Gi",
+                                "memory": properties.get("lmemory").unwrap_or(&"4Gi".to_string()),
                                 "cpu": "2000m"
                             }
                         },

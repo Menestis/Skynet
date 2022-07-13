@@ -32,6 +32,14 @@ pub struct CreateServer {
     pub properties: Option<HashMap<String, String>>,
 }
 
+#[derive(Serialize, Deserialize, Debug, Default)]
+pub struct ServerStartup {
+    #[serde(default)]
+    properties: HashMap<String, String>,
+    #[serde(default)]
+    env: HashMap<String, String>,
+}
+
 #[instrument(skip(data))]
 pub async fn create_server(data: Arc<AppData>, request: CreateServer) -> Result<impl Reply, Rejection> {
     let kind = match data.db.select_server_kind_object(&request.kind).await.map_err(ApiError::from)? {
@@ -39,10 +47,19 @@ pub async fn create_server(data: Arc<AppData>, request: CreateServer) -> Result<
         Some(kind) => kind
     };
 
+    let mut startup = match kind.startup {
+        None => Ok(ServerStartup::default()),
+        Some(startup) => serde_json::from_str::<ServerStartup>(&startup).map_err(ApiError::from),
+    }?;
+
+    for (k, v) in request.properties.unwrap_or_default() {
+        startup.properties.insert(k, v);
+    }
+
     let name = generate_server_name(&request.kind, &request.name);
     data.k8s.create_pod(&kind.name, &kind.image,
                         &name,
-                        request.properties.unwrap_or_default(), HashMap::new()).await.map_err(ApiError::from)?;
+                        startup.properties, startup.env).await.map_err(ApiError::from)?;
 
     Ok(reply::json(&name).into_response())
 }
