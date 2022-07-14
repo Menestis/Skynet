@@ -32,7 +32,7 @@ paths:
         200:
           description: "Leaderboards have been generated"
   /api/leaderboards/{name}:
-    post:
+    get:
       security:
         - auth: [ "get-player" ]
       tags: [ "Stats" ]

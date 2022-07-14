@@ -44,7 +44,7 @@ async fn generate_stats(data: Arc<AppData>) -> Result<impl Reply, Rejection> {
         let mut leaderboard = Vec::new();
         for (player, value) in raw_leaderboard {
             let username = data.db.select_player_username(&player).await.map_err(ApiError::from)?;
-            leaderboard.push(format!("{}: {}", username.unwrap_or("????".to_string()), value));
+            leaderboard.push(format!("{}:{}", username.unwrap_or("?".to_string()), value));
         }
 
 
