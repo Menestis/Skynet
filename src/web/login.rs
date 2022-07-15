@@ -83,9 +83,22 @@ async fn proxy_login(uuid: Uuid, data: Arc<AppData>, request: ProxyLoginRequest)
             data.db.insert_player(&uuid, &request.username, None).await.map_err(ApiError::from)?;
             DbProxyPlayerInfo::default().build_proxy_login_player_info(&data.db).await.map_err(ApiError::from)?
         }
+        Some(info) if info.session.is_some() => {
+            let builder = MessageBuilder::new()
+                .component("SkyNet ".to_string()).with_color(Some(Color::Aqua)).close()
+                .component("> ".to_string()).with_color(Some(Color::DarkGray)).close()
+                .component("Connection impossible...".to_string()).with_color(Some(Color::Red)).close()
+                .line_break()
+                .component("Vous êtes déja connecté à notre infrastructure".to_string()).close()
+                .line_break()
+                .component("Si le problème persiste merci de contacter le support".to_string()).close()
+                .line_break()
+                .component(format!("En précisant l'identifiant de session suivant : {}", info.session.unwrap())).close();
+            return Ok(reply::json(&ProxyLoginResponse::Denied { message: builder.close() }));
+        },
         Some(info) if info.ban.is_some() => {
             let builder = MessageBuilder::new()
-                .component("SkyNet ".to_string()).with_color(Some(Color::DarkPurple)).close()
+                .component("SkyNet ".to_string()).with_color(Some(Color::Aqua)).close()
                 .component("> ".to_string()).with_color(Some(Color::DarkGray)).close()
                 .component("Connection impossible...".to_string()).with_color(Some(Color::Red)).close()
                 .line_break()
@@ -173,13 +186,12 @@ enum ProxyPreLoginResponse {
 
 #[instrument(skip(data))]
 async fn pre_login(ip: IpAddr, data: Arc<AppData>) -> Result<impl Reply, Rejection> {
-
     let maintenance = data.db.select_setting("maintenance").await.map_err(ApiError::from)?.map(|t1| t1 == "true").unwrap_or(false);
     if maintenance {
         let ips: Vec<IpAddr> = data.db.select_setting("maintenance_override").await.map_err(ApiError::from)?.map(|t2| serde_json::from_str(&t2)).transpose().map_err(ApiError::from)?.unwrap_or_default();
         return if ips.contains(&ip) {
             Ok(reply::json(&ProxyPreLoginResponse::Allowed))
-        }else {
+        } else {
             Ok(reply::json(&ProxyPreLoginResponse::Denied(MessageBuilder::new()
                 .component("SkyNet ".to_string()).with_color(Some(Color::DarkPurple)).close()
                 .component("> ".to_string()).with_color(Some(Color::DarkGray)).close()
@@ -187,7 +199,7 @@ async fn pre_login(ip: IpAddr, data: Arc<AppData>) -> Result<impl Reply, Rejecti
                 .line_break()
                 .component("Le serveur est en maintenance, merci de réesayer plus tard".to_string()).close()
                 .close())))
-        }
+        };
     }
 
     let builder = MessageBuilder::new()
@@ -251,7 +263,7 @@ pub struct ServerLoginPlayerInfo {
     pub inventory: HashMap<String, i32>,
     pub properties: HashMap<String, String>,
     pub mute: Option<Mute>,
-    pub discord_id: Option<String>
+    pub discord_id: Option<String>,
 }
 
 

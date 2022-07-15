@@ -24,11 +24,11 @@ pub struct DbMute {
 
 impl Database {
     #[instrument(skip(self), level = "debug")]
-    pub(crate) async fn insert_mute_log(&self, duration: Option<&Duration>, target_uuid: Option<&Uuid>, target_ip: Option<&IpAddr>, issuer: Option<&Uuid>, reason: Option<&String>) -> Result<Uuid, DatabaseError> {
+    pub async fn insert_mute_log(&self, duration: Option<&Duration>, target_uuid: Option<&Uuid>, issuer: Option<&Uuid>, reason: Option<&String>) -> Result<Uuid, DatabaseError> {
         //#[query(insert_mute_log = "INSERT INTO mutes_logs(id, start, end, target, issuer, reason) VALUES (?, toTimestamp(now()), ?, ?, ?, ?);")]
         let uuid = Uuid::new_v4();
         let end = duration.map(|d| Timestamp(d.add(Duration::seconds(Local::now().timestamp()))));
-        execute(&self.queries.insert_mute_log, &self.session, (uuid, end, target_uuid, target_ip, issuer, reason)).await?;
+        execute(&self.queries.insert_mute_log, &self.session, (uuid, end, target_uuid, issuer, reason)).await?;
         Ok(uuid)
     }
 
@@ -42,7 +42,7 @@ impl Database {
 
     #[instrument(skip(self), level = "debug")]
     pub async fn insert_mute(&self, uuid: &Uuid, reason: Option<&String>, issuer: Option<&Uuid>, duration: Option<&Duration>) -> Result<Uuid, DatabaseError> {
-        let mute = self.insert_mute_log(duration, Some(uuid), None, issuer, reason).await?;
+        let mute = self.insert_mute_log(duration, Some(uuid), issuer, reason).await?;
         match duration {
             None => {
                 //#[query(insert_mute = "UPDATE players SET mute = ? WHERE uuid = ?;")]

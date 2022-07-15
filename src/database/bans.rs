@@ -101,21 +101,21 @@ impl Database {
     }
 
 
-/*    #[instrument(skip(self), level = "debug")]
-    pub async fn insert_ips_ban_related(&self, ips: Vec<&IpAddr>, reason: Option<&String>, issuer: Option<&Uuid>, duration: Option<&Duration>, ban: &Uuid) -> Result<(), DatabaseError> {
-        match duration {
-            None => {
-                //#[query(insert_ip_ban = "INSERT INTO ip_bans(ip, reason, date, end, ban, automated) VALUES (?, ?, toTimestamp(now()), null, ?, ?);")]
-                execute(&self.queries.insert_ip_ban, &self.session, (ip, reason, ban, automated)).await?;
+    /*    #[instrument(skip(self), level = "debug")]
+        pub async fn insert_ips_ban_related(&self, ips: Vec<&IpAddr>, reason: Option<&String>, issuer: Option<&Uuid>, duration: Option<&Duration>, ban: &Uuid) -> Result<(), DatabaseError> {
+            match duration {
+                None => {
+                    //#[query(insert_ip_ban = "INSERT INTO ip_bans(ip, reason, date, end, ban, automated) VALUES (?, ?, toTimestamp(now()), null, ?, ?);")]
+                    execute(&self.queries.insert_ip_ban, &self.session, (ip, reason, ban, automated)).await?;
+                }
+                Some(duration) => {
+                    let end = duration.add(Duration::seconds(Local::now().timestamp()));
+                    //#[query(insert_ip_ban_ttl = "INSERT INTO ip_bans(ip, reason, date, end, ban, automated) VALUES (?, ?, toTimestamp(now()), ?, ?, ?) USING TTL ?;")]
+                    execute(&self.queries.insert_ip_ban_ttl, &self.session, (ip, reason, Timestamp(end), ban, automated, duration.num_seconds() as i32)).await?;
+                }
             }
-            Some(duration) => {
-                let end = duration.add(Duration::seconds(Local::now().timestamp()));
-                //#[query(insert_ip_ban_ttl = "INSERT INTO ip_bans(ip, reason, date, end, ban, automated) VALUES (?, ?, toTimestamp(now()), ?, ?, ?) USING TTL ?;")]
-                execute(&self.queries.insert_ip_ban_ttl, &self.session, (ip, reason, Timestamp(end), ban, automated, duration.num_seconds() as i32)).await?;
-            }
-        }
-        Ok(())
-    }*/
+            Ok(())
+        }*/
 
     #[instrument(skip(self), level = "debug")]
     pub async fn insert_ban(&self, uuid: &Uuid, reason: Option<&String>, issuer: Option<&Uuid>, duration: Option<&Duration>) -> Result<Uuid, DatabaseError> {
@@ -147,7 +147,6 @@ impl Database {
     }
 
 
-
     #[instrument(skip(self), level = "debug")]
     pub async fn remove_player_ban(&self, uuid: &Uuid) -> Result<(), DatabaseError> {
         //#[query(remove_ban = "UPDATE players SET ban = null, ban_reason = null WHERE uuid = ?;")]
@@ -155,7 +154,7 @@ impl Database {
     }
 
     #[instrument(skip(self), level = "debug")]
-    pub async fn select_ban(&self, ban_id: Uuid) -> Result<Option<DbBan>, DatabaseError>{
+    pub async fn select_ban(&self, ban_id: Uuid) -> Result<Option<DbBan>, DatabaseError> {
         //#[query(select_ban_log = "SELECT id, start, end, issuer, reason, ip, target FROM bans_logs WHERE id = ?;")]
         select_one(&self.queries.select_ban_log, &self.session, (ban_id, )).await
     }
@@ -163,14 +162,14 @@ impl Database {
 
 impl Into<Ban> for DbBan {
     fn into(self) -> Ban {
-        Ban{
+        Ban {
             id: self.id,
-            start: NaiveDateTime::from_timestamp(self.start.num_seconds(),0).to_string(),
-            end: self.end.map(|t| NaiveDateTime::from_timestamp(t.num_seconds(),0).to_string()),
+            start: NaiveDateTime::from_timestamp(self.start.num_seconds(), 0).to_string(),
+            end: self.end.map(|t| NaiveDateTime::from_timestamp(t.num_seconds(), 0).to_string()),
             issuer: self.issuer,
             reason: self.reason,
             ip: self.ip,
-            target: self.target
+            target: self.target,
         }
     }
 }

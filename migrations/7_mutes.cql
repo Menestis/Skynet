@@ -11,5 +11,5 @@ CREATE TABLE mutes_logs
 
 
 ALTER TABLE players
-    ADD mute TEXT;
+    ADD mute UUID;
 

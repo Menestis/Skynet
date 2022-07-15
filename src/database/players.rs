@@ -11,6 +11,7 @@ use crate::web::login::{ProxyLoginPlayerInfo, ServerLoginPlayerInfo};
 
 #[derive(Serialize, Debug, Default, FromRow)]
 pub struct DbProxyPlayerInfo {
+    pub session: Option<Uuid>,
     pub locale: Option<String>, //Having one there means that we force his locale to this
 
     pub groups: Option<Vec<String>>,
@@ -150,7 +151,7 @@ impl Database {
 
     #[instrument(skip(self), level = "debug")]
     pub async fn select_proxy_player_info(&self, uuid: &Uuid) -> Result<Option<DbProxyPlayerInfo>, DatabaseError> {
-        //#[query(select_proxy_player_info = "SELECT locale, groups, permissions, properties, ban, ban_reason, TTL(ban) AS ban_ttl FROM players WHERE uuid = ?;")]
+        //#[query(select_proxy_player_info = "SELECT session, locale, groups, permissions, properties, ban, ban_reason, TTL(ban) AS ban_ttl FROM players WHERE uuid = ?;")]
         select_one(&self.queries.select_proxy_player_info, &self.session, (uuid, )).await
     }
 

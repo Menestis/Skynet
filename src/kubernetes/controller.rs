@@ -61,7 +61,7 @@ pub async fn reconcile(pod: Arc<Pod>, ctx: Context<(Api<Pod>, Arc<Database>, Arc
             label: pod.name(),
             state: "Starting".to_string(),
             properties: Some(properties.clone()),
-            online: 0
+            online: 0,
         }).await?;
 
         if kind != "proxy" {
@@ -94,17 +94,23 @@ pub async fn reconcile(pod: Arc<Pod>, ctx: Context<(Api<Pod>, Arc<Database>, Arc
                 msgr.send_event(&ServerEvent::DeleteRoute { id, name: pod.name() }).await?;
 
                 let server = db.select_server(&id).await?;
-                if let Some(server) = server{
+                if let Some(server) = server {
                     online_player_count.write().await.remove(&id);
                     let online: i32 = online_player_count.read().await.values().sum();
-                    if let Err(e) = db.insert_setting("online_count", &online.to_string()).await{
+                    if let Err(e) = db.insert_setting("online_count", &online.to_string()).await {
                         error!("{}", e);
+                    }
+                    if server.kind == "proxy" {
+                        for pl in db.select_online_players_reduced_info().await? {
+                            if pl.proxy == server.id {
+                                info!("Force closing {} session (due to {} shutdown)",pl.username, pl.proxy);
+                                db.close_player_session(&pl.uuid).await?;
+                            }
+                        }
                     }
                     db.delete_server(&id).await?;
                     db.insert_server_log(&server.id, &server.description, &server.kind, &server.label, &server.properties.unwrap_or_default()).await?;
                 }
-
-
             }
             let finalizers: Vec<String> = pod.finalizers().iter().filter(|&x| x != FINALIZER).map(|x| x.clone()).collect();
             let patch = json!({
