@@ -17,11 +17,11 @@ pub struct MessageComponent {
 
 #[derive(Debug, Serialize)]
 pub struct Modifiers {
-    bold: bool,
-    italic: bool,
-    underlined: bool,
-    strikethrough: bool,
-    obfuscated: bool,
+    pub bold: bool,
+    pub italic: bool,
+    pub underlined: bool,
+    pub strikethrough: bool,
+    pub obfuscated: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Display)]
@@ -42,7 +42,7 @@ pub enum Color {
     Red,
     LighPurple,
     Yellow,
-    While,
+    White,
     Reset,
     Custom(String),
 }
@@ -106,12 +106,12 @@ impl MessageComponentBuilder {
         self
     }
 
-    pub fn _with_modifiers(mut self, modifiers: Option<Modifiers>) -> MessageComponentBuilder {
+    pub fn with_modifiers(mut self, modifiers: Option<Modifiers>) -> MessageComponentBuilder {
         self.component.modifiers = modifiers;
         self
     }
 
-    pub fn _with_font(mut self, font: Option<String>) -> MessageComponentBuilder {
+    pub fn with_font(mut self, font: Option<String>) -> MessageComponentBuilder {
         self.component.font = font;
         self
     }

@@ -15,7 +15,7 @@ use warp::hyper::StatusCode;
 use crate::database::players::DbProxyPlayerInfo;
 use crate::log::debug;
 use crate::structures::players::Mute;
-use crate::utils::message::{Color, Message, MessageBuilder};
+use crate::utils::message::{Color, Message, MessageBuilder, Modifiers};
 use crate::utils::proxycheck;
 
 pub fn filter(data: Arc<AppData>) -> impl Filter<Extract=impl Reply, Error=Rejection> + Clone {
@@ -85,35 +85,54 @@ async fn proxy_login(uuid: Uuid, data: Arc<AppData>, request: ProxyLoginRequest)
         }
         Some(info) if info.session.is_some() => {
             let builder = MessageBuilder::new()
-                .component("SkyNet ".to_string()).with_color(Some(Color::Aqua)).close()
-                .component("> ".to_string()).with_color(Some(Color::DarkGray)).close()
+                .component("Menestis ".to_string()).with_color(Some(Color::DarkAqua)).with_modifiers(Some(Modifiers {
+                bold: true,
+                italic: false,
+                underlined: false,
+                strikethrough: false,
+                obfuscated: false,
+            })).close()
+                .component("» ".to_string()).with_color(Some(Color::White)).close()
+                .line_break()
                 .component("Connection impossible...".to_string()).with_color(Some(Color::Red)).close()
                 .line_break()
-                .component("Vous êtes déja connecté à notre infrastructure".to_string()).close()
                 .line_break()
-                .component("Si le problème persiste merci de contacter le support".to_string()).close()
+                .component("Vous êtes déjà connecté(e) à notre infrastructure".to_string()).with_color(Some(Color::Red)).close()
+                .line_break()
+                .component("Si le problème persiste merci de contacter le support.".to_string()).with_color(Some(Color::Red)).close()
                 .line_break()
                 .component(format!("En précisant l'identifiant de session suivant : {}", info.session.unwrap())).close();
             return Ok(reply::json(&ProxyLoginResponse::Denied { message: builder.close() }));
-        },
+        }
         Some(info) if info.ban.is_some() => {
             let builder = MessageBuilder::new()
-                .component("SkyNet ".to_string()).with_color(Some(Color::Aqua)).close()
-                .component("> ".to_string()).with_color(Some(Color::DarkGray)).close()
-                .component("Connection impossible...".to_string()).with_color(Some(Color::Red)).close()
+                .component("» ".to_string()).with_color(Some(Color::White)).close()
+                .component("§cVous avez été banni(e) de notre infrastructure.".to_string()).with_color(Some(Color::Red)).close()
                 .line_break()
-                .component(format!("Vous avez été bannis pour : {}", info.ban_reason.unwrap_or("non spécifié".to_string()))).close()
+
+                .component("» ".to_string()).with_color(Some(Color::DarkGray)).close()
+                .component("Raison :".to_string()).with_color(Some(Color::Gray)).close()
+                .component(" ".to_string()).with_color(Some(Color::Yellow)).close()
+                .component(format!("{}", info.ban_reason.unwrap_or("non spécifié".to_string()))).close()
                 .line_break()
-                .component(format!("Référence : {}", info.ban.unwrap())).close()
-                .line_break()
+
+                .component("» ".to_string()).with_color(Some(Color::DarkGray)).close()
+                .component("Date :".to_string()).with_color(Some(Color::Gray)).close()
+                .component(" ".to_string()).with_color(Some(Color::Yellow)).close()
                 .component(match info.ban_ttl {
                     None => {
-                        "Votre sanction ne prendra jamais fin".to_string()
+                        "Jamais".to_string()
                     }
                     Some(time) => {
-                        format!("Votre sanction prendra fin le {}", Local::now().add(Duration::seconds(time as i64)).format("%c"))
+                        format!("{}", Local::now().add(Duration::seconds(time as i64)).format("%c"))
                     }
-                }).close();
+                }).close()
+
+                .line_break()
+                .component("Si vous pensez que c'est une erreur, contactez le support.".to_string()).with_color(Some(Color::Red)).close()
+                .line_break()
+                .component(format!("Sanction-ID : {}", info.ban.unwrap())).close()
+                .line_break();
             return Ok(reply::json(&ProxyLoginResponse::Denied { message: builder.close() }));
         }
         Some(info) => {
@@ -197,7 +216,7 @@ async fn pre_login(ip: IpAddr, data: Arc<AppData>) -> Result<impl Reply, Rejecti
                 .component("> ".to_string()).with_color(Some(Color::DarkGray)).close()
                 .component("Connection impossible...".to_string()).with_color(Some(Color::Red)).close()
                 .line_break()
-                .component("Le serveur est en maintenance, merci de réesayer plus tard".to_string()).close()
+                .component("Le serveur est en maintenance, merci de réessayer plus tard".to_string()).close()
                 .close())))
         };
     }

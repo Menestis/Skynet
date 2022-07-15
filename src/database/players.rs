@@ -43,11 +43,10 @@ pub struct DbServerPlayerInfo {
     pub currency: i32,
     pub premium_currency: i32,
 
-    pub mute: Option<Uuid>,
-
     pub blocked: Option<Vec<Uuid>>,
     pub inventory: Option<HashMap<String, i32>>,
     pub properties: Option<HashMap<String, String>>,
+    pub mute: Option<Uuid>,
 }
 
 #[derive(Serialize, Debug, FromRow)]
