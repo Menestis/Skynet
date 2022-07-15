@@ -3,7 +3,7 @@ use itertools::Itertools;
 use serde::Serialize;
 use warp::{Filter, path, Rejection, Reply, reply};
 use crate::AppData;
-use tracing::{debug, instrument};
+use tracing::{debug, info, instrument};
 use uuid::Uuid;
 use warp::http::StatusCode;
 use crate::messenger::servers_events::ServerEvent;
@@ -28,9 +28,10 @@ async fn generate_stats(data: Arc<AppData>) -> Result<impl Reply, Rejection> {
     //.query_iter("SELECT player, sum(value) FROM statistics_processable WHERE timestamp > ? AND timestamp < ? AND server_kind = ?  AND key = ? GROUP BY player ALLOW FILTERING;", (rules.start, rules.end, rules.server_kind, rules.key)).await {
     let rules = data.db.select_leaderboards_rules().await.map_err(ApiError::from)?;
 
+    info!("Processing leaderboards, found {} leaderboards to generate", rules.len());
 
     for (name, label, rule) in rules {
-        debug!("Processing {} leaderboard", name);
+        info!("Processing {} leaderboard", name);
 
         let stats = if let Some(kind) = rule.game_kind {
             data.db.select_stats_kind(&rule.stat_key, &kind, rule.period.timestamp()).await

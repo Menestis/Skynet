@@ -360,6 +360,9 @@ paths:
                 server:
                   type: string
                   format: uuid
+                game_kind:
+                  type: string
+                  format: string
                 stats:
                   type: object
                   additionalProperties:

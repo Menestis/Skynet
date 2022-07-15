@@ -43,14 +43,14 @@ impl LeaderboardPeriod {
 
 impl Database {
     #[instrument(skip(self), level = "debug")]
-    pub async fn insert_stats(&self, player: &Uuid, session: &Uuid, server_id: &Uuid, server_kind: &str, stats: &HashMap<String, i32>) -> Result<(), DatabaseError> {
+    pub async fn insert_stats(&self, player: &Uuid, session: &Uuid, server_id: &Uuid, server_kind: &str, stats: &HashMap<String, i32>, game_kind: Option<&str>) -> Result<(), DatabaseError> {
         let mut batch = Batch::default();
         let mut values = vec![];
         let timestamp = Timestamp(Duration::seconds(Local::now().timestamp()));
         for (k, v) in stats {
-            //#[query(insert_stats = "INSERT INTO statistics(player, session, timestamp, server_id, server_kind, key, value) VALUES (?, ?, ? ,?, ?, ?, ?);")]
+            //#[query(insert_stats = "INSERT INTO statistics(player, session, timestamp, server_id, server_kind, key, value, game_kind) VALUES (?, ?, ? ,?, ?, ?, ?, ?);")]
             batch.append_statement(self.queries.insert_stats.clone());
-            values.push((player, session, &timestamp, server_id, server_kind, k, v));
+            values.push((player, session, &timestamp, server_id, server_kind, k, v, game_kind));
         }
 
         self.session.batch(&batch, values).await?;
@@ -107,7 +107,7 @@ impl Database {
 
     #[instrument(skip(self), level = "debug")]
     pub async fn select_leaderboard(&self, name: &str) -> Result<Option<(String, Vec<String>)>, DatabaseError> {
-        //#[query(select_leaderboard = "SELECT label, leaderboard FROM leaderboards")]
+        //#[query(select_leaderboard = "SELECT label, leaderboard FROM leaderboards WHERE name = ?")]
         Ok(select_one::<(String, Option<Vec<String>>), _>(&self.queries.select_leaderboard, &self.session, (name, )).await?.map(|(name, leaderboard)| (name, leaderboard.unwrap_or_default())))
 
     }

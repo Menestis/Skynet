@@ -38,6 +38,7 @@ pub fn filter(data: Arc<AppData>) -> impl Filter<Extract=impl Reply, Error=Rejec
 struct PlayerStats {
     server: Uuid,
     session: Uuid,
+    game_kind: Option<String>,
     stats: HashMap<String, i32>,
 }
 
@@ -49,7 +50,7 @@ async fn post_stats(uuid: Uuid, data: Arc<AppData>, request: PlayerStats) -> Res
         Some(kind) => kind
     };
 
-    data.db.insert_stats(&uuid, &request.session, &request.server, &kind, &request.stats).await.map_err(ApiError::from)?;
+    data.db.insert_stats(&uuid, &request.session, &request.server, &kind, &request.stats, Some(request.game_kind.as_ref().unwrap_or(&kind))).await.map_err(ApiError::from)?;
 
     Ok(reply().into_response())
 }

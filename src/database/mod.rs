@@ -4,6 +4,7 @@ use scylla::{FromRow, Session, SessionBuilder};
 use std::env::{var, VarError};
 use std::num::ParseIntError;
 use futures::{StreamExt};
+use scylla::batch::Consistency;
 use scylla::transport::errors::{NewSessionError, QueryError};
 use scylla::transport::iterator::NextRowError;
 use thiserror::Error;
@@ -56,7 +57,7 @@ pub async fn init() -> Result<Database, DatabaseError> {
 
     Span::current().record("keyspace", &keyspace.as_str());
 
-    let session = SessionBuilder::new().known_node(addr).user(user, passwd).load_balancing(policy).use_keyspace(&keyspace, true).build().await?;
+    let session = SessionBuilder::new().known_node(addr).user(user, passwd).load_balancing(policy).use_keyspace(&keyspace, true).default_consistency(Consistency::Quorum).build().await?;
     let queries = Queries::new(&session).await?;
     let database = Database { session, queries };
     Ok(database)
