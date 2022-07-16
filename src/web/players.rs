@@ -140,7 +140,7 @@ pub async fn move_player_to_server_kind(data: Arc<AppData>, uuid: &Uuid, kind: &
         if srv.state != "Waiting" && srv.state != "Idle" {
             continue;
         }
-        if srv.properties.is_some() && srv.properties.unwrap().contains_key("host") {
+        if srv.properties.is_some() && srv.properties.as_ref().unwrap().contains_key("host") {
             continue;
         }
         let slots = if let Some(slots) = srv.properties.as_ref().map(|t| t.get("slots")).flatten().map(|t| t.parse::<i64>()).transpose().map_err(ApiError::from)? {
