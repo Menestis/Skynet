@@ -42,6 +42,7 @@ pub struct Leaderboard {
 async fn delete_link(discord: String, data: Arc<AppData>) -> Result<impl Reply, Rejection> {
     let uuids = data.db.select_players_uuid_by_discord(&discord).await.map_err(ApiError::from)?;
     for uuid in uuids {
+        data.db.set_player_discord_id(&uuid, None).await.map_err(ApiError::from)?;
         let (proxy, server) = join!(data.db.select_online_player_proxy(&uuid), data.db.select_online_player_server(&uuid));
 
         if let Some(proxy) = proxy.map_err(ApiError::from)? {
