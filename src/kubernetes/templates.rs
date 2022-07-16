@@ -35,7 +35,7 @@ impl Kubernetes {
                                 "cpu": "100m"
                             },
                             "limits": {
-                                "memory": properties.get("lmemory").unwrap_or(&"4Gi".to_string()),
+                                "memory": properties.get("lmemory").unwrap_or(&"5Gi".to_string()),
                                 "cpu": "2000m"
                             }
                         },
