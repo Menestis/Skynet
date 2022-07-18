@@ -2,7 +2,8 @@ use std::collections::HashMap;
 use std::net::IpAddr;
 use std::ops::Add;
 use std::sync::Arc;
-use chrono::{Duration, Local};
+use chrono::{Duration, FixedOffset, Local, TimeZone};
+use humantime::format_duration;
 use warp::{Filter, path, Rejection, Reply, reply};
 use crate::AppData;
 use tracing::{error, instrument};
@@ -77,7 +78,6 @@ pub struct ProxyLoginPlayerInfo {
 #[instrument(skip(data))]
 async fn proxy_login(uuid: Uuid, data: Arc<AppData>, request: ProxyLoginRequest) -> Result<impl Reply, Rejection> {
     let option = data.db.select_proxy_player_info(&uuid).await.map_err(ApiError::from)?;
-
     let info = match option {
         None => {
             data.db.insert_player(&uuid, &request.username, None).await.map_err(ApiError::from)?;
@@ -111,27 +111,28 @@ async fn proxy_login(uuid: Uuid, data: Arc<AppData>, request: ProxyLoginRequest)
                 .line_break()
 
                 .component("» ".to_string()).with_color(Some(Color::DarkGray)).close()
-                .component("Raison :".to_string()).with_color(Some(Color::Gray)).close()
-                .component(" ".to_string()).with_color(Some(Color::Yellow)).close()
+                .component("Raison : ".to_string()).with_color(Some(Color::Gray)).close()
                 .component(format!("{}", info.ban_reason.unwrap_or("non spécifié".to_string()))).close()
                 .line_break()
 
                 .component("» ".to_string()).with_color(Some(Color::DarkGray)).close()
-                .component("Date :".to_string()).with_color(Some(Color::Gray)).close()
-                .component(" ".to_string()).with_color(Some(Color::Yellow)).close()
+                .component("Date : ".to_string()).with_color(Some(Color::Gray)).close()
+
+                .component("» ".to_string()).with_color(Some(Color::DarkGray)).close()
+                .component("Expiration : ".to_string()).with_color(Some(Color::Gray)).close()
                 .component(match info.ban_ttl {
                     None => {
                         "Jamais".to_string()
                     }
                     Some(time) => {
-                        format!("{}", Local::now().add(Duration::seconds(time as i64)).format("%c"))
+                        format!("{} ({})",Duration::seconds(time as i64).to_std().map(|t| format_duration(t).to_string()).unwrap_or("?".to_string()), Local::now().add(Duration::seconds(time as i64 + 60*2)).format("%c"))
                     }
                 }).close()
 
                 .line_break()
                 .component("Si vous pensez que c'est une erreur, contactez le support.".to_string()).with_color(Some(Color::Red)).close()
                 .line_break()
-                .component(format!("Sanction-ID : {}", info.ban.unwrap())).close()
+                .component(format!("Identifiant : {}", info.ban.unwrap())).close()
                 .line_break();
             return Ok(reply::json(&ProxyLoginResponse::Denied { message: builder.close() }));
         }
