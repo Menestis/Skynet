@@ -1,0 +1,69 @@
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: skynet
+  namespace: minecraft
+rules:
+  - verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - watch
+    apiGroups: ["", "coordination.k8s.io"]
+    resources:
+      - pods
+      - leases
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: skynet
+  namespace: minecraft
+roleRef:
+  kind: Role
+  apiGroup: rbac.authorization.k8s.io
+  name: skynet
+subjects:
+  - kind: ServiceAccount
+    name: skynet
+    namespace: skynet
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: skynet
+  namespace: skynet
+rules:
+  - verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - watch
+    apiGroups: ["", "coordination.k8s.io"]
+    resources:
+      - pods
+      - leases
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: skynet
+  namespace: skynet
+roleRef:
+  kind: Role
+  apiGroup: rbac.authorization.k8s.io
+  name: skynet
+subjects:
+  - kind: ServiceAccount
+    name: skynet
+    namespace: skynet
+---
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: skynet
+  namespace: skynet

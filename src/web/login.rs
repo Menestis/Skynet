@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::net::IpAddr;
 use std::ops::Add;
 use std::sync::Arc;
-use chrono::{Duration, FixedOffset, Local, TimeZone};
+use chrono::{Duration, Local, TimeZone};
 use humantime::format_duration;
 use warp::{Filter, path, Rejection, Reply, reply};
 use crate::AppData;
@@ -125,7 +125,7 @@ async fn proxy_login(uuid: Uuid, data: Arc<AppData>, request: ProxyLoginRequest)
                         "Jamais".to_string()
                     }
                     Some(time) => {
-                        format!("{} ({})",Duration::seconds(time as i64).to_std().map(|t| format_duration(t).to_string()).unwrap_or("?".to_string()), Local::now().add(Duration::seconds(time as i64 + 60*2)).format("%c"))
+                        format!("{} ({})", Duration::seconds(time as i64).to_std().map(|t| format_duration(t).to_string()).unwrap_or("?".to_string()), Local::now().add(Duration::seconds(time as i64 + 60 * 2)).format("%c"))
                     }
                 }).close()
 
@@ -323,11 +323,13 @@ async fn login(uuid: Uuid, data: Arc<AppData>, server: Uuid) -> Result<impl Repl
         }
     }
 
-
     let info = player.build_server_login_player_info(&data.db, &server_kind.name).await.map_err(ApiError::from)?;
 
+    match data.db.select_player_waiting_for_move(&uuid).await.map_err(ApiError::from)? {
+        Some(waiting) if waiting == kind => data.db.update_player_server_and_null_waiting_move_to(&uuid, server).await.map_err(ApiError::from)?,
+        _ => data.db.update_player_server(&uuid, server).await.map_err(ApiError::from)?
+    };
 
-    data.db.update_player_server_and_null_waiting_move_to(&uuid, server).await.map_err(ApiError::from)?;
 
     Ok(reply::json(&info).into_response())
 }

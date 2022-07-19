@@ -1,0 +1,31 @@
+kind: ServiceMonitor
+apiVersion: monitoring.coreos.com/v1
+metadata:
+  name: skynet
+  namespace: skynet
+spec:
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 5s
+  selector:
+    matchLabels:
+      app: skynet
+      skynet_master: "true"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: skynet-master
+  namespace: skynet
+  labels:
+    app: skynet
+    skynet_master: "true"
+spec:
+  type: ClusterIP
+  selector:
+    app: skynet
+    skynet_master: "true"
+  ports:
+    - port: 8080
+      name: metrics

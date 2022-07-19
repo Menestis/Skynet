@@ -4,13 +4,16 @@ use serde::Serialize;
 use tokio::join;
 use warp::{Filter, path, Rejection, Reply, reply};
 use crate::AppData;
-use tracing::{instrument};
+use tracing::{error, instrument};
 use uuid::Uuid;
 use warp::body::json;
 use warp::http::StatusCode;
+use crate::database::DatabaseError;
+use crate::database::servers::ServerKind;
 use crate::messenger::servers_events::ServerEvent;
 use crate::structures::discord::Message;
 use crate::web::{with_auth, with_data};
+use crate::web::players::move_player_to_server_kind;
 use crate::web::rejections::ApiError;
 
 pub fn filter(data: Arc<AppData>) -> impl Filter<Extract=impl Reply, Error=Rejection> + Clone {
@@ -47,9 +50,25 @@ async fn delete_link(discord: String, data: Arc<AppData>) -> Result<impl Reply, 
 
         if let Some(proxy) = proxy.map_err(ApiError::from)? {
             data.msgr.send_event(&ServerEvent::InvalidatePlayer { server: proxy, uuid }).await.map_err(ApiError::from)?;
-        };
-        if let Some(server) = server.map_err(ApiError::from)? {
-            data.msgr.send_event(&ServerEvent::InvalidatePlayer { server, uuid }).await.map_err(ApiError::from)?;
+
+            if let Some(server) = server.map_err(ApiError::from)? {
+                data.msgr.send_event(&ServerEvent::InvalidatePlayer { server, uuid }).await.map_err(ApiError::from)?;
+
+
+                let kind = match data.db.select_server_kind(&server).await {
+                    Ok(Some(kind)) => kind,
+                    Ok(None) => return Ok(warp::reply().into_response()),
+                    Err(e) => {
+                        error!("{}",e);
+                        return Ok(warp::reply().into_response());
+                    }
+                };
+                if kind != "lobby" {
+                    // move_player_to_server_kind(data.clone(), &uuid, "lobby").await.map_err(ApiError::from)?;
+                    //TODO add message
+                    data.msgr.send_event(&ServerEvent::DisconnectPlayer { proxy, player: uuid }).await.map_err(ApiError::from)?;
+                }
+            };
         };
     }
 

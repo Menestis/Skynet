@@ -22,6 +22,7 @@ use uuid::Uuid;
 use crate::database::Database;
 use crate::kubernetes::Kubernetes;
 use crate::messenger::Messenger;
+use crate::structures::metrics::Metrics;
 
 mod database;
 mod messenger;
@@ -42,6 +43,8 @@ async fn main() -> anyhow::Result<()> {
     let db = Arc::new(database::init().await?);
     let msgr = Arc::new(messenger::init(&uuid).await?);
     let k8s = Arc::new(kubernetes::init(&uuid, db.clone(), msgr.clone(), online_player_count.clone()).await?);
+    
+    let metrics = Metrics::new()?;
 
     let (shutdown_task, s, r) = shutdown();
 
@@ -54,7 +57,8 @@ async fn main() -> anyhow::Result<()> {
         proxy_check_api_key: var("PROXYCHECK_API_KEY")?,
         shutdown_sender: s,
         shutdown_receiver: r,
-        player_count: online_player_count
+        player_count: online_player_count,
+        metrics
     });
 
     let addr = SocketAddr::from_str(&var("SKYNET_ADDRESS").unwrap_or("127.0.0.1:8888".to_string()))?;
@@ -77,6 +81,7 @@ pub struct AppData {
     pub shutdown_sender: mpsc::Sender<()>,
     pub shutdown_receiver: watch::Receiver<bool>,
     pub player_count: Arc<RwLock<HashMap<Uuid, i32>>>,
+    pub metrics: Metrics,
 }
 
 impl AppData {
@@ -89,7 +94,7 @@ impl AppData {
 
 fn init_logs() {
     tracing_subscriber::fmt()
-        .with_env_filter(env::var("LOG_LEVEL").unwrap_or("mio=info,lapin=info,pinky_swear=info,scylla=info,tower=info,hyper=info,want=info,warp=info,kube_leader_election=warn,renew_lock=warn,kube=warn,tokio=info,info".to_string()))
+        .with_env_filter(var("LOG_LEVEL").unwrap_or("mio=info,lapin=info,pinky_swear=info,scylla=info,tower=info,hyper=info,want=info,warp=info,kube_leader_election=warn,renew_lock=warn,kube=warn,tokio=info,info".to_string()))
         .with_span_events(FmtSpan::CLOSE).init();
 }
 

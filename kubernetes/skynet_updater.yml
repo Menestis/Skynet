@@ -1,0 +1,33 @@
+#apiVersion: batch/v1
+#kind: Job
+#metadata:
+#  name: leaderboardupdater
+#  namespace: skynet
+#spec:
+#  template:
+#    spec:
+#      containers:
+#        - name: curl
+#          image: curlimages/curl
+#          args: [ "-v","--location", "--request", "POST", "http://skynet.skynet:8080/api/leaderboards","--header", "Authorization: 70610200-da27-4bc7-8d57-45b6407bcd94" ]
+#      restartPolicy: OnFailure
+#  backoffLimit: 4
+#---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: leaderboardupdater
+  namespace: skynet
+spec:
+  schedule: "0 22 * * *"
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 86400
+      template:
+        spec:
+          containers:
+            - name: curl
+              image: curlimages/curl
+              imagePullPolicy: IfNotPresent
+              args: [ "-v","--location", "--request", "POST", "http://skynet.skynet:8080/api/leaderboards","--header", "Authorization: 70610200-da27-4bc7-8d57-45b6407bcd94" ]
+          restartPolicy: OnFailure

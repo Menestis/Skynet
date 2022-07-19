@@ -219,9 +219,21 @@ impl Database {
     }
 
     #[instrument(skip(self), level = "debug")]
+    pub async fn update_player_server(&self, player: &Uuid, server: Uuid) -> Result<(), DatabaseError> {
+        //#[query(update_player_server = "UPDATE players USING TTL 86400 SET server = ? WHERE uuid = ?;")]
+        execute(&self.queries.update_player_server_and_null_waiting_move_to, &self.session, (server, player)).await
+    }
+
+    #[instrument(skip(self), level = "debug")]
     pub async fn set_player_waiting_move_to(&self, player: &Uuid, kind: &str) -> Result<(), DatabaseError> {
         //#[query(set_player_waiting_move_to = "UPDATE players SET waiting_move_to = ? WHERE uuid = ?;")]
         execute(&self.queries.set_player_waiting_move_to, &self.session, (kind, player)).await
+    }
+
+    #[instrument(skip(self), level = "debug")]
+    pub async fn select_player_waiting_for_move(&self, uuid: &Uuid) -> Result<Option<String>, DatabaseError> {
+        //#[query(select_player_waiting_for_move = "SELECT waiting_move_to FROM players WHERE uuid = ?")]
+        Ok(select_one::<(Option<String>, ), _>(&self.queries.select_player_waiting_for_move, &self.session, (uuid, )).await?.map(|t| t.0).flatten())
     }
 
 

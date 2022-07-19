@@ -63,3 +63,6 @@ rand = "0.8.5"
 async-trait = "0.1.52"
 itertools = "0.10.3"
 humantime = "2.1.0"
+
+# Prometheus
+prometheus = { version = "0.13.1" }

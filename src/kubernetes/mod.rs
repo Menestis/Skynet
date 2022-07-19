@@ -1,16 +1,18 @@
 use std::collections::HashMap;
-use std::env::var;
+use std::env::{var, VarError};
 use std::sync::{Arc, PoisonError, RwLock, RwLockWriteGuard};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
+use futures::future::err;
 
 use futures::StreamExt;
 use k8s_openapi::api::core::v1::Pod;
 use kube::{Api, Client, Error};
-use kube::api::ListParams;
+use kube::api::{ListParams, Patch, PatchParams};
 use kube::runtime::Controller;
 use kube::runtime::controller::Context;
 use kube_leader_election::{LeaseLock, LeaseLockParams};
+use serde_json::json;
 use tokio::select;
 use tokio::sync::{oneshot};
 use tokio::sync::oneshot::Sender;
@@ -34,7 +36,8 @@ pub struct Kubernetes {
     sender: RwLock<Option<Sender<()>>>,
     database: Arc<Database>,
     messenger: Arc<Messenger>,
-    online_player_count: Arc<tokio::sync::RwLock<HashMap<Uuid, i32>>>
+    online_player_count: Arc<tokio::sync::RwLock<HashMap<Uuid, i32>>>,
+    sk_namespace: String,
 }
 
 #[instrument(name = "k8s_init", skip(database, messenger), fields(version = field::Empty))]
@@ -43,11 +46,13 @@ pub async fn init(id: &Uuid, database: Arc<Database>, messenger: Arc<Messenger>,
     let info = client.apiserver_version().await?;
     Span::current().record("version", &format!("{}.{}", info.major, info.minor).as_str());
 
-    let namespace = var("KUBERNETES_NAMESPACE").unwrap_or("minecraft".to_string());
+    let namespace = var("MINECRAFT_NAMESPACE").unwrap_or("minecraft".to_string());
+    let sk_namespace = var("SKYNET_NAMESPACE").unwrap_or("skynet".to_string());
+
 
     let leadership = LeaseLock::new(
         client.clone(),
-        &namespace,
+        &sk_namespace,
         LeaseLockParams {
             holder_id: id.to_string(),
             lease_name: "skynet-lease".into(),
@@ -62,6 +67,7 @@ pub async fn init(id: &Uuid, database: Arc<Database>, messenger: Arc<Messenger>,
         leadership,
         leader: AtomicBool::new(false),
         _namespace: namespace,
+        sk_namespace,
         sender: RwLock::new(None),
         database,
         messenger,
@@ -118,6 +124,26 @@ impl Kubernetes {
             error!("{}", err);
             self.leader.store(false, Ordering::Relaxed);
         }
+
+        let api = Api::<Pod>::namespaced(self.client.clone(), &self.sk_namespace);
+        let hostname = match var("HOSTNAME") {
+            Ok(hostname) => hostname,
+            Err(_) => return
+        };
+
+
+        let patch = json!({
+            "metadata": {
+                "labels": {
+                    "skynet_master": "true"
+                }
+            }
+        });
+
+        if let Err(e) = api.patch(&hostname, &PatchParams::default(), &Patch::Merge(patch)).await{
+            error!("{}", e);
+        }
+
         debug!("Control loop started !");
     }
 
@@ -133,6 +159,27 @@ impl Kubernetes {
                 error!("{}",e)
             }
         };
+
+        let api = Api::<Pod>::namespaced(self.client.clone(), &self.sk_namespace);
+        let hostname = match var("HOSTNAME") {
+            Ok(hostname) => hostname,
+            Err(_) => return
+        };
+
+        let empty: Option<String> = None;
+
+        let patch = json!({
+            "metadata": {
+                "labels": {
+                    "skynet_master": empty
+                }
+            }
+        });
+
+        if let Err(e) = api.patch(&hostname, &PatchParams::default(), &Patch::Merge(patch)).await{
+            error!("{}", e);
+        }
+
     }
 
 

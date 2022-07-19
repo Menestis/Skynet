@@ -21,8 +21,7 @@ pub mod registration;
 pub mod players;
 pub mod stats;
 pub mod discord;
-
-//TODO broadcast message to all srvs
+pub mod metrics;
 
 pub async fn create_task(addr: SocketAddr, data: Arc<AppData>) -> impl Future<Output=()> {
     let mut r = data.shutdown_receiver.clone();
@@ -38,6 +37,7 @@ pub async fn create_task(addr: SocketAddr, data: Arc<AppData>) -> impl Future<Ou
         .or(status::filter(data.clone()))
         .or(stats::filter(data.clone()))
         .or(discord::filter(data.clone()))
+        .or(metrics::filter(data.clone()))
 
         .recover(handle_rejection);
 

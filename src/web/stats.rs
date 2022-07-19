@@ -3,7 +3,7 @@ use itertools::Itertools;
 use serde::Serialize;
 use warp::{Filter, path, Rejection, Reply, reply};
 use crate::AppData;
-use tracing::{debug, info, instrument};
+use tracing::{info, instrument};
 use uuid::Uuid;
 use warp::http::StatusCode;
 use crate::messenger::servers_events::ServerEvent;
