@@ -144,7 +144,7 @@ impl Database {
     #[instrument(skip(self), level = "debug")]
     pub async fn select_players_uuid_by_discord(&self, discord: &str) -> Result<Vec<Uuid>, DatabaseError> {
         //#[query(select_player_uuid_by_discord = "SELECT uuid FROM players_by_discord_id WHERE discord_id = ?")]
-        Ok(select_iter::<(Option<Uuid>, ),_>(&self.queries.select_player_uuid_by_discord, &self.session, (discord, )).await?.iter().filter_map(|x| x.0).collect())
+        Ok(select_iter::<(Option<Uuid>, ), _>(&self.queries.select_player_uuid_by_discord, &self.session, (discord, )).await?.iter().filter_map(|x| x.0).collect())
     }
 
     #[instrument(skip(self), level = "debug")]
@@ -152,6 +152,19 @@ impl Database {
         //#[query(select_players_uuid_by_name = "SELECT uuid FROM players_by_username WHERE username = ?")]
         Ok(select_one::<(Option<Uuid>, ), _>(&self.queries.select_players_uuid_by_name, &self.session, (name, )).await?.map(|t| t.0).flatten())
     }
+
+    #[instrument(skip(self), level = "debug")]
+    pub async fn select_player_name(&self, uuid: &Uuid) -> Result<Option<String>, DatabaseError> {
+        //#[query(select_player_name = "SELECT username FROM players WHERE uuid = ?")]
+        Ok(select_one::<(Option<String>, ), _>(&self.queries.select_player_name, &self.session, (uuid, )).await?.map(|t| t.0).flatten())
+    }
+
+    #[instrument(skip(self), level = "debug")]
+    pub async fn select_player_discord(&self, uuid: &Uuid) -> Result<Option<String>, DatabaseError> {
+        //#[query(select_player_discord = "SELECT discord_id FROM players WHERE uuid = ?")]
+        Ok(select_one::<(Option<String>, ), _>(&self.queries.select_player_discord, &self.session, (uuid, )).await?.map(|t| t.0).flatten())
+    }
+
 
 
     #[instrument(skip(self), level = "debug")]
@@ -392,7 +405,7 @@ impl DbServerPlayerInfo {
             inventory: self.inventory.unwrap_or_default(),
             properties: self.properties.unwrap_or_default(),
             mute: mute.map(|t| t.into()),
-            discord_id: self.discord_id
+            discord_id: self.discord_id,
         })
     }
 }
@@ -430,7 +443,7 @@ impl DbPlayerInfo {
             properties: self.properties.unwrap_or_default(),
             ban: ban.map(DbBan::into),
             discord_id: self.discord_id,
-            mute: mute.map(|t| t.into())
+            mute: mute.map(|t| t.into()),
         })
     }
 }

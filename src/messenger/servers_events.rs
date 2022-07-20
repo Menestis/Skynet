@@ -3,8 +3,6 @@ use std::net::IpAddr;
 
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use crate::structures::discord::Message;
-use crate::utils::message::MessageComponent;
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(tag = "event")]

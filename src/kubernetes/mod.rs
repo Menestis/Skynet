@@ -1,10 +1,8 @@
 use std::collections::HashMap;
-use std::env::{var, VarError};
+use std::env::var;
 use std::sync::{Arc, PoisonError, RwLock, RwLockWriteGuard};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
-use futures::future::err;
-
 use futures::StreamExt;
 use k8s_openapi::api::core::v1::Pod;
 use kube::{Api, Client, Error};
@@ -71,7 +69,7 @@ pub async fn init(id: &Uuid, database: Arc<Database>, messenger: Arc<Messenger>,
         sender: RwLock::new(None),
         database,
         messenger,
-        online_player_count
+        online_player_count,
     })
 }
 
@@ -140,7 +138,7 @@ impl Kubernetes {
             }
         });
 
-        if let Err(e) = api.patch(&hostname, &PatchParams::default(), &Patch::Merge(patch)).await{
+        if let Err(e) = api.patch(&hostname, &PatchParams::default(), &Patch::Merge(patch)).await {
             error!("{}", e);
         }
 
@@ -176,10 +174,9 @@ impl Kubernetes {
             }
         });
 
-        if let Err(e) = api.patch(&hostname, &PatchParams::default(), &Patch::Merge(patch)).await{
+        if let Err(e) = api.patch(&hostname, &PatchParams::default(), &Patch::Merge(patch)).await {
             error!("{}", e);
         }
-
     }
 
 

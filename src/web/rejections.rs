@@ -1,3 +1,4 @@
+use std::net::AddrParseError;
 use std::num::ParseIntError;
 use thiserror::Error;
 use tokio::sync::mpsc;
@@ -32,6 +33,8 @@ pub enum ApiError {
     Channel(#[from] mpsc::error::SendError<()>),
     #[error("Could not parse uuid : {0}")]
     UUID(#[from] uuid::Error),
+    #[error("Could not parse addr : {0}")]
+    Addr(#[from] AddrParseError),
     #[error("Could not send message : {0}")]
     MessengerError(#[from] MessengerError),
     #[error("Could not parse int : {0}")]
@@ -43,7 +46,7 @@ pub enum ApiError {
     #[error(transparent)]
     Scaling(#[from] ScalingError),
     #[error(transparent)]
-    Reqwest(#[from] reqwest::Error)
+    Reqwest(#[from] reqwest::Error),
 }
 
 
@@ -58,7 +61,7 @@ impl ApiError {
     }
     pub fn log_if_needed(&self) {
         match self {
-            ApiError::Authorization => {},
+            ApiError::Authorization => {}
             _ => error!("{}", self)
         }
     }

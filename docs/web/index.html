@@ -1180,7 +1180,7 @@ ul.nav-tabs {
   "required" : [ "category" ],
   "type" : "object",
   "properties" : {
-    "categorie" : {
+    "category" : {
       "type" : "string"
     },
     "issuer" : {
@@ -10276,8 +10276,8 @@ $(document).ready(function() {
  -H "Content-Type: application/json" \
  "http://localhost:8888/api/players/{uuid}/sanction" \
  -d '{
-  &quot;categorie&quot; : &quot;categorie&quot;,
   &quot;unsanction&quot; : true,
+  &quot;category&quot; : &quot;category&quot;,
   &quot;issuer&quot; : &quot;046b6c7f-0b8a-43b9-b35d-6489e6daee91&quot;
 }'
 </code></pre>

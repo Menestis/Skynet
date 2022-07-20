@@ -6,9 +6,7 @@ use scylla::frame::value::Timestamp;
 use tracing::*;
 use uuid::Uuid;
 use crate::Database;
-use crate::database::{DatabaseError, execute, select_iter, select_one};
-use scylla::FromRow;
-use crate::structures::players::Mute;
+use crate::database::{DatabaseError, execute, select_one};
 
 impl Database {
     #[instrument(skip(self), level = "debug")]

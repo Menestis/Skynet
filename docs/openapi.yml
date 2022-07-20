@@ -816,7 +816,7 @@ paths:
               title: PlayerSanction
               required: ["category"]
               properties:
-                categorie:
+                category:
                   type: string
                 issuer:
                   type: string

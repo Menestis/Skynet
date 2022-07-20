@@ -5,7 +5,7 @@ use std::str::FromStr;
 use std::sync::Arc;
 use chrono::Duration;
 use reqwest::StatusCode;
-use warp::{Filter, path, Rejection, Reply, reply};
+use warp::{Filter, path, query, Rejection, Reply, reply};
 use crate::{AppData, Database};
 use tracing::instrument;
 use uuid::{Uuid};
@@ -21,6 +21,8 @@ use crate::log::debug;
 use crate::messenger::servers_events::ServerEvent;
 use async_recursion::async_recursion;
 use serde_json::json;
+use crate::utils::apocalypse_builder;
+use crate::utils::apocalypse_builder::ApocalypseState;
 use crate::utils::message::{Color, MessageBuilder};
 
 
@@ -35,6 +37,7 @@ pub fn filter(data: Arc<AppData>) -> impl Filter<Extract=impl Reply, Error=Rejec
         .or(warp::post().and(path!("api"/"players"/Uuid/"transaction")).and(with_auth(data.clone(), "player-transaction")).and(with_data(data.clone())).and(json::<PlayerTransaction>()).and_then(player_transaction))
         .or(warp::get().and(path!("api"/"players")).and(with_auth(data.clone(), "get-online-players")).and(with_data(data.clone())).and_then(get_online))
         .or(warp::get().and(path!("api"/"players"/String)).and(with_auth(data.clone(), "get-player")).and(with_data(data.clone())).and_then(get_player))
+        .or(warp::get().and(path!("api"/"players"/String/"full")).and(with_auth(data.clone(), "get-full-player")).and(query::<PlayerSelector>()).and(with_data(data.clone())).and_then(get_full_player))
         .or(warp::post().and(path!("api"/"players"/Uuid/"groups"/"update")).and(with_auth(data.clone(), "update-player-groups")).and(with_data(data.clone())).and(json::<PlayerGroupsUpdate>()).and_then(update_player_groups))
         .or(warp::post().and(path!("api"/"players"/Uuid/"inventory"/"transaction")).and(with_auth(data.clone(), "player-inventory-transaction")).and(with_data(data.clone())).and(json::<PlayerInventoryTransaction>()).and_then(player_inventory_transaction))
 }
@@ -360,7 +363,7 @@ async fn sanction_player(uuid: Uuid, data: Arc<AppData>, request: PlayerSanction
                 return Ok(StatusCode::OK.into_response());
             } else {
                 if info.ban.is_some() {
-                    return Ok(StatusCode::CONFLICT.into_response()); //TODO 409
+                    return Ok(StatusCode::CONFLICT.into_response());
                 }
                 let ban = data.db.insert_ban(&uuid, Some(&label), request.issuer.as_ref(), duration.as_ref()).await.map_err(ApiError::from)?;
 
@@ -447,6 +450,34 @@ async fn get_player(player: String, data: Arc<AppData>) -> Result<impl Reply, Re
             }.build_player_info(&data.db).await.map_err(ApiError::from)?).into_response())
         }
     }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct PlayerSelector {
+    by: PlayerSelectorValue,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+enum PlayerSelectorValue {
+    Name,
+    Discord,
+    Ip,
+    Uuid,
+}
+
+#[instrument(skip(data))]
+async fn get_full_player(player: String, selector: PlayerSelector, data: Arc<AppData>) -> Result<impl Reply, Rejection> {
+    let mut state = ApocalypseState::default();
+    match selector.by {
+        PlayerSelectorValue::Name => apocalypse_builder::get_name_associations(player, data.clone(), &mut state).await,
+        PlayerSelectorValue::Discord => apocalypse_builder::get_discord_associations(player, data.clone(), &mut state).await,
+        PlayerSelectorValue::Ip => apocalypse_builder::get_ip_associations(IpAddr::from_str(&player).map_err(ApiError::from)?, data.clone(), &mut state).await,
+        PlayerSelectorValue::Uuid => apocalypse_builder::get_uuid_associations(Uuid::parse_str(&player).map_err(ApiError::from)?, data.clone(), &mut state).await,
+    }.map_err(ApiError::from)?;
+
+
+
+    Ok(reply::json(&state))
 }
 
 #[instrument(skip(data))]

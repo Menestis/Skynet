@@ -1,4 +1,4 @@
-use prometheus::{Gauge, IntGauge};
+use prometheus::IntGauge;
 use tracing::instrument;
 
 pub struct Metrics {

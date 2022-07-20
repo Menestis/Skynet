@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::net::IpAddr;
 use std::ops::Add;
 use std::sync::Arc;
-use chrono::{Duration, Local, TimeZone};
+use chrono::{Duration, Local};
 use humantime::format_duration;
 use warp::{Filter, path, Rejection, Reply, reply};
 use crate::AppData;
@@ -114,9 +114,6 @@ async fn proxy_login(uuid: Uuid, data: Arc<AppData>, request: ProxyLoginRequest)
                 .component("Raison : ".to_string()).with_color(Some(Color::Gray)).close()
                 .component(format!("{}", info.ban_reason.unwrap_or("non spécifié".to_string()))).close()
                 .line_break()
-
-                .component("» ".to_string()).with_color(Some(Color::DarkGray)).close()
-                .component("Date : ".to_string()).with_color(Some(Color::Gray)).close()
 
                 .component("» ".to_string()).with_color(Some(Color::DarkGray)).close()
                 .component("Expiration : ".to_string()).with_color(Some(Color::Gray)).close()
