@@ -56,7 +56,7 @@ impl Database {
     }
 
     #[instrument(skip(self), level = "debug")]
-    pub async fn insert_mute_with_log(&self, uuid: &Uuid, reason: Option<&String>, issuer: Option<&Uuid>, duration: Option<&Duration>, mute: &Uuid) -> Result<(), DatabaseError> {
+    pub async fn insert_mute_without_log(&self, uuid: &Uuid, reason: Option<&String>, issuer: Option<&Uuid>, duration: Option<&Duration>, mute: &Uuid) -> Result<(), DatabaseError> {
         match duration {
             None => {
                 execute(&self.queries.insert_mute, &self.session, (mute, reason, uuid)).await?;

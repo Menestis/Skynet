@@ -83,6 +83,25 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/PlayerInfo"
+  /api/players/{player}/uuid:
+    get:
+      security:
+        - auth: [ "get-player" ]
+      tags: [ "Player" ]
+      parameters:
+        - name: player
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: "Players"
+          content:
+            application/json:
+              schema:
+                type: string
+                format: uuid
   /api/players/{uuid}/proxy/login:
     post:
       security:
@@ -777,6 +796,53 @@ paths:
           description: OK
         404:
           description: Player does not exist
+  /api/players/{uuid}/sanction:
+    post:
+      security:
+        - auth: [ "sanction-player" ]
+      tags: [ "Player" ]
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              title: PlayerSanction
+              required: ["category"]
+              properties:
+                categorie:
+                  type: string
+                issuer:
+                  type: string
+                  format: uuid
+                unsanction:
+                  type: boolean
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                title: PlayerSanctionResult
+                type: object
+                properties:
+                  sanction:
+                    type: string
+                    enum: ["kick", "mute", "ban"]
+                  id:
+                    type: string
+                    format: uuid
+        404:
+          description: Player or sanction board does not exist
+        409:
+          description: Player is already banned/muted for other reason
   /api/players/{uuid}/disconnect:
     post:
       security:

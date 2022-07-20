@@ -23,6 +23,7 @@ pub mod sessions;
 pub mod stats;
 pub mod discord;
 pub mod mutes;
+pub mod sanctions;
 
 pub struct Database {
     pub session: Session,

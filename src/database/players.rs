@@ -147,6 +147,12 @@ impl Database {
         Ok(select_iter::<(Option<Uuid>, ),_>(&self.queries.select_player_uuid_by_discord, &self.session, (discord, )).await?.iter().filter_map(|x| x.0).collect())
     }
 
+    #[instrument(skip(self), level = "debug")]
+    pub async fn select_players_uuid_by_name(&self, name: &str) -> Result<Option<Uuid>, DatabaseError> {
+        //#[query(select_players_uuid_by_name = "SELECT uuid FROM players_by_username WHERE username = ?")]
+        Ok(select_one::<(Option<Uuid>, ), _>(&self.queries.select_players_uuid_by_name, &self.session, (name, )).await?.map(|t| t.0).flatten())
+    }
+
 
     #[instrument(skip(self), level = "debug")]
     pub async fn select_proxy_player_info(&self, uuid: &Uuid) -> Result<Option<DbProxyPlayerInfo>, DatabaseError> {

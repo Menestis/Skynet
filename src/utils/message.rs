@@ -1,10 +1,10 @@
-use serde::{Serialize};
+use serde::{Serialize, Deserialize};
 
 pub type Message = Vec<MessageComponent>;
 
 use strum_macros::Display;
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct MessageComponent {
     pub text: String,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -15,7 +15,7 @@ pub struct MessageComponent {
     pub modifiers: Option<Modifiers>,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Modifiers {
     pub bold: bool,
     pub italic: bool,
@@ -24,7 +24,7 @@ pub struct Modifiers {
     pub obfuscated: bool,
 }
 
-#[derive(Debug, Clone, Serialize, Display)]
+#[derive(Debug, Clone, Serialize, Deserialize, Display)]
 #[serde(into = "String")]
 pub enum Color {
     Black,

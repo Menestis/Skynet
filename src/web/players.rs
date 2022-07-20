@@ -1,5 +1,7 @@
+use std::cmp::max;
 use std::collections::HashMap;
 use std::net::IpAddr;
+use std::str::FromStr;
 use std::sync::Arc;
 use chrono::Duration;
 use reqwest::StatusCode;
@@ -18,6 +20,8 @@ use crate::kubernetes::autoscale::Autoscale;
 use crate::log::debug;
 use crate::messenger::servers_events::ServerEvent;
 use async_recursion::async_recursion;
+use serde_json::json;
+use crate::utils::message::{Color, MessageBuilder};
 
 
 pub fn filter(data: Arc<AppData>) -> impl Filter<Extract=impl Reply, Error=Rejection> + Clone {
@@ -25,7 +29,9 @@ pub fn filter(data: Arc<AppData>) -> impl Filter<Extract=impl Reply, Error=Rejec
         .or(warp::post().and(path!("api"/"players"/Uuid/"move")).and(with_auth(data.clone(), "move-player")).and(with_data(data.clone()).and(json::<PlayerMove>())).and_then(move_player))
         .or(warp::post().and(path!("api"/"players"/Uuid/"ban")).and(with_auth(data.clone(), "ban-player")).and(with_data(data.clone())).and(json::<PlayerBan>()).and_then(ban_player))
         .or(warp::post().and(path!("api"/"players"/Uuid/"mute")).and(with_auth(data.clone(), "mute-player")).and(with_data(data.clone())).and(json::<PlayerMute>()).and_then(mute_player))
+        .or(warp::post().and(path!("api"/"players"/Uuid/"sanction")).and(with_auth(data.clone(), "sanction-player")).and(with_data(data.clone())).and(json::<PlayerSanction>()).and_then(sanction_player))
         .or(warp::post().and(path!("api"/"players"/Uuid/"disconnect")).and(with_auth(data.clone(), "disconnect-player")).and(with_data(data.clone())).and_then(disconnect_player))
+        .or(warp::get().and(path!("api"/"players"/String/"uuid")).and(with_auth(data.clone(), "get-player")).and(with_data(data.clone())).and_then(get_player_uuid))
         .or(warp::post().and(path!("api"/"players"/Uuid/"transaction")).and(with_auth(data.clone(), "player-transaction")).and(with_data(data.clone())).and(json::<PlayerTransaction>()).and_then(player_transaction))
         .or(warp::get().and(path!("api"/"players")).and(with_auth(data.clone(), "get-online-players")).and(with_data(data.clone())).and_then(get_online))
         .or(warp::get().and(path!("api"/"players"/String)).and(with_auth(data.clone(), "get-player")).and(with_data(data.clone())).and_then(get_player))
@@ -75,7 +81,7 @@ enum PlayerMoveResponse {
     PlayerOffline,
     MissingServer,
     MissingServerKind,
-    UnlinkedPlayer
+    UnlinkedPlayer,
 }
 
 #[instrument(skip(data), level = "info")]
@@ -86,8 +92,8 @@ async fn move_player(uuid: Uuid, data: Arc<AppData>, request: PlayerMove) -> Res
         Some(t) => t
     };
 
-    if discord.is_none(){
-        return Ok(reply::json(&PlayerMoveResponse::UnlinkedPlayer).into_response())
+    if discord.is_none() {
+        return Ok(reply::json(&PlayerMoveResponse::UnlinkedPlayer).into_response());
     }
 
 
@@ -174,7 +180,7 @@ pub async fn move_player_to_server_kind(data: Arc<AppData>, uuid: &Uuid, kind: &
         if data.db.select_all_players_with_waiting_move_to(&kind.name, 1).await.map_err(ApiError::from)?.len() == 1 {
             debug!("Server already scaling : {}", kind.name);
             data.db.set_player_waiting_move_to(uuid, &kind.name).await.map_err(ApiError::from)?;
-            return Ok(true)
+            return Ok(true);
         };
 
         autoscale::create_autoscale_server(data.clone(), &kind, &autoscale).await.map_err(ApiError::from)?;
@@ -198,9 +204,9 @@ struct PlayerBan {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct BanIpResult{
+struct BanIpResult {
     players: Vec<Uuid>,
-    ips: Vec<IpAddr>
+    ips: Vec<IpAddr>,
 }
 
 #[instrument(skip(data))]
@@ -218,19 +224,19 @@ async fn ban_player(uuid: Uuid, data: Arc<AppData>, request: PlayerBan) -> Resul
             let players = data.db.select_players_from_ban(&ban).await.map_err(ApiError::from)?;
             let ips = data.db.select_ips_from_ban(&ban).await.map_err(ApiError::from)?;
 
-            for player in &players{
+            for player in &players {
                 data.db.remove_player_ban(player).await.map_err(ApiError::from)?;
             }
             for ip in &ips {
                 data.db.remove_ip_ban(&ip).await.map_err(ApiError::from)?;
             }
 
-            return Ok(reply::json(&BanIpResult{ players, ips }).into_response());
+            return Ok(reply::json(&BanIpResult { players, ips }).into_response());
         } else {
             let mut players = vec![uuid];
             let mut ips = Vec::new();
 
-            ip_ban_recursive(uuid,  &mut ips, &mut players, &data.db).await.map_err(ApiError::from)?;
+            ip_ban_recursive(uuid, &mut ips, &mut players, &data.db).await.map_err(ApiError::from)?;
 
             let duration = request.duration.map(|t| Duration::seconds(t as i64));
             let reason = Some(request.reason.map(|r| format!("IPBan : {}", r)).unwrap_or("IPBan".to_string()));
@@ -240,15 +246,15 @@ async fn ban_player(uuid: Uuid, data: Arc<AppData>, request: PlayerBan) -> Resul
             }
 
             for player in &players {
-                data.db.insert_ban_with_log(player, reason.as_ref(), request.issuer.as_ref(), duration.as_ref(),&ban_id).await.map_err(ApiError::from)?;
+                data.db.insert_ban_with_log(player, reason.as_ref(), request.issuer.as_ref(), duration.as_ref(), &ban_id).await.map_err(ApiError::from)?;
 
                 if let Some(proxy) = data.db.select_online_player_proxy(&uuid).await.map_err(ApiError::from)? {
-                    data.msgr.send_event(&ServerEvent::DisconnectPlayer { proxy, player: uuid }).await.map_err(ApiError::from)?;
+                    data.msgr.send_event(&ServerEvent::DisconnectPlayer { proxy, player: uuid, message: Some("Vous avez été bannis".to_string()) }).await.map_err(ApiError::from)?;
                 }
             }
 
 
-            return Ok(reply::json(&BanIpResult{ players, ips }).into_response());
+            return Ok(reply::json(&BanIpResult { players, ips }).into_response());
         }
     } else if request.unban {
         data.db.remove_player_ban(&uuid).await.map_err(ApiError::from)?;
@@ -256,10 +262,10 @@ async fn ban_player(uuid: Uuid, data: Arc<AppData>, request: PlayerBan) -> Resul
     } else {
         let duration = request.duration.map(|t| Duration::seconds(t as i64));
         data.db.insert_ban(&uuid, request.reason.as_ref(), request.issuer.as_ref(), duration.as_ref()).await.map_err(ApiError::from)?;
-    }
-
-    if let Some(proxy) = data.db.select_online_player_proxy(&uuid).await.map_err(ApiError::from)? {
-        data.msgr.send_event(&ServerEvent::DisconnectPlayer { proxy, player: uuid }).await.map_err(ApiError::from)?;
+        let msg = MessageBuilder::new().component("Vous avez été bannis".to_string()).with_color(Some(Color::Red)).close().close();
+        if let Some(proxy) = data.db.select_online_player_proxy(&uuid).await.map_err(ApiError::from)? {
+            data.msgr.send_event(&ServerEvent::DisconnectPlayer { proxy, player: uuid, message: Some("Vous avez été bannis".to_string()) }).await.map_err(ApiError::from)?;
+        }
     }
 
 
@@ -293,14 +299,118 @@ async fn mute_player(uuid: Uuid, data: Arc<AppData>, request: PlayerMute) -> Res
     Ok(reply().into_response())
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+struct PlayerSanction {
+    category: String,
+    issuer: Option<Uuid>,
+    #[serde(default)]
+    unsanction: bool,
+}
+
+#[instrument(skip(data))]
+async fn sanction_player(uuid: Uuid, data: Arc<AppData>, request: PlayerSanction) -> Result<impl Reply, Rejection> {
+    let (label, sanctions) = match data.db.select_sanction_board(&request.category).await.map_err(ApiError::from)? {
+        None => return Ok(StatusCode::NOT_FOUND.into_response()),
+        Some(board) => { board }
+    };
+
+    let mut i = data.db.select_player_sanction_state(&uuid, &request.category).await.map_err(ApiError::from)?;
+
+    if request.unsanction {
+        i = max(i - 1, 0);
+    }
+
+    let sanction: &str = if let Some(sanction) = sanctions.get(i as usize) {
+        sanction
+    } else {
+        sanctions.last().unwrap()
+    };
+
+    let duration = if sanction.len() == 1 {
+        None
+    } else {
+        Some(Duration::seconds(i64::from_str(&sanction[1..]).map_err(ApiError::from)?))
+    };
+
+    let info = match data.db.select_player_info(&uuid).await.map_err(ApiError::from)? {
+        None => return Ok(StatusCode::NOT_FOUND.into_response()),
+        Some(info) => info
+    };
+
+    let response = match &sanction[0..1] {
+        "K" => {
+            if request.unsanction {
+                Ok(reply::reply().into_response())
+            } else {
+                if let Some(proxy) = info.proxy {
+                    data.msgr.send_event(&ServerEvent::DisconnectPlayer {
+                        proxy,
+                        player: uuid,
+                        message: Some(format!("Vous avez été kick pour {}", label)),
+                    }).await.map_err(ApiError::from)?;
+                }
+                Ok(reply::json(&json!({"sanction": "kick"})).into_response())
+            }
+        }
+        "B" => {
+            if request.unsanction {
+                if info.ban.is_some() {
+                    data.db.remove_player_ban(&uuid).await.map_err(ApiError::from)?;
+                }
+                return Ok(StatusCode::OK.into_response());
+            } else {
+                if info.ban.is_some() {
+                    return Ok(StatusCode::CONFLICT.into_response()); //TODO 409
+                }
+                let ban = data.db.insert_ban(&uuid, Some(&label), request.issuer.as_ref(), duration.as_ref()).await.map_err(ApiError::from)?;
+
+                if let Some(proxy) = info.proxy {
+                    data.msgr.send_event(&ServerEvent::DisconnectPlayer {
+                        proxy,
+                        player: uuid,
+                        message: Some(format!("Vous avez été bannis pour {}", label)),
+                    }).await.map_err(ApiError::from)?;
+                }
+                Ok(reply::json(&json!({"sanction": "ban", "id": ban})).into_response())
+            }
+        }
+        "M" => {
+            if request.unsanction {
+                if info.mute.is_some() {
+                    data.db.remove_player_mute(&uuid).await.map_err(ApiError::from)?;
+                }
+                return Ok(StatusCode::OK.into_response());
+            } else {
+                if info.mute.is_some() {
+                    return Ok(StatusCode::CONFLICT.into_response()); //TODO 409
+                }
+                let mute = data.db.insert_mute(&uuid, Some(&label), request.issuer.as_ref(), duration.as_ref()).await.map_err(ApiError::from)?;
+
+                if let Some(server) = data.db.select_online_player_server(&uuid).await.map_err(ApiError::from)? {
+                    data.msgr.send_event(&ServerEvent::InvalidatePlayer { server, uuid }).await.map_err(ApiError::from)?;
+                }
+
+                Ok(reply::json(&json!({"sanction": "mute", "id": mute})).into_response())
+            }
+        }
+        _ => {
+            return Ok(StatusCode::INTERNAL_SERVER_ERROR.into_response());
+        }
+    };
+
+    data.db.insert_player_sanction_state(&uuid, &request.category, i).await.map_err(ApiError::from)?;
+
+    response
+}
+
 #[async_recursion]
-pub async fn ip_ban_recursive(uuid: Uuid, ips: &mut Vec<IpAddr>, players: &mut Vec<Uuid>, db: &Database) -> Result<(), DatabaseError>{
+pub async fn ip_ban_recursive(uuid: Uuid, ips: &mut Vec<IpAddr>, players: &mut Vec<Uuid>, db: &Database) -> Result<(), DatabaseError> {
     let player_ips = db.select_all_player_sessions_ips(&uuid).await?;
 
     for ip in &player_ips {
-        if ips.contains(ip){
-            continue
-        }else {
+        if ips.contains(ip) {
+            continue;
+        } else {
             ips.push(ip.clone());
             let new_players = db.select_players_with_session_ip(ip).await?;
 
@@ -315,7 +425,6 @@ pub async fn ip_ban_recursive(uuid: Uuid, ips: &mut Vec<IpAddr>, players: &mut V
 
 
     Ok(())
-
 }
 
 #[instrument(skip(data))]
@@ -343,10 +452,19 @@ async fn get_player(player: String, data: Arc<AppData>) -> Result<impl Reply, Re
 #[instrument(skip(data))]
 async fn disconnect_player(uuid: Uuid, data: Arc<AppData>) -> Result<impl Reply, Rejection> {
     if let Some(proxy) = data.db.select_online_player_proxy(&uuid).await.map_err(ApiError::from)? {
-        data.msgr.send_event(&ServerEvent::DisconnectPlayer { proxy, player: uuid }).await.map_err(ApiError::from)?;
+        data.msgr.send_event(&ServerEvent::DisconnectPlayer { proxy, player: uuid, message: None }).await.map_err(ApiError::from)?;
         Ok(StatusCode::OK)
     } else {
         Ok(StatusCode::NOT_FOUND)
+    }
+}
+
+#[instrument(skip(data))]
+async fn get_player_uuid(name: String, data: Arc<AppData>) -> Result<impl Reply, Rejection> {
+    if let Some(uuid) = data.db.select_players_uuid_by_name(&name).await.map_err(ApiError::from)? {
+        Ok(reply::json(&uuid).into_response())
+    } else {
+        Ok(StatusCode::NOT_FOUND.into_response())
     }
 }
 

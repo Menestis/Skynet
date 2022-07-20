@@ -1175,6 +1175,37 @@ ul.nav-tabs {
     }
   }
 };
+    defs["PlayerSanction"] = {
+  "title" : "PlayerSanction",
+  "required" : [ "category" ],
+  "type" : "object",
+  "properties" : {
+    "categorie" : {
+      "type" : "string"
+    },
+    "issuer" : {
+      "type" : "string",
+      "format" : "uuid"
+    },
+    "unsanction" : {
+      "type" : "boolean"
+    }
+  }
+};
+    defs["PlayerSanctionResult"] = {
+  "title" : "PlayerSanctionResult",
+  "type" : "object",
+  "properties" : {
+    "sanction" : {
+      "type" : "string",
+      "enum" : [ "kick", "mute", "ban" ]
+    },
+    "id" : {
+      "type" : "string",
+      "format" : "uuid"
+    }
+  }
+};
     defs["PlayerStats"] = {
   "title" : "PlayerStats",
   "required" : [ "server", "session", "stats" ],
@@ -1467,6 +1498,9 @@ ul.nav-tabs {
                     <li data-group="Player" data-name="apiPlayersPlayerGet" class="">
                       <a href="#api-Player-apiPlayersPlayerGet">apiPlayersPlayerGet</a>
                     </li>
+                    <li data-group="Player" data-name="apiPlayersPlayerUuidGet" class="">
+                      <a href="#api-Player-apiPlayersPlayerUuidGet">apiPlayersPlayerUuidGet</a>
+                    </li>
                     <li data-group="Player" data-name="apiPlayersUuidBanPost" class="">
                       <a href="#api-Player-apiPlayersUuidBanPost">apiPlayersUuidBanPost</a>
                     </li>
@@ -1484,6 +1518,9 @@ ul.nav-tabs {
                     </li>
                     <li data-group="Player" data-name="apiPlayersUuidMutePost" class="">
                       <a href="#api-Player-apiPlayersUuidMutePost">apiPlayersUuidMutePost</a>
+                    </li>
+                    <li data-group="Player" data-name="apiPlayersUuidSanctionPost" class="">
+                      <a href="#api-Player-apiPlayersUuidSanctionPost">apiPlayersUuidSanctionPost</a>
                     </li>
                     <li data-group="Player" data-name="apiPlayersUuidStatsPost" class="">
                       <a href="#api-Player-apiPlayersUuidStatsPost">apiPlayersUuidStatsPost</a>
@@ -7350,6 +7387,382 @@ pub fn main() {
                         </article>
                       </div>
                       <hr>
+                    <div id="api-Player-apiPlayersPlayerUuidGet">
+                      <article id="api-Player-apiPlayersPlayerUuidGet-0" data-group="User" data-name="apiPlayersPlayerUuidGet" data-version="0">
+                        <div class="pull-left">
+                          <h1>apiPlayersPlayerUuidGet</h1>
+                          <p></p>
+                        </div>
+                        <div class="pull-right"></div>
+                        <div class="clearfix"></div>
+                        <p></p>
+                        <p class="marked"></p>
+                        <p></p>
+                        <br />
+                        <pre class="prettyprint language-html prettyprinted" data-type="get"><code><span class="pln">/api/players/{player}/uuid</span></code></pre>
+                        <p>
+                          <h3>Usage and SDK Samples</h3>
+                        </p>
+                        <ul class="nav nav-tabs nav-tabs-examples">
+                          <li class="active"><a href="#examples-Player-apiPlayersPlayerUuidGet-0-curl">Curl</a></li>
+                          <li class=""><a href="#examples-Player-apiPlayersPlayerUuidGet-0-java">Java</a></li>
+                          <li class=""><a href="#examples-Player-apiPlayersPlayerUuidGet-0-android">Android</a></li>
+                          <!--<li class=""><a href="#examples-Player-apiPlayersPlayerUuidGet-0-groovy">Groovy</a></li>-->
+                          <li class=""><a href="#examples-Player-apiPlayersPlayerUuidGet-0-objc">Obj-C</a></li>
+                          <li class=""><a href="#examples-Player-apiPlayersPlayerUuidGet-0-javascript">JavaScript</a></li>
+                          <!--<li class=""><a href="#examples-Player-apiPlayersPlayerUuidGet-0-angular">Angular</a></li>-->
+                          <li class=""><a href="#examples-Player-apiPlayersPlayerUuidGet-0-csharp">C#</a></li>
+                          <li class=""><a href="#examples-Player-apiPlayersPlayerUuidGet-0-php">PHP</a></li>
+                          <li class=""><a href="#examples-Player-apiPlayersPlayerUuidGet-0-perl">Perl</a></li>
+                          <li class=""><a href="#examples-Player-apiPlayersPlayerUuidGet-0-python">Python</a></li>
+                          <li class=""><a href="#examples-Player-apiPlayersPlayerUuidGet-0-rust">Rust</a></li>
+                        </ul>
+
+                        <div class="tab-content">
+                          <div class="tab-pane active" id="examples-Player-apiPlayersPlayerUuidGet-0-curl">
+                            <pre class="prettyprint"><code class="language-bsh">curl -X GET \
+-H "Authorization: [[apiKey]]" \
+ -H "Accept: application/json" \
+ "http://localhost:8888/api/players/{player}/uuid"
+</code></pre>
+                          </div>
+                          <div class="tab-pane" id="examples-Player-apiPlayersPlayerUuidGet-0-java">
+                            <pre class="prettyprint"><code class="language-java">import org.openapitools.client.*;
+import org.openapitools.client.auth.*;
+import org.openapitools.client.model.*;
+import org.openapitools.client.api.PlayerApi;
+
+import java.io.File;
+import java.util.*;
+
+public class PlayerApiExample {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        
+        // Configure API key authorization: auth
+        ApiKeyAuth auth = (ApiKeyAuth) defaultClient.getAuthentication("auth");
+        auth.setApiKey("YOUR API KEY");
+        // Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+        //auth.setApiKeyPrefix("Token");
+
+        // Create an instance of the API class
+        PlayerApi apiInstance = new PlayerApi();
+        String player = player_example; // String | 
+
+        try {
+            UUID result = apiInstance.apiPlayersPlayerUuidGet(player);
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling PlayerApi#apiPlayersPlayerUuidGet");
+            e.printStackTrace();
+        }
+    }
+}
+</code></pre>
+                          </div>
+
+                          <div class="tab-pane" id="examples-Player-apiPlayersPlayerUuidGet-0-android">
+                            <pre class="prettyprint"><code class="language-java">import org.openapitools.client.api.PlayerApi;
+
+public class PlayerApiExample {
+    public static void main(String[] args) {
+        PlayerApi apiInstance = new PlayerApi();
+        String player = player_example; // String | 
+
+        try {
+            UUID result = apiInstance.apiPlayersPlayerUuidGet(player);
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling PlayerApi#apiPlayersPlayerUuidGet");
+            e.printStackTrace();
+        }
+    }
+}</code></pre>
+                          </div>
+  <!--
+  <div class="tab-pane" id="examples-Player-apiPlayersPlayerUuidGet-0-groovy">
+  <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+  </div> -->
+                            <div class="tab-pane" id="examples-Player-apiPlayersPlayerUuidGet-0-objc">
+                              <pre class="prettyprint"><code class="language-cpp">Configuration *apiConfig = [Configuration sharedConfig];
+
+// Configure API key authorization: (authentication scheme: auth)
+[apiConfig setApiKey:@"YOUR_API_KEY" forApiKeyIdentifier:@"Authorization"];
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//[apiConfig setApiKeyPrefix:@"Bearer" forApiKeyIdentifier:@"Authorization"];
+
+
+// Create an instance of the API class
+PlayerApi *apiInstance = [[PlayerApi alloc] init];
+String *player = player_example; //  (default to null)
+
+[apiInstance apiPlayersPlayerUuidGetWith:player
+              completionHandler: ^(UUID output, NSError* error) {
+    if (output) {
+        NSLog(@"%@", output);
+    }
+    if (error) {
+        NSLog(@"Error: %@", error);
+    }
+}];
+</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Player-apiPlayersPlayerUuidGet-0-javascript">
+                              <pre class="prettyprint"><code class="language-js">var SkynetApi = require('skynet_api');
+var defaultClient = SkynetApi.ApiClient.instance;
+
+// Configure API key authorization: auth
+var auth = defaultClient.authentications['auth'];
+auth.apiKey = "YOUR API KEY";
+// Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+//auth.apiKeyPrefix['Authorization'] = "Token";
+
+// Create an instance of the API class
+var api = new SkynetApi.PlayerApi()
+var player = player_example; // {String} 
+
+var callback = function(error, data, response) {
+  if (error) {
+    console.error(error);
+  } else {
+    console.log('API called successfully. Returned data: ' + data);
+  }
+};
+api.apiPlayersPlayerUuidGet(player, callback);
+</code></pre>
+                            </div>
+
+                            <!--<div class="tab-pane" id="examples-Player-apiPlayersPlayerUuidGet-0-angular">
+              <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+            </div>-->
+                            <div class="tab-pane" id="examples-Player-apiPlayersPlayerUuidGet-0-csharp">
+                              <pre class="prettyprint"><code class="language-cs">using System;
+using System.Diagnostics;
+using Org.OpenAPITools.Api;
+using Org.OpenAPITools.Client;
+using Org.OpenAPITools.Model;
+
+namespace Example
+{
+    public class apiPlayersPlayerUuidGetExample
+    {
+        public void main()
+        {
+            // Configure API key authorization: auth
+            Configuration.Default.ApiKey.Add("Authorization", "YOUR_API_KEY");
+            // Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+            // Configuration.Default.ApiKeyPrefix.Add("Authorization", "Bearer");
+
+            // Create an instance of the API class
+            var apiInstance = new PlayerApi();
+            var player = player_example;  // String |  (default to null)
+
+            try {
+                UUID result = apiInstance.apiPlayersPlayerUuidGet(player);
+                Debug.WriteLine(result);
+            } catch (Exception e) {
+                Debug.Print("Exception when calling PlayerApi.apiPlayersPlayerUuidGet: " + e.Message );
+            }
+        }
+    }
+}
+</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Player-apiPlayersPlayerUuidGet-0-php">
+                              <pre class="prettyprint"><code class="language-php"><&#63;php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+// Configure API key authorization: auth
+OpenAPITools\Client\Configuration::getDefaultConfiguration()->setApiKey('Authorization', 'YOUR_API_KEY');
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+// OpenAPITools\Client\Configuration::getDefaultConfiguration()->setApiKeyPrefix('Authorization', 'Bearer');
+
+// Create an instance of the API class
+$api_instance = new OpenAPITools\Client\Api\PlayerApi();
+$player = player_example; // String | 
+
+try {
+    $result = $api_instance->apiPlayersPlayerUuidGet($player);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling PlayerApi->apiPlayersPlayerUuidGet: ', $e->getMessage(), PHP_EOL;
+}
+?></code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Player-apiPlayersPlayerUuidGet-0-perl">
+                              <pre class="prettyprint"><code class="language-perl">use Data::Dumper;
+use WWW::OPenAPIClient::Configuration;
+use WWW::OPenAPIClient::PlayerApi;
+
+# Configure API key authorization: auth
+$WWW::OPenAPIClient::Configuration::api_key->{'Authorization'} = 'YOUR_API_KEY';
+# uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+#$WWW::OPenAPIClient::Configuration::api_key_prefix->{'Authorization'} = "Bearer";
+
+# Create an instance of the API class
+my $api_instance = WWW::OPenAPIClient::PlayerApi->new();
+my $player = player_example; # String | 
+
+eval {
+    my $result = $api_instance->apiPlayersPlayerUuidGet(player => $player);
+    print Dumper($result);
+};
+if ($@) {
+    warn "Exception when calling PlayerApi->apiPlayersPlayerUuidGet: $@\n";
+}</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Player-apiPlayersPlayerUuidGet-0-python">
+                              <pre class="prettyprint"><code class="language-python">from __future__ import print_statement
+import time
+import openapi_client
+from openapi_client.rest import ApiException
+from pprint import pprint
+
+# Configure API key authorization: auth
+openapi_client.configuration.api_key['Authorization'] = 'YOUR_API_KEY'
+# Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+# openapi_client.configuration.api_key_prefix['Authorization'] = 'Bearer'
+
+# Create an instance of the API class
+api_instance = openapi_client.PlayerApi()
+player = player_example # String |  (default to null)
+
+try:
+    api_response = api_instance.api_players_player_uuid_get(player)
+    pprint(api_response)
+except ApiException as e:
+    print("Exception when calling PlayerApi->apiPlayersPlayerUuidGet: %s\n" % e)</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Player-apiPlayersPlayerUuidGet-0-rust">
+                              <pre class="prettyprint"><code class="language-rust">extern crate PlayerApi;
+
+pub fn main() {
+    let player = player_example; // String
+
+    let mut context = PlayerApi::Context::default();
+    let result = client.apiPlayersPlayerUuidGet(player, &context).wait();
+
+    println!("{:?}", result);
+}
+</code></pre>
+                            </div>
+                          </div>
+
+                          <h2>Scopes</h2>
+                          <table>
+                            
+                          </table>
+
+                          <h2>Parameters</h2>
+
+                            <div class="methodsubtabletitle">Path parameters</div>
+                            <table id="methodsubtable">
+                                <tr>
+                                  <th width="150px">Name</th>
+                                  <th>Description</th>
+                                </tr>
+                                  <tr><td style="width:150px;">player*</td>
+<td>
+
+
+    <div id="d2e199_apiPlayersPlayerUuidGet_player">
+        <div class="json-schema-view">
+            <div class="primitive">
+                <span class="type">
+                    String
+                </span>
+
+            </div>
+                <div class="inner required">
+                    Required
+                </div>
+        </div>
+    </div>
+</td>
+</tr>
+
+                            </table>
+
+
+
+
+
+                          <h2>Responses</h2>
+                            <h3 id="examples-Player-apiPlayersPlayerUuidGet-title-200"></h3>
+                            <p id="examples-Player-apiPlayersPlayerUuidGet-description-200" class="marked"></p>
+                            <script>
+                              var responsePlayer200_description = `Players`;
+                              var responsePlayer200_description_break = responsePlayer200_description.indexOf('\n');
+                              if (responsePlayer200_description_break == -1) {
+                                $("#examples-Player-apiPlayersPlayerUuidGet-title-200").text("Status: 200 - " + responsePlayer200_description);
+                              } else {
+                                $("#examples-Player-apiPlayersPlayerUuidGet-title-200").text("Status: 200 - " + responsePlayer200_description.substring(0, responsePlayer200_description_break));
+                                $("#examples-Player-apiPlayersPlayerUuidGet-description-200").html(responsePlayer200_description.substring(responsePlayer200_description_break));
+                              }
+                            </script>
+
+
+                            <ul id="responses-detail-Player-apiPlayersPlayerUuidGet-200" class="nav nav-tabs nav-tabs-examples" >
+                                <li class="active">
+                                  <a data-toggle="tab" href="#responses-Player-apiPlayersPlayerUuidGet-200-schema">Schema</a>
+                                </li>
+
+
+
+
+                            </ul>
+
+
+                            <div class="tab-content" id="responses-Player-apiPlayersPlayerUuidGet-200-wrapper" style='margin-bottom: 10px;'>
+                                <div class="tab-pane active" id="responses-Player-apiPlayersPlayerUuidGet-200-schema">
+                                  <div id="responses-Player-apiPlayersPlayerUuidGet-schema-200" class="exampleStyle">
+                                    <script>
+                                      $(document).ready(function() {
+                                        var schemaWrapper = {
+  "description" : "Players",
+  "content" : {
+    "application/json" : {
+      "schema" : {
+        "type" : "string",
+        "format" : "uuid"
+      }
+    }
+  }
+};
+                                        var schema = findNode('schema',schemaWrapper).schema;
+                                        if (!schema) {
+                                          schema = schemaWrapper.schema;
+                                        }
+                                        if (schema.$ref != null) {
+                                          schema = defsParser.$refs.get(schema.$ref);
+                                        } else if (schema.items != null && schema.items.$ref != null) {
+                                            schema.items = defsParser.$refs.get(schema.items.$ref);
+                                        } else {
+                                          schemaWrapper.definitions = Object.assign({}, defs);
+                                          $RefParser.dereference(schemaWrapper).catch(function(err) {
+                                            console.log(err);
+                                          });
+                                        }
+
+                                        var view = new JSONSchemaView(schema, 3);
+                                        $('#responses-Player-apiPlayersPlayerUuidGet-200-schema-data').val(JSON.stringify(schema));
+                                        var result = $('#responses-Player-apiPlayersPlayerUuidGet-schema-200');
+                                        result.empty();
+                                        result.append(view.render());
+                                      });
+                                    </script>
+                                  </div>
+                                  <input id='responses-Player-apiPlayersPlayerUuidGet-200-schema-data' type='hidden' value=''></input>
+                                </div>
+                            </div>
+                        </article>
+                      </div>
+                      <hr>
                     <div id="api-Player-apiPlayersUuidBanPost">
                       <article id="api-Player-apiPlayersUuidBanPost-0" data-group="User" data-name="apiPlayersUuidBanPost" data-version="0">
                         <div class="pull-left">
@@ -9820,6 +10233,490 @@ $(document).ready(function() {
 
 
                             <div class="tab-content" id="responses-Player-apiPlayersUuidMutePost-404-wrapper" style='margin-bottom: 10px;'>
+                            </div>
+                        </article>
+                      </div>
+                      <hr>
+                    <div id="api-Player-apiPlayersUuidSanctionPost">
+                      <article id="api-Player-apiPlayersUuidSanctionPost-0" data-group="User" data-name="apiPlayersUuidSanctionPost" data-version="0">
+                        <div class="pull-left">
+                          <h1>apiPlayersUuidSanctionPost</h1>
+                          <p></p>
+                        </div>
+                        <div class="pull-right"></div>
+                        <div class="clearfix"></div>
+                        <p></p>
+                        <p class="marked"></p>
+                        <p></p>
+                        <br />
+                        <pre class="prettyprint language-html prettyprinted" data-type="post"><code><span class="pln">/api/players/{uuid}/sanction</span></code></pre>
+                        <p>
+                          <h3>Usage and SDK Samples</h3>
+                        </p>
+                        <ul class="nav nav-tabs nav-tabs-examples">
+                          <li class="active"><a href="#examples-Player-apiPlayersUuidSanctionPost-0-curl">Curl</a></li>
+                          <li class=""><a href="#examples-Player-apiPlayersUuidSanctionPost-0-java">Java</a></li>
+                          <li class=""><a href="#examples-Player-apiPlayersUuidSanctionPost-0-android">Android</a></li>
+                          <!--<li class=""><a href="#examples-Player-apiPlayersUuidSanctionPost-0-groovy">Groovy</a></li>-->
+                          <li class=""><a href="#examples-Player-apiPlayersUuidSanctionPost-0-objc">Obj-C</a></li>
+                          <li class=""><a href="#examples-Player-apiPlayersUuidSanctionPost-0-javascript">JavaScript</a></li>
+                          <!--<li class=""><a href="#examples-Player-apiPlayersUuidSanctionPost-0-angular">Angular</a></li>-->
+                          <li class=""><a href="#examples-Player-apiPlayersUuidSanctionPost-0-csharp">C#</a></li>
+                          <li class=""><a href="#examples-Player-apiPlayersUuidSanctionPost-0-php">PHP</a></li>
+                          <li class=""><a href="#examples-Player-apiPlayersUuidSanctionPost-0-perl">Perl</a></li>
+                          <li class=""><a href="#examples-Player-apiPlayersUuidSanctionPost-0-python">Python</a></li>
+                          <li class=""><a href="#examples-Player-apiPlayersUuidSanctionPost-0-rust">Rust</a></li>
+                        </ul>
+
+                        <div class="tab-content">
+                          <div class="tab-pane active" id="examples-Player-apiPlayersUuidSanctionPost-0-curl">
+                            <pre class="prettyprint"><code class="language-bsh">curl -X POST \
+-H "Authorization: [[apiKey]]" \
+ -H "Accept: application/json" \
+ -H "Content-Type: application/json" \
+ "http://localhost:8888/api/players/{uuid}/sanction" \
+ -d '{
+  &quot;categorie&quot; : &quot;categorie&quot;,
+  &quot;unsanction&quot; : true,
+  &quot;issuer&quot; : &quot;046b6c7f-0b8a-43b9-b35d-6489e6daee91&quot;
+}'
+</code></pre>
+                          </div>
+                          <div class="tab-pane" id="examples-Player-apiPlayersUuidSanctionPost-0-java">
+                            <pre class="prettyprint"><code class="language-java">import org.openapitools.client.*;
+import org.openapitools.client.auth.*;
+import org.openapitools.client.model.*;
+import org.openapitools.client.api.PlayerApi;
+
+import java.io.File;
+import java.util.*;
+
+public class PlayerApiExample {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        
+        // Configure API key authorization: auth
+        ApiKeyAuth auth = (ApiKeyAuth) defaultClient.getAuthentication("auth");
+        auth.setApiKey("YOUR API KEY");
+        // Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+        //auth.setApiKeyPrefix("Token");
+
+        // Create an instance of the API class
+        PlayerApi apiInstance = new PlayerApi();
+        UUID uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // UUID | 
+        PlayerSanction playerSanction = ; // PlayerSanction | 
+
+        try {
+            PlayerSanctionResult result = apiInstance.apiPlayersUuidSanctionPost(uuid, playerSanction);
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling PlayerApi#apiPlayersUuidSanctionPost");
+            e.printStackTrace();
+        }
+    }
+}
+</code></pre>
+                          </div>
+
+                          <div class="tab-pane" id="examples-Player-apiPlayersUuidSanctionPost-0-android">
+                            <pre class="prettyprint"><code class="language-java">import org.openapitools.client.api.PlayerApi;
+
+public class PlayerApiExample {
+    public static void main(String[] args) {
+        PlayerApi apiInstance = new PlayerApi();
+        UUID uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // UUID | 
+        PlayerSanction playerSanction = ; // PlayerSanction | 
+
+        try {
+            PlayerSanctionResult result = apiInstance.apiPlayersUuidSanctionPost(uuid, playerSanction);
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling PlayerApi#apiPlayersUuidSanctionPost");
+            e.printStackTrace();
+        }
+    }
+}</code></pre>
+                          </div>
+  <!--
+  <div class="tab-pane" id="examples-Player-apiPlayersUuidSanctionPost-0-groovy">
+  <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+  </div> -->
+                            <div class="tab-pane" id="examples-Player-apiPlayersUuidSanctionPost-0-objc">
+                              <pre class="prettyprint"><code class="language-cpp">Configuration *apiConfig = [Configuration sharedConfig];
+
+// Configure API key authorization: (authentication scheme: auth)
+[apiConfig setApiKey:@"YOUR_API_KEY" forApiKeyIdentifier:@"Authorization"];
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//[apiConfig setApiKeyPrefix:@"Bearer" forApiKeyIdentifier:@"Authorization"];
+
+
+// Create an instance of the API class
+PlayerApi *apiInstance = [[PlayerApi alloc] init];
+UUID *uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; //  (default to null)
+PlayerSanction *playerSanction = ; // 
+
+[apiInstance apiPlayersUuidSanctionPostWith:uuid
+    playerSanction:playerSanction
+              completionHandler: ^(PlayerSanctionResult output, NSError* error) {
+    if (output) {
+        NSLog(@"%@", output);
+    }
+    if (error) {
+        NSLog(@"Error: %@", error);
+    }
+}];
+</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Player-apiPlayersUuidSanctionPost-0-javascript">
+                              <pre class="prettyprint"><code class="language-js">var SkynetApi = require('skynet_api');
+var defaultClient = SkynetApi.ApiClient.instance;
+
+// Configure API key authorization: auth
+var auth = defaultClient.authentications['auth'];
+auth.apiKey = "YOUR API KEY";
+// Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+//auth.apiKeyPrefix['Authorization'] = "Token";
+
+// Create an instance of the API class
+var api = new SkynetApi.PlayerApi()
+var uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // {UUID} 
+var playerSanction = ; // {PlayerSanction} 
+
+var callback = function(error, data, response) {
+  if (error) {
+    console.error(error);
+  } else {
+    console.log('API called successfully. Returned data: ' + data);
+  }
+};
+api.apiPlayersUuidSanctionPost(uuid, playerSanction, callback);
+</code></pre>
+                            </div>
+
+                            <!--<div class="tab-pane" id="examples-Player-apiPlayersUuidSanctionPost-0-angular">
+              <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+            </div>-->
+                            <div class="tab-pane" id="examples-Player-apiPlayersUuidSanctionPost-0-csharp">
+                              <pre class="prettyprint"><code class="language-cs">using System;
+using System.Diagnostics;
+using Org.OpenAPITools.Api;
+using Org.OpenAPITools.Client;
+using Org.OpenAPITools.Model;
+
+namespace Example
+{
+    public class apiPlayersUuidSanctionPostExample
+    {
+        public void main()
+        {
+            // Configure API key authorization: auth
+            Configuration.Default.ApiKey.Add("Authorization", "YOUR_API_KEY");
+            // Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+            // Configuration.Default.ApiKeyPrefix.Add("Authorization", "Bearer");
+
+            // Create an instance of the API class
+            var apiInstance = new PlayerApi();
+            var uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d;  // UUID |  (default to null)
+            var playerSanction = new PlayerSanction(); // PlayerSanction | 
+
+            try {
+                PlayerSanctionResult result = apiInstance.apiPlayersUuidSanctionPost(uuid, playerSanction);
+                Debug.WriteLine(result);
+            } catch (Exception e) {
+                Debug.Print("Exception when calling PlayerApi.apiPlayersUuidSanctionPost: " + e.Message );
+            }
+        }
+    }
+}
+</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Player-apiPlayersUuidSanctionPost-0-php">
+                              <pre class="prettyprint"><code class="language-php"><&#63;php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+// Configure API key authorization: auth
+OpenAPITools\Client\Configuration::getDefaultConfiguration()->setApiKey('Authorization', 'YOUR_API_KEY');
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+// OpenAPITools\Client\Configuration::getDefaultConfiguration()->setApiKeyPrefix('Authorization', 'Bearer');
+
+// Create an instance of the API class
+$api_instance = new OpenAPITools\Client\Api\PlayerApi();
+$uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // UUID | 
+$playerSanction = ; // PlayerSanction | 
+
+try {
+    $result = $api_instance->apiPlayersUuidSanctionPost($uuid, $playerSanction);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling PlayerApi->apiPlayersUuidSanctionPost: ', $e->getMessage(), PHP_EOL;
+}
+?></code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Player-apiPlayersUuidSanctionPost-0-perl">
+                              <pre class="prettyprint"><code class="language-perl">use Data::Dumper;
+use WWW::OPenAPIClient::Configuration;
+use WWW::OPenAPIClient::PlayerApi;
+
+# Configure API key authorization: auth
+$WWW::OPenAPIClient::Configuration::api_key->{'Authorization'} = 'YOUR_API_KEY';
+# uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+#$WWW::OPenAPIClient::Configuration::api_key_prefix->{'Authorization'} = "Bearer";
+
+# Create an instance of the API class
+my $api_instance = WWW::OPenAPIClient::PlayerApi->new();
+my $uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; # UUID | 
+my $playerSanction = WWW::OPenAPIClient::Object::PlayerSanction->new(); # PlayerSanction | 
+
+eval {
+    my $result = $api_instance->apiPlayersUuidSanctionPost(uuid => $uuid, playerSanction => $playerSanction);
+    print Dumper($result);
+};
+if ($@) {
+    warn "Exception when calling PlayerApi->apiPlayersUuidSanctionPost: $@\n";
+}</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Player-apiPlayersUuidSanctionPost-0-python">
+                              <pre class="prettyprint"><code class="language-python">from __future__ import print_statement
+import time
+import openapi_client
+from openapi_client.rest import ApiException
+from pprint import pprint
+
+# Configure API key authorization: auth
+openapi_client.configuration.api_key['Authorization'] = 'YOUR_API_KEY'
+# Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+# openapi_client.configuration.api_key_prefix['Authorization'] = 'Bearer'
+
+# Create an instance of the API class
+api_instance = openapi_client.PlayerApi()
+uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d # UUID |  (default to null)
+playerSanction =  # PlayerSanction | 
+
+try:
+    api_response = api_instance.api_players_uuid_sanction_post(uuid, playerSanction)
+    pprint(api_response)
+except ApiException as e:
+    print("Exception when calling PlayerApi->apiPlayersUuidSanctionPost: %s\n" % e)</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Player-apiPlayersUuidSanctionPost-0-rust">
+                              <pre class="prettyprint"><code class="language-rust">extern crate PlayerApi;
+
+pub fn main() {
+    let uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // UUID
+    let playerSanction = ; // PlayerSanction
+
+    let mut context = PlayerApi::Context::default();
+    let result = client.apiPlayersUuidSanctionPost(uuid, playerSanction, &context).wait();
+
+    println!("{:?}", result);
+}
+</code></pre>
+                            </div>
+                          </div>
+
+                          <h2>Scopes</h2>
+                          <table>
+                            
+                          </table>
+
+                          <h2>Parameters</h2>
+
+                            <div class="methodsubtabletitle">Path parameters</div>
+                            <table id="methodsubtable">
+                                <tr>
+                                  <th width="150px">Name</th>
+                                  <th>Description</th>
+                                </tr>
+                                  <tr><td style="width:150px;">uuid*</td>
+<td>
+
+
+    <div id="d2e199_apiPlayersUuidSanctionPost_uuid">
+        <div class="json-schema-view">
+            <div class="primitive">
+                <span class="type">
+                    UUID
+                </span>
+                    <span class="format">
+                        (uuid)
+                    </span>
+
+            </div>
+                <div class="inner required">
+                    Required
+                </div>
+        </div>
+    </div>
+</td>
+</tr>
+
+                            </table>
+
+
+                            <div class="methodsubtabletitle">Body parameters</div>
+                            <table id="methodsubtable">
+                              <tr>
+                                <th width="150px">Name</th>
+                                <th>Description</th>
+                              </tr>
+                                <tr><td style="width:150px;">playerSanction <span style="color:red;">*</span></td>
+<td>
+<p class="marked"></p>
+<script>
+$(document).ready(function() {
+  var schemaWrapper = {
+  "content" : {
+    "application/json" : {
+      "schema" : {
+        "$ref" : "#/components/schemas/PlayerSanction"
+      }
+    }
+  },
+  "required" : true
+};
+
+  var schema = findNode('schema',schemaWrapper).schema;
+  if (!schema) {
+    schema = schemaWrapper.schema;
+  }
+  if (schema.$ref != null) {
+    schema = defsParser.$refs.get(schema.$ref);
+  } else {
+    schemaWrapper.definitions = Object.assign({}, defs);
+    $RefParser.dereference(schemaWrapper).catch(function(err) {
+      console.log(err);
+    });
+  }
+
+  var view = new JSONSchemaView(schema,2,{isBodyParam: true});
+  var result = $('#d2e199_apiPlayersUuidSanctionPost_playerSanction');
+  result.empty();
+  result.append(view.render());
+});
+</script>
+<div id="d2e199_apiPlayersUuidSanctionPost_playerSanction"></div>
+</td>
+</tr>
+
+                            </table>
+
+
+
+                          <h2>Responses</h2>
+                            <h3 id="examples-Player-apiPlayersUuidSanctionPost-title-200"></h3>
+                            <p id="examples-Player-apiPlayersUuidSanctionPost-description-200" class="marked"></p>
+                            <script>
+                              var responsePlayer200_description = `OK`;
+                              var responsePlayer200_description_break = responsePlayer200_description.indexOf('\n');
+                              if (responsePlayer200_description_break == -1) {
+                                $("#examples-Player-apiPlayersUuidSanctionPost-title-200").text("Status: 200 - " + responsePlayer200_description);
+                              } else {
+                                $("#examples-Player-apiPlayersUuidSanctionPost-title-200").text("Status: 200 - " + responsePlayer200_description.substring(0, responsePlayer200_description_break));
+                                $("#examples-Player-apiPlayersUuidSanctionPost-description-200").html(responsePlayer200_description.substring(responsePlayer200_description_break));
+                              }
+                            </script>
+
+
+                            <ul id="responses-detail-Player-apiPlayersUuidSanctionPost-200" class="nav nav-tabs nav-tabs-examples" >
+                                <li class="active">
+                                  <a data-toggle="tab" href="#responses-Player-apiPlayersUuidSanctionPost-200-schema">Schema</a>
+                                </li>
+
+
+
+
+                            </ul>
+
+
+                            <div class="tab-content" id="responses-Player-apiPlayersUuidSanctionPost-200-wrapper" style='margin-bottom: 10px;'>
+                                <div class="tab-pane active" id="responses-Player-apiPlayersUuidSanctionPost-200-schema">
+                                  <div id="responses-Player-apiPlayersUuidSanctionPost-schema-200" class="exampleStyle">
+                                    <script>
+                                      $(document).ready(function() {
+                                        var schemaWrapper = {
+  "description" : "OK",
+  "content" : {
+    "application/json" : {
+      "schema" : {
+        "$ref" : "#/components/schemas/PlayerSanctionResult"
+      }
+    }
+  }
+};
+                                        var schema = findNode('schema',schemaWrapper).schema;
+                                        if (!schema) {
+                                          schema = schemaWrapper.schema;
+                                        }
+                                        if (schema.$ref != null) {
+                                          schema = defsParser.$refs.get(schema.$ref);
+                                        } else if (schema.items != null && schema.items.$ref != null) {
+                                            schema.items = defsParser.$refs.get(schema.items.$ref);
+                                        } else {
+                                          schemaWrapper.definitions = Object.assign({}, defs);
+                                          $RefParser.dereference(schemaWrapper).catch(function(err) {
+                                            console.log(err);
+                                          });
+                                        }
+
+                                        var view = new JSONSchemaView(schema, 3);
+                                        $('#responses-Player-apiPlayersUuidSanctionPost-200-schema-data').val(JSON.stringify(schema));
+                                        var result = $('#responses-Player-apiPlayersUuidSanctionPost-schema-200');
+                                        result.empty();
+                                        result.append(view.render());
+                                      });
+                                    </script>
+                                  </div>
+                                  <input id='responses-Player-apiPlayersUuidSanctionPost-200-schema-data' type='hidden' value=''></input>
+                                </div>
+                            </div>
+                            <h3 id="examples-Player-apiPlayersUuidSanctionPost-title-404"></h3>
+                            <p id="examples-Player-apiPlayersUuidSanctionPost-description-404" class="marked"></p>
+                            <script>
+                              var responsePlayer404_description = `Player or sanction board does not exist`;
+                              var responsePlayer404_description_break = responsePlayer404_description.indexOf('\n');
+                              if (responsePlayer404_description_break == -1) {
+                                $("#examples-Player-apiPlayersUuidSanctionPost-title-404").text("Status: 404 - " + responsePlayer404_description);
+                              } else {
+                                $("#examples-Player-apiPlayersUuidSanctionPost-title-404").text("Status: 404 - " + responsePlayer404_description.substring(0, responsePlayer404_description_break));
+                                $("#examples-Player-apiPlayersUuidSanctionPost-description-404").html(responsePlayer404_description.substring(responsePlayer404_description_break));
+                              }
+                            </script>
+
+
+                            <ul id="responses-detail-Player-apiPlayersUuidSanctionPost-404" class="nav nav-tabs nav-tabs-examples" >
+
+
+                            </ul>
+
+
+                            <div class="tab-content" id="responses-Player-apiPlayersUuidSanctionPost-404-wrapper" style='margin-bottom: 10px;'>
+                            </div>
+                            <h3 id="examples-Player-apiPlayersUuidSanctionPost-title-409"></h3>
+                            <p id="examples-Player-apiPlayersUuidSanctionPost-description-409" class="marked"></p>
+                            <script>
+                              var responsePlayer409_description = `Player is already banned/muted for other reason`;
+                              var responsePlayer409_description_break = responsePlayer409_description.indexOf('\n');
+                              if (responsePlayer409_description_break == -1) {
+                                $("#examples-Player-apiPlayersUuidSanctionPost-title-409").text("Status: 409 - " + responsePlayer409_description);
+                              } else {
+                                $("#examples-Player-apiPlayersUuidSanctionPost-title-409").text("Status: 409 - " + responsePlayer409_description.substring(0, responsePlayer409_description_break));
+                                $("#examples-Player-apiPlayersUuidSanctionPost-description-409").html(responsePlayer409_description.substring(responsePlayer409_description_break));
+                              }
+                            </script>
+
+
+                            <ul id="responses-detail-Player-apiPlayersUuidSanctionPost-409" class="nav nav-tabs nav-tabs-examples" >
+
+
+                            </ul>
+
+
+                            <div class="tab-content" id="responses-Player-apiPlayersUuidSanctionPost-409-wrapper" style='margin-bottom: 10px;'>
                             </div>
                         </article>
                       </div>
