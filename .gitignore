@@ -27,3 +27,4 @@ gen/
 templates/
 tests/
 secrets/
+docs/web/
