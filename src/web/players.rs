@@ -7,7 +7,7 @@ use chrono::Duration;
 use reqwest::StatusCode;
 use warp::{Filter, path, query, Rejection, Reply, reply};
 use crate::{AppData, Database};
-use tracing::instrument;
+use tracing::{info, instrument};
 use uuid::{Uuid};
 use warp::body::json;
 use crate::web::rejections::ApiError;
@@ -24,6 +24,7 @@ use serde_json::json;
 use crate::utils::apocalypse_builder;
 use crate::utils::apocalypse_builder::ApocalypseState;
 use crate::utils::message::{Color, MessageBuilder};
+use crate::web::echo::{ECHO_URL, EchoUserDefinition};
 
 
 pub fn filter(data: Arc<AppData>) -> impl Filter<Extract=impl Reply, Error=Rejection> + Clone {
@@ -99,27 +100,16 @@ async fn move_player(uuid: Uuid, data: Arc<AppData>, request: PlayerMove) -> Res
         return Ok(reply::json(&PlayerMoveResponse::UnlinkedPlayer).into_response());
     }
 
-
     debug!("Got player proxy {}", proxy);
 
     match request {
         PlayerMove::Server { server, admin_move } => {
+
             if data.db.select_server_kind(&server).await.map_err(ApiError::from)?.is_none() {
                 return Ok(reply::json(&PlayerMoveResponse::MissingServer).into_response());
             }
 
-            if admin_move {
-                data.msgr.send_event(&ServerEvent::AdminMovePlayer {
-                    server,
-                    player: uuid,
-                }).await.map_err(ApiError::from)?;
-            } else {
-                data.msgr.send_event(&ServerEvent::MovePlayer {
-                    proxy,
-                    server,
-                    player: uuid,
-                }).await.map_err(ApiError::from)?;
-            }
+            commit_move(data, proxy,uuid, server, admin_move).await?;
         }
         PlayerMove::ServerKind { kind } => {
             let srv_kind = match data.db.select_server_kind_object(&kind).await.map_err(ApiError::from)? {
@@ -139,7 +129,7 @@ async fn move_player(uuid: Uuid, data: Arc<AppData>, request: PlayerMove) -> Res
 }
 
 
-pub async fn move_player_to_server_kind(data: Arc<AppData>, uuid: &Uuid, kind: &ServerKind) -> Result<bool, Rejection> {
+pub async fn move_player_to_server_kind(data: Arc<AppData>, uuid: &Uuid, kind: &ServerKind) -> Result<bool, ApiError> {
     let servers = data.db.select_all_servers_by_kind(&kind.name).await.map_err(ApiError::from)?;
     debug!("Got servers with kind {}", kind.name);
     let autoscale = kind.autoscale.as_ref().map(|t| serde_json::from_str::<Autoscale>(t)).transpose().map_err(ApiError::from)?;
@@ -170,11 +160,7 @@ pub async fn move_player_to_server_kind(data: Arc<AppData>, uuid: &Uuid, kind: &
             Some(proxy) => proxy
         };
 
-        data.msgr.send_event(&ServerEvent::MovePlayer {
-            proxy,
-            server: srv.id.clone(),
-            player: uuid.clone(),
-        }).await.map_err(ApiError::from)?;
+        commit_move(data, proxy, uuid.clone(), srv.id, false).await?;
 
         return Ok(true);
     }
@@ -194,6 +180,46 @@ pub async fn move_player_to_server_kind(data: Arc<AppData>, uuid: &Uuid, kind: &
         Ok(false)
     }
 }
+
+pub async fn commit_move(data: Arc<AppData>, proxy: Uuid, player: Uuid, server: Uuid, admin_move: bool) -> Result<(), ApiError> {
+
+
+    if admin_move {
+        data.msgr.send_event(&ServerEvent::AdminMovePlayer {
+            server,
+            player,
+        }).await.map_err(ApiError::from)?;
+    } else {
+        data.msgr.send_event(&ServerEvent::MovePlayer {
+            proxy,
+            server,
+            player,
+        }).await.map_err(ApiError::from)?;
+    }
+
+    let echo = data.db.select_player_echo_enabled(&player).await.map_err(ApiError::from)?;
+
+    if echo{
+        let server_echo = data.db.select_server_echo_key(&server).await.map_err(ApiError::from)?;
+        if server_echo.is_some() {
+            info!("Updating echo server for {} : {}", player, server);
+            let _: u32 = data.client.post(format!("{}/players/{}", ECHO_URL, player)).header("Authorization", data.echo_key.to_string()).json(&EchoUserDefinition{ ip: None, server }).send().await.map_err(ApiError::from)?.json().await.map_err(ApiError::from)?;
+            data.msgr.send_event(&ServerEvent::EchoStartTrackingPlayer {
+                player,
+                server,
+            }).await.map_err(ApiError::from)?;
+        }else {
+            info!("Disabling alpha feature echo for player {}", player);
+            data.client.delete(format!("{}/players/{}", ECHO_URL, player)).header("Authorization", data.echo_key.to_string()).send().await.map_err(ApiError::from)?;
+            data.db.set_player_echo_enabled(&player, false).await.map_err(ApiError::from)?;
+            info!("Disabled alpha feature echo for player {}", player);
+        }
+    };
+
+
+    Ok(())
+}
+
 
 #[derive(Debug, Serialize, Deserialize)]
 struct PlayerBan {
@@ -474,7 +500,6 @@ async fn get_full_player(player: String, selector: PlayerSelector, data: Arc<App
         PlayerSelectorValue::Ip => apocalypse_builder::get_ip_associations(IpAddr::from_str(&player).map_err(ApiError::from)?, data.clone(), &mut state).await,
         PlayerSelectorValue::Uuid => apocalypse_builder::get_uuid_associations(Uuid::parse_str(&player).map_err(ApiError::from)?, data.clone(), &mut state).await,
     }.map_err(ApiError::from)?;
-
 
 
     Ok(reply::json(&state))

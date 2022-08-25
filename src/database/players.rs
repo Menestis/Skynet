@@ -279,7 +279,17 @@ impl Database {
         //#[query(set_player_discord_id = "UPDATE players SET discord_id = ? WHERE uuid = ?;")]
         execute(&self.queries.set_player_discord_id, &self.session, (discord_id, player)).await
     }
+    #[instrument(skip(self), level = "debug")]
+    pub async fn set_player_echo_enabled(&self, player: &Uuid, echo: bool) -> Result<(), DatabaseError> {
+        //#[query(set_player_echo_enabled = "UPDATE players SET echo_enabled = ? WHERE uuid = ?;")]
+        execute(&self.queries.set_player_echo_enabled, &self.session, (echo, player)).await
+    }
 
+    #[instrument(skip(self), level = "debug")]
+    pub async fn select_player_echo_enabled(&self, uuid: &Uuid) -> Result<bool, DatabaseError> {
+        //#[query(select_player_echo_enabled = "SELECT echo_enabled FROM players WHERE uuid = ?")]
+        Ok(select_one::<(Option<bool>, ), _>(&self.queries.select_player_echo_enabled, &self.session, (uuid, )).await?.map(|t| t.0).flatten().unwrap_or_default())
+    }
 
     #[instrument(skip(self), level = "debug")]
     pub async fn add_player_group(&self, player: &Uuid, group: &str) -> Result<(), DatabaseError> {

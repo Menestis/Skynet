@@ -4,13 +4,13 @@ use std::sync::Arc;
 use thiserror::Error;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
-use tracing::{debug, error, info, instrument};
+use tracing::{debug, error, info, instrument, warn};
 use uuid::Uuid;
 use crate::AppData;
 use crate::database::DatabaseError;
 use crate::database::servers::{Server, ServerKind};
 use crate::messenger::MessengerError;
-use crate::messenger::servers_events::ServerEvent;
+use crate::web::players::commit_move;
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(tag = "type")]
@@ -37,7 +37,7 @@ pub enum ScalingError {
     #[error(transparent)]
     Serde(#[from] serde_json::Error),
     #[error(transparent)]
-    Messenger(#[from] MessengerError)
+    Messenger(#[from] MessengerError),
 }
 
 #[instrument(skip(data))]
@@ -104,11 +104,14 @@ pub async fn process_waiting(data: Arc<AppData>, server: Uuid) -> Result<(), Sca
         create_autoscale_server(data.clone(), &kind_obj, &autoscale_opt.unwrap()).await.map_err(ScalingError::from)?;
     }
     for pl in players {
-        data.msgr.send_event(&ServerEvent::MovePlayer {
-            proxy: pl.proxy,
-            server,
-            player: pl.uuid,
-        }).await.map_err(ScalingError::from)?;
+        if let Err(e) = commit_move(data.clone(), pl.proxy, pl.uuid, server, false).await{
+            warn!("Error commiting move : {}", e);
+        };
+        // data.msgr.send_event(&ServerEvent::MovePlayer {
+        //     proxy: pl.proxy,
+        //     server,
+        //     player: pl.uuid,
+        // }).await.map_err(ScalingError::from)?;
     }
 
     Ok(())

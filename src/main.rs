@@ -1,7 +1,6 @@
 #![recursion_limit = "1024"]
 
 use std::collections::HashMap;
-use std::env;
 use std::env::var;
 use std::future::Future;
 use std::net::SocketAddr;
@@ -42,8 +41,9 @@ async fn main() -> anyhow::Result<()> {
 
     let db = Arc::new(database::init().await?);
     let msgr = Arc::new(messenger::init(&uuid).await?);
-    let k8s = Arc::new(kubernetes::init(&uuid, db.clone(), msgr.clone(), online_player_count.clone()).await?);
-    
+    let echo_key = var("ECHO_KEY").map(|t| Uuid::from_str(&t).ok()).ok().flatten().unwrap_or_default();
+    let k8s = Arc::new(kubernetes::init(&uuid, db.clone(), msgr.clone(), online_player_count.clone(), echo_key).await?);
+
     let metrics = Metrics::new()?;
 
     let (shutdown_task, s, r) = shutdown();
@@ -58,7 +58,8 @@ async fn main() -> anyhow::Result<()> {
         shutdown_sender: s,
         shutdown_receiver: r,
         player_count: online_player_count,
-        metrics
+        metrics,
+        echo_key,
     });
 
     let addr = SocketAddr::from_str(&var("SKYNET_ADDRESS").unwrap_or("127.0.0.1:8888".to_string()))?;
@@ -82,6 +83,7 @@ pub struct AppData {
     pub shutdown_receiver: watch::Receiver<bool>,
     pub player_count: Arc<RwLock<HashMap<Uuid, i32>>>,
     pub metrics: Metrics,
+    pub echo_key: Uuid,
 }
 
 impl AppData {

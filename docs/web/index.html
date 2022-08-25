@@ -912,6 +912,22 @@ ul.nav-tabs {
     }
   }
 };
+    defs["EchoUserDefinition"] = {
+  "title" : "EchoUserDefinition",
+  "required" : [ "ip", "server" ],
+  "type" : "object",
+  "properties" : {
+    "ip" : {
+      "type" : "string",
+      "format" : "ipv4"
+    },
+    "server" : {
+      "type" : "string",
+      "format" : "uuid"
+    }
+  },
+  "description" : "Echo user"
+};
     defs["Leaderboard"] = {
   "required" : [ "label", "leaderboard" ],
   "type" : "object",
@@ -1465,6 +1481,13 @@ ul.nav-tabs {
                     </li>
                     <li data-group="Discord" data-name="apiDiscordWebhookNamePost" class="">
                       <a href="#api-Discord-apiDiscordWebhookNamePost">apiDiscordWebhookNamePost</a>
+                    </li>
+                  <li class="nav-header" data-group="Echo"><a href="#api-Echo">API Methods - Echo</a></li>
+                    <li data-group="Echo" data-name="apiPlayersUuidEchoPost" class="">
+                      <a href="#api-Echo-apiPlayersUuidEchoPost">apiPlayersUuidEchoPost</a>
+                    </li>
+                    <li data-group="Echo" data-name="apiServersUuidEchoEnableGet" class="">
+                      <a href="#api-Echo-apiServersUuidEchoEnableGet">apiServersUuidEchoEnableGet</a>
                     </li>
                   <li class="nav-header" data-group="Login"><a href="#api-Login">API Methods - Login</a></li>
                     <li data-group="Login" data-name="apiPlayersIpProxyPreloginGet" class="">
@@ -3441,6 +3464,827 @@ $(document).ready(function() {
 
 
                             <div class="tab-content" id="responses-Discord-apiDiscordWebhookNamePost-404-wrapper" style='margin-bottom: 10px;'>
+                            </div>
+                        </article>
+                      </div>
+                      <hr>
+                  </section>
+                <section id="api-Echo">
+                  <h1>Echo</h1>
+                    <div id="api-Echo-apiPlayersUuidEchoPost">
+                      <article id="api-Echo-apiPlayersUuidEchoPost-0" data-group="User" data-name="apiPlayersUuidEchoPost" data-version="0">
+                        <div class="pull-left">
+                          <h1>apiPlayersUuidEchoPost</h1>
+                          <p></p>
+                        </div>
+                        <div class="pull-right"></div>
+                        <div class="clearfix"></div>
+                        <p></p>
+                        <p class="marked"></p>
+                        <p></p>
+                        <br />
+                        <pre class="prettyprint language-html prettyprinted" data-type="post"><code><span class="pln">/api/players/{uuid}/echo</span></code></pre>
+                        <p>
+                          <h3>Usage and SDK Samples</h3>
+                        </p>
+                        <ul class="nav nav-tabs nav-tabs-examples">
+                          <li class="active"><a href="#examples-Echo-apiPlayersUuidEchoPost-0-curl">Curl</a></li>
+                          <li class=""><a href="#examples-Echo-apiPlayersUuidEchoPost-0-java">Java</a></li>
+                          <li class=""><a href="#examples-Echo-apiPlayersUuidEchoPost-0-android">Android</a></li>
+                          <!--<li class=""><a href="#examples-Echo-apiPlayersUuidEchoPost-0-groovy">Groovy</a></li>-->
+                          <li class=""><a href="#examples-Echo-apiPlayersUuidEchoPost-0-objc">Obj-C</a></li>
+                          <li class=""><a href="#examples-Echo-apiPlayersUuidEchoPost-0-javascript">JavaScript</a></li>
+                          <!--<li class=""><a href="#examples-Echo-apiPlayersUuidEchoPost-0-angular">Angular</a></li>-->
+                          <li class=""><a href="#examples-Echo-apiPlayersUuidEchoPost-0-csharp">C#</a></li>
+                          <li class=""><a href="#examples-Echo-apiPlayersUuidEchoPost-0-php">PHP</a></li>
+                          <li class=""><a href="#examples-Echo-apiPlayersUuidEchoPost-0-perl">Perl</a></li>
+                          <li class=""><a href="#examples-Echo-apiPlayersUuidEchoPost-0-python">Python</a></li>
+                          <li class=""><a href="#examples-Echo-apiPlayersUuidEchoPost-0-rust">Rust</a></li>
+                        </ul>
+
+                        <div class="tab-content">
+                          <div class="tab-pane active" id="examples-Echo-apiPlayersUuidEchoPost-0-curl">
+                            <pre class="prettyprint"><code class="language-bsh">curl -X POST \
+-H "Authorization: [[apiKey]]" \
+ -H "Accept: application/json" \
+ -H "Content-Type: application/json" \
+ "http://localhost:8888/api/players/{uuid}/echo" \
+ -d '{
+  &quot;server&quot; : &quot;046b6c7f-0b8a-43b9-b35d-6489e6daee91&quot;,
+  &quot;ip&quot; : &quot;ip&quot;
+}'
+</code></pre>
+                          </div>
+                          <div class="tab-pane" id="examples-Echo-apiPlayersUuidEchoPost-0-java">
+                            <pre class="prettyprint"><code class="language-java">import org.openapitools.client.*;
+import org.openapitools.client.auth.*;
+import org.openapitools.client.model.*;
+import org.openapitools.client.api.EchoApi;
+
+import java.io.File;
+import java.util.*;
+
+public class EchoApiExample {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        
+        // Configure API key authorization: auth
+        ApiKeyAuth auth = (ApiKeyAuth) defaultClient.getAuthentication("auth");
+        auth.setApiKey("YOUR API KEY");
+        // Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+        //auth.setApiKeyPrefix("Token");
+
+        // Create an instance of the API class
+        EchoApi apiInstance = new EchoApi();
+        UUID uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // UUID | 
+        EchoUserDefinition echoUserDefinition = ; // EchoUserDefinition | 
+
+        try {
+            'Integer' result = apiInstance.apiPlayersUuidEchoPost(uuid, echoUserDefinition);
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling EchoApi#apiPlayersUuidEchoPost");
+            e.printStackTrace();
+        }
+    }
+}
+</code></pre>
+                          </div>
+
+                          <div class="tab-pane" id="examples-Echo-apiPlayersUuidEchoPost-0-android">
+                            <pre class="prettyprint"><code class="language-java">import org.openapitools.client.api.EchoApi;
+
+public class EchoApiExample {
+    public static void main(String[] args) {
+        EchoApi apiInstance = new EchoApi();
+        UUID uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // UUID | 
+        EchoUserDefinition echoUserDefinition = ; // EchoUserDefinition | 
+
+        try {
+            'Integer' result = apiInstance.apiPlayersUuidEchoPost(uuid, echoUserDefinition);
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling EchoApi#apiPlayersUuidEchoPost");
+            e.printStackTrace();
+        }
+    }
+}</code></pre>
+                          </div>
+  <!--
+  <div class="tab-pane" id="examples-Echo-apiPlayersUuidEchoPost-0-groovy">
+  <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+  </div> -->
+                            <div class="tab-pane" id="examples-Echo-apiPlayersUuidEchoPost-0-objc">
+                              <pre class="prettyprint"><code class="language-cpp">Configuration *apiConfig = [Configuration sharedConfig];
+
+// Configure API key authorization: (authentication scheme: auth)
+[apiConfig setApiKey:@"YOUR_API_KEY" forApiKeyIdentifier:@"Authorization"];
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//[apiConfig setApiKeyPrefix:@"Bearer" forApiKeyIdentifier:@"Authorization"];
+
+
+// Create an instance of the API class
+EchoApi *apiInstance = [[EchoApi alloc] init];
+UUID *uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; //  (default to null)
+EchoUserDefinition *echoUserDefinition = ; // 
+
+[apiInstance apiPlayersUuidEchoPostWith:uuid
+    echoUserDefinition:echoUserDefinition
+              completionHandler: ^('Integer' output, NSError* error) {
+    if (output) {
+        NSLog(@"%@", output);
+    }
+    if (error) {
+        NSLog(@"Error: %@", error);
+    }
+}];
+</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Echo-apiPlayersUuidEchoPost-0-javascript">
+                              <pre class="prettyprint"><code class="language-js">var SkynetApi = require('skynet_api');
+var defaultClient = SkynetApi.ApiClient.instance;
+
+// Configure API key authorization: auth
+var auth = defaultClient.authentications['auth'];
+auth.apiKey = "YOUR API KEY";
+// Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+//auth.apiKeyPrefix['Authorization'] = "Token";
+
+// Create an instance of the API class
+var api = new SkynetApi.EchoApi()
+var uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // {UUID} 
+var echoUserDefinition = ; // {EchoUserDefinition} 
+
+var callback = function(error, data, response) {
+  if (error) {
+    console.error(error);
+  } else {
+    console.log('API called successfully. Returned data: ' + data);
+  }
+};
+api.apiPlayersUuidEchoPost(uuid, echoUserDefinition, callback);
+</code></pre>
+                            </div>
+
+                            <!--<div class="tab-pane" id="examples-Echo-apiPlayersUuidEchoPost-0-angular">
+              <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+            </div>-->
+                            <div class="tab-pane" id="examples-Echo-apiPlayersUuidEchoPost-0-csharp">
+                              <pre class="prettyprint"><code class="language-cs">using System;
+using System.Diagnostics;
+using Org.OpenAPITools.Api;
+using Org.OpenAPITools.Client;
+using Org.OpenAPITools.Model;
+
+namespace Example
+{
+    public class apiPlayersUuidEchoPostExample
+    {
+        public void main()
+        {
+            // Configure API key authorization: auth
+            Configuration.Default.ApiKey.Add("Authorization", "YOUR_API_KEY");
+            // Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+            // Configuration.Default.ApiKeyPrefix.Add("Authorization", "Bearer");
+
+            // Create an instance of the API class
+            var apiInstance = new EchoApi();
+            var uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d;  // UUID |  (default to null)
+            var echoUserDefinition = new EchoUserDefinition(); // EchoUserDefinition | 
+
+            try {
+                'Integer' result = apiInstance.apiPlayersUuidEchoPost(uuid, echoUserDefinition);
+                Debug.WriteLine(result);
+            } catch (Exception e) {
+                Debug.Print("Exception when calling EchoApi.apiPlayersUuidEchoPost: " + e.Message );
+            }
+        }
+    }
+}
+</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Echo-apiPlayersUuidEchoPost-0-php">
+                              <pre class="prettyprint"><code class="language-php"><&#63;php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+// Configure API key authorization: auth
+OpenAPITools\Client\Configuration::getDefaultConfiguration()->setApiKey('Authorization', 'YOUR_API_KEY');
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+// OpenAPITools\Client\Configuration::getDefaultConfiguration()->setApiKeyPrefix('Authorization', 'Bearer');
+
+// Create an instance of the API class
+$api_instance = new OpenAPITools\Client\Api\EchoApi();
+$uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // UUID | 
+$echoUserDefinition = ; // EchoUserDefinition | 
+
+try {
+    $result = $api_instance->apiPlayersUuidEchoPost($uuid, $echoUserDefinition);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling EchoApi->apiPlayersUuidEchoPost: ', $e->getMessage(), PHP_EOL;
+}
+?></code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Echo-apiPlayersUuidEchoPost-0-perl">
+                              <pre class="prettyprint"><code class="language-perl">use Data::Dumper;
+use WWW::OPenAPIClient::Configuration;
+use WWW::OPenAPIClient::EchoApi;
+
+# Configure API key authorization: auth
+$WWW::OPenAPIClient::Configuration::api_key->{'Authorization'} = 'YOUR_API_KEY';
+# uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+#$WWW::OPenAPIClient::Configuration::api_key_prefix->{'Authorization'} = "Bearer";
+
+# Create an instance of the API class
+my $api_instance = WWW::OPenAPIClient::EchoApi->new();
+my $uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; # UUID | 
+my $echoUserDefinition = WWW::OPenAPIClient::Object::EchoUserDefinition->new(); # EchoUserDefinition | 
+
+eval {
+    my $result = $api_instance->apiPlayersUuidEchoPost(uuid => $uuid, echoUserDefinition => $echoUserDefinition);
+    print Dumper($result);
+};
+if ($@) {
+    warn "Exception when calling EchoApi->apiPlayersUuidEchoPost: $@\n";
+}</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Echo-apiPlayersUuidEchoPost-0-python">
+                              <pre class="prettyprint"><code class="language-python">from __future__ import print_statement
+import time
+import openapi_client
+from openapi_client.rest import ApiException
+from pprint import pprint
+
+# Configure API key authorization: auth
+openapi_client.configuration.api_key['Authorization'] = 'YOUR_API_KEY'
+# Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+# openapi_client.configuration.api_key_prefix['Authorization'] = 'Bearer'
+
+# Create an instance of the API class
+api_instance = openapi_client.EchoApi()
+uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d # UUID |  (default to null)
+echoUserDefinition =  # EchoUserDefinition | 
+
+try:
+    api_response = api_instance.api_players_uuid_echo_post(uuid, echoUserDefinition)
+    pprint(api_response)
+except ApiException as e:
+    print("Exception when calling EchoApi->apiPlayersUuidEchoPost: %s\n" % e)</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Echo-apiPlayersUuidEchoPost-0-rust">
+                              <pre class="prettyprint"><code class="language-rust">extern crate EchoApi;
+
+pub fn main() {
+    let uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // UUID
+    let echoUserDefinition = ; // EchoUserDefinition
+
+    let mut context = EchoApi::Context::default();
+    let result = client.apiPlayersUuidEchoPost(uuid, echoUserDefinition, &context).wait();
+
+    println!("{:?}", result);
+}
+</code></pre>
+                            </div>
+                          </div>
+
+                          <h2>Scopes</h2>
+                          <table>
+                            
+                          </table>
+
+                          <h2>Parameters</h2>
+
+                            <div class="methodsubtabletitle">Path parameters</div>
+                            <table id="methodsubtable">
+                                <tr>
+                                  <th width="150px">Name</th>
+                                  <th>Description</th>
+                                </tr>
+                                  <tr><td style="width:150px;">uuid*</td>
+<td>
+
+
+    <div id="d2e199_apiPlayersUuidEchoPost_uuid">
+        <div class="json-schema-view">
+            <div class="primitive">
+                <span class="type">
+                    UUID
+                </span>
+                    <span class="format">
+                        (uuid)
+                    </span>
+
+            </div>
+                <div class="inner required">
+                    Required
+                </div>
+        </div>
+    </div>
+</td>
+</tr>
+
+                            </table>
+
+
+                            <div class="methodsubtabletitle">Body parameters</div>
+                            <table id="methodsubtable">
+                              <tr>
+                                <th width="150px">Name</th>
+                                <th>Description</th>
+                              </tr>
+                                <tr><td style="width:150px;">echoUserDefinition <span style="color:red;">*</span></td>
+<td>
+<p class="marked"></p>
+<script>
+$(document).ready(function() {
+  var schemaWrapper = {
+  "content" : {
+    "application/json" : {
+      "schema" : {
+        "$ref" : "#/components/schemas/EchoUserDefinition"
+      }
+    }
+  },
+  "required" : true
+};
+
+  var schema = findNode('schema',schemaWrapper).schema;
+  if (!schema) {
+    schema = schemaWrapper.schema;
+  }
+  if (schema.$ref != null) {
+    schema = defsParser.$refs.get(schema.$ref);
+  } else {
+    schemaWrapper.definitions = Object.assign({}, defs);
+    $RefParser.dereference(schemaWrapper).catch(function(err) {
+      console.log(err);
+    });
+  }
+
+  var view = new JSONSchemaView(schema,2,{isBodyParam: true});
+  var result = $('#d2e199_apiPlayersUuidEchoPost_echoUserDefinition');
+  result.empty();
+  result.append(view.render());
+});
+</script>
+<div id="d2e199_apiPlayersUuidEchoPost_echoUserDefinition"></div>
+</td>
+</tr>
+
+                            </table>
+
+
+
+                          <h2>Responses</h2>
+                            <h3 id="examples-Echo-apiPlayersUuidEchoPost-title-200"></h3>
+                            <p id="examples-Echo-apiPlayersUuidEchoPost-description-200" class="marked"></p>
+                            <script>
+                              var responseEcho200_description = `OK`;
+                              var responseEcho200_description_break = responseEcho200_description.indexOf('\n');
+                              if (responseEcho200_description_break == -1) {
+                                $("#examples-Echo-apiPlayersUuidEchoPost-title-200").text("Status: 200 - " + responseEcho200_description);
+                              } else {
+                                $("#examples-Echo-apiPlayersUuidEchoPost-title-200").text("Status: 200 - " + responseEcho200_description.substring(0, responseEcho200_description_break));
+                                $("#examples-Echo-apiPlayersUuidEchoPost-description-200").html(responseEcho200_description.substring(responseEcho200_description_break));
+                              }
+                            </script>
+
+
+                            <ul id="responses-detail-Echo-apiPlayersUuidEchoPost-200" class="nav nav-tabs nav-tabs-examples" >
+                                <li class="active">
+                                  <a data-toggle="tab" href="#responses-Echo-apiPlayersUuidEchoPost-200-schema">Schema</a>
+                                </li>
+
+
+
+
+                            </ul>
+
+
+                            <div class="tab-content" id="responses-Echo-apiPlayersUuidEchoPost-200-wrapper" style='margin-bottom: 10px;'>
+                                <div class="tab-pane active" id="responses-Echo-apiPlayersUuidEchoPost-200-schema">
+                                  <div id="responses-Echo-apiPlayersUuidEchoPost-schema-200" class="exampleStyle">
+                                    <script>
+                                      $(document).ready(function() {
+                                        var schemaWrapper = {
+  "description" : "OK",
+  "content" : {
+    "application/json" : {
+      "schema" : {
+        "type" : "integer"
+      }
+    }
+  }
+};
+                                        var schema = findNode('schema',schemaWrapper).schema;
+                                        if (!schema) {
+                                          schema = schemaWrapper.schema;
+                                        }
+                                        if (schema.$ref != null) {
+                                          schema = defsParser.$refs.get(schema.$ref);
+                                        } else if (schema.items != null && schema.items.$ref != null) {
+                                            schema.items = defsParser.$refs.get(schema.items.$ref);
+                                        } else {
+                                          schemaWrapper.definitions = Object.assign({}, defs);
+                                          $RefParser.dereference(schemaWrapper).catch(function(err) {
+                                            console.log(err);
+                                          });
+                                        }
+
+                                        var view = new JSONSchemaView(schema, 3);
+                                        $('#responses-Echo-apiPlayersUuidEchoPost-200-schema-data').val(JSON.stringify(schema));
+                                        var result = $('#responses-Echo-apiPlayersUuidEchoPost-schema-200');
+                                        result.empty();
+                                        result.append(view.render());
+                                      });
+                                    </script>
+                                  </div>
+                                  <input id='responses-Echo-apiPlayersUuidEchoPost-200-schema-data' type='hidden' value=''></input>
+                                </div>
+                            </div>
+                        </article>
+                      </div>
+                      <hr>
+                    <div id="api-Echo-apiServersUuidEchoEnableGet">
+                      <article id="api-Echo-apiServersUuidEchoEnableGet-0" data-group="User" data-name="apiServersUuidEchoEnableGet" data-version="0">
+                        <div class="pull-left">
+                          <h1>apiServersUuidEchoEnableGet</h1>
+                          <p></p>
+                        </div>
+                        <div class="pull-right"></div>
+                        <div class="clearfix"></div>
+                        <p></p>
+                        <p class="marked"></p>
+                        <p></p>
+                        <br />
+                        <pre class="prettyprint language-html prettyprinted" data-type="get"><code><span class="pln">/api/servers/{uuid}/echo/enable</span></code></pre>
+                        <p>
+                          <h3>Usage and SDK Samples</h3>
+                        </p>
+                        <ul class="nav nav-tabs nav-tabs-examples">
+                          <li class="active"><a href="#examples-Echo-apiServersUuidEchoEnableGet-0-curl">Curl</a></li>
+                          <li class=""><a href="#examples-Echo-apiServersUuidEchoEnableGet-0-java">Java</a></li>
+                          <li class=""><a href="#examples-Echo-apiServersUuidEchoEnableGet-0-android">Android</a></li>
+                          <!--<li class=""><a href="#examples-Echo-apiServersUuidEchoEnableGet-0-groovy">Groovy</a></li>-->
+                          <li class=""><a href="#examples-Echo-apiServersUuidEchoEnableGet-0-objc">Obj-C</a></li>
+                          <li class=""><a href="#examples-Echo-apiServersUuidEchoEnableGet-0-javascript">JavaScript</a></li>
+                          <!--<li class=""><a href="#examples-Echo-apiServersUuidEchoEnableGet-0-angular">Angular</a></li>-->
+                          <li class=""><a href="#examples-Echo-apiServersUuidEchoEnableGet-0-csharp">C#</a></li>
+                          <li class=""><a href="#examples-Echo-apiServersUuidEchoEnableGet-0-php">PHP</a></li>
+                          <li class=""><a href="#examples-Echo-apiServersUuidEchoEnableGet-0-perl">Perl</a></li>
+                          <li class=""><a href="#examples-Echo-apiServersUuidEchoEnableGet-0-python">Python</a></li>
+                          <li class=""><a href="#examples-Echo-apiServersUuidEchoEnableGet-0-rust">Rust</a></li>
+                        </ul>
+
+                        <div class="tab-content">
+                          <div class="tab-pane active" id="examples-Echo-apiServersUuidEchoEnableGet-0-curl">
+                            <pre class="prettyprint"><code class="language-bsh">curl -X GET \
+-H "Authorization: [[apiKey]]" \
+ -H "Accept: application/json" \
+ "http://localhost:8888/api/servers/{uuid}/echo/enable"
+</code></pre>
+                          </div>
+                          <div class="tab-pane" id="examples-Echo-apiServersUuidEchoEnableGet-0-java">
+                            <pre class="prettyprint"><code class="language-java">import org.openapitools.client.*;
+import org.openapitools.client.auth.*;
+import org.openapitools.client.model.*;
+import org.openapitools.client.api.EchoApi;
+
+import java.io.File;
+import java.util.*;
+
+public class EchoApiExample {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        
+        // Configure API key authorization: auth
+        ApiKeyAuth auth = (ApiKeyAuth) defaultClient.getAuthentication("auth");
+        auth.setApiKey("YOUR API KEY");
+        // Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+        //auth.setApiKeyPrefix("Token");
+
+        // Create an instance of the API class
+        EchoApi apiInstance = new EchoApi();
+        UUID uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // UUID | 
+
+        try {
+            UUID result = apiInstance.apiServersUuidEchoEnableGet(uuid);
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling EchoApi#apiServersUuidEchoEnableGet");
+            e.printStackTrace();
+        }
+    }
+}
+</code></pre>
+                          </div>
+
+                          <div class="tab-pane" id="examples-Echo-apiServersUuidEchoEnableGet-0-android">
+                            <pre class="prettyprint"><code class="language-java">import org.openapitools.client.api.EchoApi;
+
+public class EchoApiExample {
+    public static void main(String[] args) {
+        EchoApi apiInstance = new EchoApi();
+        UUID uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // UUID | 
+
+        try {
+            UUID result = apiInstance.apiServersUuidEchoEnableGet(uuid);
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling EchoApi#apiServersUuidEchoEnableGet");
+            e.printStackTrace();
+        }
+    }
+}</code></pre>
+                          </div>
+  <!--
+  <div class="tab-pane" id="examples-Echo-apiServersUuidEchoEnableGet-0-groovy">
+  <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+  </div> -->
+                            <div class="tab-pane" id="examples-Echo-apiServersUuidEchoEnableGet-0-objc">
+                              <pre class="prettyprint"><code class="language-cpp">Configuration *apiConfig = [Configuration sharedConfig];
+
+// Configure API key authorization: (authentication scheme: auth)
+[apiConfig setApiKey:@"YOUR_API_KEY" forApiKeyIdentifier:@"Authorization"];
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//[apiConfig setApiKeyPrefix:@"Bearer" forApiKeyIdentifier:@"Authorization"];
+
+
+// Create an instance of the API class
+EchoApi *apiInstance = [[EchoApi alloc] init];
+UUID *uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; //  (default to null)
+
+[apiInstance apiServersUuidEchoEnableGetWith:uuid
+              completionHandler: ^(UUID output, NSError* error) {
+    if (output) {
+        NSLog(@"%@", output);
+    }
+    if (error) {
+        NSLog(@"Error: %@", error);
+    }
+}];
+</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Echo-apiServersUuidEchoEnableGet-0-javascript">
+                              <pre class="prettyprint"><code class="language-js">var SkynetApi = require('skynet_api');
+var defaultClient = SkynetApi.ApiClient.instance;
+
+// Configure API key authorization: auth
+var auth = defaultClient.authentications['auth'];
+auth.apiKey = "YOUR API KEY";
+// Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+//auth.apiKeyPrefix['Authorization'] = "Token";
+
+// Create an instance of the API class
+var api = new SkynetApi.EchoApi()
+var uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // {UUID} 
+
+var callback = function(error, data, response) {
+  if (error) {
+    console.error(error);
+  } else {
+    console.log('API called successfully. Returned data: ' + data);
+  }
+};
+api.apiServersUuidEchoEnableGet(uuid, callback);
+</code></pre>
+                            </div>
+
+                            <!--<div class="tab-pane" id="examples-Echo-apiServersUuidEchoEnableGet-0-angular">
+              <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+            </div>-->
+                            <div class="tab-pane" id="examples-Echo-apiServersUuidEchoEnableGet-0-csharp">
+                              <pre class="prettyprint"><code class="language-cs">using System;
+using System.Diagnostics;
+using Org.OpenAPITools.Api;
+using Org.OpenAPITools.Client;
+using Org.OpenAPITools.Model;
+
+namespace Example
+{
+    public class apiServersUuidEchoEnableGetExample
+    {
+        public void main()
+        {
+            // Configure API key authorization: auth
+            Configuration.Default.ApiKey.Add("Authorization", "YOUR_API_KEY");
+            // Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+            // Configuration.Default.ApiKeyPrefix.Add("Authorization", "Bearer");
+
+            // Create an instance of the API class
+            var apiInstance = new EchoApi();
+            var uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d;  // UUID |  (default to null)
+
+            try {
+                UUID result = apiInstance.apiServersUuidEchoEnableGet(uuid);
+                Debug.WriteLine(result);
+            } catch (Exception e) {
+                Debug.Print("Exception when calling EchoApi.apiServersUuidEchoEnableGet: " + e.Message );
+            }
+        }
+    }
+}
+</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Echo-apiServersUuidEchoEnableGet-0-php">
+                              <pre class="prettyprint"><code class="language-php"><&#63;php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+// Configure API key authorization: auth
+OpenAPITools\Client\Configuration::getDefaultConfiguration()->setApiKey('Authorization', 'YOUR_API_KEY');
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+// OpenAPITools\Client\Configuration::getDefaultConfiguration()->setApiKeyPrefix('Authorization', 'Bearer');
+
+// Create an instance of the API class
+$api_instance = new OpenAPITools\Client\Api\EchoApi();
+$uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // UUID | 
+
+try {
+    $result = $api_instance->apiServersUuidEchoEnableGet($uuid);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling EchoApi->apiServersUuidEchoEnableGet: ', $e->getMessage(), PHP_EOL;
+}
+?></code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Echo-apiServersUuidEchoEnableGet-0-perl">
+                              <pre class="prettyprint"><code class="language-perl">use Data::Dumper;
+use WWW::OPenAPIClient::Configuration;
+use WWW::OPenAPIClient::EchoApi;
+
+# Configure API key authorization: auth
+$WWW::OPenAPIClient::Configuration::api_key->{'Authorization'} = 'YOUR_API_KEY';
+# uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+#$WWW::OPenAPIClient::Configuration::api_key_prefix->{'Authorization'} = "Bearer";
+
+# Create an instance of the API class
+my $api_instance = WWW::OPenAPIClient::EchoApi->new();
+my $uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; # UUID | 
+
+eval {
+    my $result = $api_instance->apiServersUuidEchoEnableGet(uuid => $uuid);
+    print Dumper($result);
+};
+if ($@) {
+    warn "Exception when calling EchoApi->apiServersUuidEchoEnableGet: $@\n";
+}</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Echo-apiServersUuidEchoEnableGet-0-python">
+                              <pre class="prettyprint"><code class="language-python">from __future__ import print_statement
+import time
+import openapi_client
+from openapi_client.rest import ApiException
+from pprint import pprint
+
+# Configure API key authorization: auth
+openapi_client.configuration.api_key['Authorization'] = 'YOUR_API_KEY'
+# Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+# openapi_client.configuration.api_key_prefix['Authorization'] = 'Bearer'
+
+# Create an instance of the API class
+api_instance = openapi_client.EchoApi()
+uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d # UUID |  (default to null)
+
+try:
+    api_response = api_instance.api_servers_uuid_echo_enable_get(uuid)
+    pprint(api_response)
+except ApiException as e:
+    print("Exception when calling EchoApi->apiServersUuidEchoEnableGet: %s\n" % e)</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Echo-apiServersUuidEchoEnableGet-0-rust">
+                              <pre class="prettyprint"><code class="language-rust">extern crate EchoApi;
+
+pub fn main() {
+    let uuid = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // UUID
+
+    let mut context = EchoApi::Context::default();
+    let result = client.apiServersUuidEchoEnableGet(uuid, &context).wait();
+
+    println!("{:?}", result);
+}
+</code></pre>
+                            </div>
+                          </div>
+
+                          <h2>Scopes</h2>
+                          <table>
+                            
+                          </table>
+
+                          <h2>Parameters</h2>
+
+                            <div class="methodsubtabletitle">Path parameters</div>
+                            <table id="methodsubtable">
+                                <tr>
+                                  <th width="150px">Name</th>
+                                  <th>Description</th>
+                                </tr>
+                                  <tr><td style="width:150px;">uuid*</td>
+<td>
+
+
+    <div id="d2e199_apiServersUuidEchoEnableGet_uuid">
+        <div class="json-schema-view">
+            <div class="primitive">
+                <span class="type">
+                    UUID
+                </span>
+                    <span class="format">
+                        (uuid)
+                    </span>
+
+            </div>
+                <div class="inner required">
+                    Required
+                </div>
+        </div>
+    </div>
+</td>
+</tr>
+
+                            </table>
+
+
+
+
+
+                          <h2>Responses</h2>
+                            <h3 id="examples-Echo-apiServersUuidEchoEnableGet-title-200"></h3>
+                            <p id="examples-Echo-apiServersUuidEchoEnableGet-description-200" class="marked"></p>
+                            <script>
+                              var responseEcho200_description = `OK`;
+                              var responseEcho200_description_break = responseEcho200_description.indexOf('\n');
+                              if (responseEcho200_description_break == -1) {
+                                $("#examples-Echo-apiServersUuidEchoEnableGet-title-200").text("Status: 200 - " + responseEcho200_description);
+                              } else {
+                                $("#examples-Echo-apiServersUuidEchoEnableGet-title-200").text("Status: 200 - " + responseEcho200_description.substring(0, responseEcho200_description_break));
+                                $("#examples-Echo-apiServersUuidEchoEnableGet-description-200").html(responseEcho200_description.substring(responseEcho200_description_break));
+                              }
+                            </script>
+
+
+                            <ul id="responses-detail-Echo-apiServersUuidEchoEnableGet-200" class="nav nav-tabs nav-tabs-examples" >
+                                <li class="active">
+                                  <a data-toggle="tab" href="#responses-Echo-apiServersUuidEchoEnableGet-200-schema">Schema</a>
+                                </li>
+
+
+
+
+                            </ul>
+
+
+                            <div class="tab-content" id="responses-Echo-apiServersUuidEchoEnableGet-200-wrapper" style='margin-bottom: 10px;'>
+                                <div class="tab-pane active" id="responses-Echo-apiServersUuidEchoEnableGet-200-schema">
+                                  <div id="responses-Echo-apiServersUuidEchoEnableGet-schema-200" class="exampleStyle">
+                                    <script>
+                                      $(document).ready(function() {
+                                        var schemaWrapper = {
+  "description" : "OK",
+  "content" : {
+    "application/json" : {
+      "schema" : {
+        "type" : "string",
+        "format" : "uuid"
+      }
+    }
+  }
+};
+                                        var schema = findNode('schema',schemaWrapper).schema;
+                                        if (!schema) {
+                                          schema = schemaWrapper.schema;
+                                        }
+                                        if (schema.$ref != null) {
+                                          schema = defsParser.$refs.get(schema.$ref);
+                                        } else if (schema.items != null && schema.items.$ref != null) {
+                                            schema.items = defsParser.$refs.get(schema.items.$ref);
+                                        } else {
+                                          schemaWrapper.definitions = Object.assign({}, defs);
+                                          $RefParser.dereference(schemaWrapper).catch(function(err) {
+                                            console.log(err);
+                                          });
+                                        }
+
+                                        var view = new JSONSchemaView(schema, 3);
+                                        $('#responses-Echo-apiServersUuidEchoEnableGet-200-schema-data').val(JSON.stringify(schema));
+                                        var result = $('#responses-Echo-apiServersUuidEchoEnableGet-schema-200');
+                                        result.empty();
+                                        result.append(view.render());
+                                      });
+                                    </script>
+                                  </div>
+                                  <input id='responses-Echo-apiServersUuidEchoEnableGet-200-schema-data' type='hidden' value=''></input>
+                                </div>
                             </div>
                         </article>
                       </div>

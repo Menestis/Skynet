@@ -77,6 +77,11 @@ pub enum ServerEvent {
     ServerCountUpdate {
         server: Uuid,
         count: i32
+    },
+    EchoStartTrackingPlayer{
+        player: Uuid,
+        #[serde(skip)]
+        server: Uuid,
     }
 }
 
@@ -98,7 +103,8 @@ impl ServerEvent {
             PlayerCount { .. } => "server.playercount".to_string(),
             ServerStateUpdate { .. } => "server.update.state".to_string(),
             ServerDescriptionUpdate { .. } => "server.update.description".to_string(),
-            ServerCountUpdate { .. } => "server.update.onlines".to_string()
+            ServerCountUpdate { .. } => "server.update.onlines".to_string(),
+            EchoStartTrackingPlayer { server, .. } => server.to_string()
         }
     }
     pub fn direct(&self) -> bool {
@@ -107,7 +113,8 @@ impl ServerEvent {
             MovePlayer { .. } |
             AdminMovePlayer { .. } |
             DisconnectPlayer { .. } |
-            InvalidatePlayer { .. } => true,
+            InvalidatePlayer { .. } |
+            EchoStartTrackingPlayer { .. } => true,
             _ => false
         }
     }

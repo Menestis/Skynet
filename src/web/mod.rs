@@ -22,6 +22,7 @@ pub mod players;
 pub mod stats;
 pub mod discord;
 pub mod metrics;
+pub mod echo;
 
 pub async fn create_task(addr: SocketAddr, data: Arc<AppData>) -> impl Future<Output=()> {
     let mut r = data.shutdown_receiver.clone();
@@ -38,6 +39,7 @@ pub async fn create_task(addr: SocketAddr, data: Arc<AppData>) -> impl Future<Ou
         .or(stats::filter(data.clone()))
         .or(discord::filter(data.clone()))
         .or(metrics::filter(data.clone()))
+        .or(echo::filter(data.clone()))
 
         .recover(handle_rejection);
 

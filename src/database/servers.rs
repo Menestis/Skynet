@@ -17,7 +17,7 @@ pub struct Server {
     pub label: String,
     pub properties: Option<HashMap<String, String>>,
     pub state: String,
-    pub online: i32
+    pub online: i32,
 }
 
 #[derive(Debug, FromRow)]
@@ -143,6 +143,16 @@ impl Database {
         execute(&self.queries.update_server_playercount, &self.session, (count, id)).await
     }
 
+    #[instrument(skip(self), level = "debug")]
+    pub async fn select_server_echo_key(&self, id: &Uuid) -> Result<Option<Uuid>, DatabaseError> {
+        //#[query(select_server_echo_key = "SELECT echo_key FROM servers WHERE id = ?;")]
+        Ok(select_one::<(Option<Uuid>, ), _>(&self.queries.select_server_echo_key, &self.session, (id, )).await?.map(|t| t.0).flatten())
+    }
 
 
+    #[instrument(skip(self), level = "debug")]
+    pub async fn update_server_echo_key(&self, id: &Uuid, key: Option<Uuid>) -> Result<(), DatabaseError> {
+        //#[query(update_server_echo_key = "UPDATE servers SET echo_key = ? WHERE id = ?;")]
+        execute(&self.queries.update_server_echo_key, &self.session, (key, id)).await
+    }
 }

@@ -5,6 +5,7 @@ use tracing::*;
 use crate::web::{with_auth, with_data};
 use uuid::Uuid;
 use warp::hyper::StatusCode;
+use crate::web::echo::ECHO_URL;
 use crate::web::rejections::ApiError;
 
 
@@ -18,6 +19,14 @@ async fn close_session(uuid: Uuid, data: Arc<AppData>) -> Result<impl Reply, Rej
     if let Some(session) = data.db.select_player_session(&uuid).await.map_err(ApiError::from)? {
         data.db.close_session(&session).await.map_err(ApiError::from)?;
         data.db.close_player_session(&uuid).await.map_err(ApiError::from)?;
+
+        if data.db.select_player_echo_enabled(&uuid).await.map_err(ApiError::from)? {
+            let client = &data.client;
+            info!("Disabling alpha feature echo for player {}", uuid);
+            client.delete(format!("{}/players/{}", ECHO_URL, uuid)).header("Authorization", data.echo_key.to_string()).send().await.map_err(ApiError::from)?;
+            data.db.set_player_echo_enabled(&uuid, false).await.map_err(ApiError::from)?;
+            info!("Disabled alpha feature echo for player {}", uuid);
+        }
     }
 
     Ok(StatusCode::OK)

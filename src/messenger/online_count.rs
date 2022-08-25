@@ -20,5 +20,5 @@ pub async fn process_online_count(data: Arc<AppData>, uuid: Uuid, count: i32) {
     }).await {
         error!("{}", e);
     }
-    data.metrics.onlines.set(count as i64);
+    data.metrics.onlines.set(online as i64);
 }
