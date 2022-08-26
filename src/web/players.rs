@@ -427,7 +427,11 @@ async fn sanction_player(uuid: Uuid, data: Arc<AppData>, request: PlayerSanction
         }
     };
 
-    data.db.insert_player_sanction_state(&uuid, &request.category, i).await.map_err(ApiError::from)?;
+    data.db.insert_player_sanction_state(&uuid, &request.category, if request.unsanction {
+        i
+    }else {
+        i + 1
+    }).await.map_err(ApiError::from)?;
 
     response
 }
