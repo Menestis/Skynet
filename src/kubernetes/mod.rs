@@ -8,7 +8,6 @@ use k8s_openapi::api::core::v1::Pod;
 use kube::{Api, Client, Error};
 use kube::api::{ListParams, Patch, PatchParams};
 use kube::runtime::Controller;
-use kube::runtime::controller::Context;
 use kube_leader_election::{LeaseLock, LeaseLockParams};
 use serde_json::json;
 use tokio::select;
@@ -197,7 +196,7 @@ impl Kubernetes {
         let controller = Controller::new(self.pod_api.clone(), ListParams::default()
             .labels("managed_by == skynet,skynet/kind")).graceful_shutdown_on(async move { if let Err(err) = receiver.await { error!("{}",err) } });
 
-        tokio::spawn(controller.run(controller::reconcile, controller::on_error, Context::new((self.pod_api.clone(), self.database.clone(), self.messenger.clone(), self.online_player_count.clone(), self.reqwest_client.clone(), self.echo_key))).for_each(|res| async move {
+        tokio::spawn(controller.run(controller::reconcile, controller::on_error, Arc::new((self.pod_api.clone(), self.database.clone(), self.messenger.clone(), self.online_player_count.clone(), self.reqwest_client.clone(), self.echo_key))).for_each(|res| async move {
             match res {
                 Ok(o) => trace!("Reconciled {}", o.0.name),
                 Err(e) => warn!("Reconcile failed: {:?}", e),

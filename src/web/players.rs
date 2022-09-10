@@ -23,7 +23,6 @@ use async_recursion::async_recursion;
 use serde_json::json;
 use crate::utils::apocalypse_builder;
 use crate::utils::apocalypse_builder::ApocalypseState;
-use crate::utils::message::{Color, MessageBuilder};
 use crate::web::echo::{ECHO_URL, EchoUserDefinition};
 
 
@@ -203,7 +202,7 @@ pub async fn commit_move(data: Arc<AppData>, proxy: Uuid, player: Uuid, server: 
         let server_echo = data.db.select_server_echo_key(&server).await.map_err(ApiError::from)?;
         if server_echo.is_some() {
             info!("Updating echo server for {} : {}", player, server);
-            let _: u32 = data.client.post(format!("{}/players/{}", ECHO_URL, player)).header("Authorization", data.echo_key.to_string()).json(&EchoUserDefinition{ ip: None, server }).send().await.map_err(ApiError::from)?.json().await.map_err(ApiError::from)?;
+            let _: u32 = data.client.post(format!("{}/players/{}", ECHO_URL, player)).header("Authorization", data.echo_key.to_string()).json(&EchoUserDefinition{ ip: None, server, username: None }).send().await.map_err(ApiError::from)?.json().await.map_err(ApiError::from)?;
             data.msgr.send_event(&ServerEvent::EchoStartTrackingPlayer {
                 player,
                 server,
@@ -291,7 +290,6 @@ async fn ban_player(uuid: Uuid, data: Arc<AppData>, request: PlayerBan) -> Resul
     } else {
         let duration = request.duration.map(|t| Duration::seconds(t as i64));
         data.db.insert_ban(&uuid, request.reason.as_ref(), request.issuer.as_ref(), duration.as_ref()).await.map_err(ApiError::from)?;
-        let msg = MessageBuilder::new().component("Vous avez été bannis".to_string()).with_color(Some(Color::Red)).close().close();
         if let Some(proxy) = data.db.select_online_player_proxy(&uuid).await.map_err(ApiError::from)? {
             data.msgr.send_event(&ServerEvent::DisconnectPlayer { proxy, player: uuid, message: Some("Vous avez été bannis".to_string()) }).await.map_err(ApiError::from)?;
         }

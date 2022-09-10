@@ -7,7 +7,7 @@ use std::time::Duration;
 use k8s_openapi::api::core::v1::Pod;
 use kube::{Api, Error, ResourceExt};
 use kube::api::{Patch, PatchParams};
-use kube::runtime::controller::{Context, ReconcilerAction};
+use kube::runtime::controller::Action;
 use serde_json::json;
 use tokio::sync::RwLock;
 use tracing::error;
@@ -39,8 +39,8 @@ pub enum K8sWorkerError {
 
 const FINALIZER: &str = "skynet/finalizer";
 
-pub async fn reconcile(pod: Arc<Pod>, ctx: Context<(Api<Pod>, Arc<Database>, Arc<Messenger>, Arc<RwLock<HashMap<Uuid, i32>>>, Arc<reqwest::Client>, Uuid)>) -> Result<ReconcilerAction, K8sWorkerError> {
-    let (pod_api, db, msgr, online_player_count, client, echo_key) = ctx.get_ref();
+pub async fn reconcile(pod: Arc<Pod>, ctx: Arc<(Api<Pod>, Arc<Database>, Arc<Messenger>, Arc<RwLock<HashMap<Uuid, i32>>>, Arc<reqwest::Client>, Uuid)>) -> Result<Action, K8sWorkerError> {
+    let (pod_api, db, msgr, online_player_count, client, echo_key) = ctx.as_ref();
 
     let ip = pod.status.as_ref().map(|t| t.pod_ip.as_ref()).flatten();
     if !pod.finalizers().contains(&FINALIZER.to_string()) && !pod.labels().contains_key("skynet_id") && ip.is_some() {
@@ -61,14 +61,14 @@ pub async fn reconcile(pod: Arc<Pod>, ctx: Context<(Api<Pod>, Arc<Database>, Arc
             ip: addr,
             key: None,
             kind: kind.clone(),
-            label: pod.name(),
+            label: pod.name_any(),
             state: "Starting".to_string(),
             properties: Some(properties.clone()),
             online: 0,
         }).await?;
 
         if kind != "proxy" {
-            msgr.send_event(&ServerEvent::NewRoute { addr, id, description: "".to_string(), name: pod.name(), kind, properties }).await?;
+            msgr.send_event(&ServerEvent::NewRoute { addr, id, description: "".to_string(), name: pod.name_any(), kind, properties }).await?;
         }
 
         let mut finalizers = Vec::from(pod.finalizers());
@@ -82,8 +82,8 @@ pub async fn reconcile(pod: Arc<Pod>, ctx: Context<(Api<Pod>, Arc<Database>, Arc
                 }
             }
         });
-        pod_api.patch(&pod.name(), &PatchParams::default(), &Patch::Merge(&patch)).await?;
-        info!("New server {} (@{})", pod.name(), ip.unwrap());
+        pod_api.patch(&pod.name_any(), &PatchParams::default(), &Patch::Merge(&patch)).await?;
+        info!("New server {} (@{})", pod.name_any(), ip.unwrap());
     }
 
 
@@ -94,7 +94,7 @@ pub async fn reconcile(pod: Arc<Pod>, ctx: Context<(Api<Pod>, Arc<Database>, Arc
                 info!("Removing server : {}",id);
 
 
-                msgr.send_event(&ServerEvent::DeleteRoute { id, name: pod.name() }).await?;
+                msgr.send_event(&ServerEvent::DeleteRoute { id, name: pod.name_any() }).await?;
 
                 let server = db.select_server(&id).await?;
                 if let Some(server) = server {
@@ -127,18 +127,14 @@ pub async fn reconcile(pod: Arc<Pod>, ctx: Context<(Api<Pod>, Arc<Database>, Arc
                     "finalizers": finalizers
                 }
             });
-            pod_api.patch(&pod.name(), &PatchParams::default(), &Patch::Merge(patch)).await?;
+            pod_api.patch(&pod.name_any(), &PatchParams::default(), &Patch::Merge(patch)).await?;
         }
     }
 
-    Ok(ReconcilerAction {
-        requeue_after: None,
-    })
+    Ok(Action::await_change())
 }
 
-pub fn on_error(_error: &K8sWorkerError, _ctx: Context<(Api<Pod>, Arc<Database>, Arc<Messenger>, Arc<RwLock<HashMap<Uuid, i32>>>,Arc<reqwest::Client>, Uuid)>) -> ReconcilerAction {
-    ReconcilerAction {
-        requeue_after: Some(Duration::from_secs(60)),
-    }
+pub fn on_error(_error: &K8sWorkerError, _ctx: Arc<(Api<Pod>, Arc<Database>, Arc<Messenger>, Arc<RwLock<HashMap<Uuid, i32>>>,Arc<reqwest::Client>, Uuid)>) -> Action {
+    Action::requeue(Duration::from_secs(60))
 }
 
