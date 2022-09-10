@@ -1021,7 +1021,9 @@ paths:
                 server:
                   type: string
                   format: uuid
-              required: [ "server", "ip" ]
+                username:
+                  type: string
+              required: [ "server", "ip", "username" ]
               description: "Echo user"
         required: true
       responses:

@@ -18,6 +18,7 @@ pub fn filter(data: Arc<AppData>) -> impl Filter<Extract=impl Reply, Error=Rejec
 pub struct EchoUserDefinition {
     pub ip: Option<IpAddr>,
     pub server: Uuid,
+    pub username: Option<String>
 }
 
 pub static ECHO_URL: &str = "http://echo.echo:8888";
