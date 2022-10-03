@@ -8,7 +8,9 @@ use crate::web::{with_auth, with_data};
 use serde::{Serialize, Deserialize};
 use uuid::Uuid;
 use warp::body::json;
+#[cfg(feature = "kubernetes")]
 use crate::kubernetes::autoscale;
+#[cfg(feature = "kubernetes")]
 use crate::kubernetes::servers::generate_server_name;
 use crate::messenger::servers_events::ServerEvent;
 use crate::web::rejections::ApiError;

@@ -8,6 +8,7 @@ use warp::reject::Reject;
 use warp::{Rejection, Reply};
 use warp::reply::{Response, with_status};
 use crate::database::DatabaseError;
+#[cfg(feature = "kubernetes")]
 use crate::kubernetes::autoscale::ScalingError;
 use crate::messenger::MessengerError;
 
@@ -39,6 +40,7 @@ pub enum ApiError {
     MessengerError(#[from] MessengerError),
     #[error("Could not parse int : {0}")]
     ParsingInt(#[from] ParseIntError),
+    #[cfg(feature = "kubernetes")]
     #[error("Kubernetes error : {0}")]
     Kubernetes(#[from] kube::Error),
     #[error("Server error : {0}")]

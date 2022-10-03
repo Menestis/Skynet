@@ -5,6 +5,7 @@ use crate::AppData;
 use crate::messenger::servers_events::ServerEvent::PlayerCount;
 
 pub async fn process_online_count(data: Arc<AppData>, uuid: Uuid, count: i32) {
+    #[cfg(feature = "kubernetes")]
     if !data.k8s.is_leader() {
         return;
     }

@@ -15,7 +15,9 @@ use crate::web::{with_auth, with_data};
 use serde::{Serialize, Deserialize};
 use crate::database::DatabaseError;
 use crate::database::servers::ServerKind;
+#[cfg(feature = "kubernetes")]
 use crate::kubernetes::autoscale;
+#[cfg(feature = "kubernetes")]
 use crate::kubernetes::autoscale::Autoscale;
 use crate::log::debug;
 use crate::messenger::servers_events::ServerEvent;

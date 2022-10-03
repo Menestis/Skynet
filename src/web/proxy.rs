@@ -39,6 +39,7 @@ async fn update_playercount(proxy: Uuid, count: i32, data: Arc<AppData>) -> Resu
 
     data.db.update_server_playercount(&proxy, count).await.map_err(ApiError::from)?;
 
+    #[cfg(feature = "kubernetes")]
     if !data.k8s.is_leader() {
         if let Err(e) = data.msgr.send_event(&ServerEvent::PlayerCountSync { proxy, count }).await {
             error!("{}", e);
@@ -46,6 +47,9 @@ async fn update_playercount(proxy: Uuid, count: i32, data: Arc<AppData>) -> Resu
     } else {
         process_online_count(data, proxy, count).await;
     }
+
+    #[cfg(not(feature = "kubernetes"))]
+    process_online_count(data, proxy, count).await;
 
 
     Ok(reply())

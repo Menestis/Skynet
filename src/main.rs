@@ -19,13 +19,19 @@ use tracing_subscriber::fmt::format::FmtSpan;
 use uuid::Uuid;
 
 use crate::database::Database;
+#[cfg(feature = "kubernetes")]
 use crate::kubernetes::Kubernetes;
+#[cfg(not(feature = "kubernetes"))]
+use crate::digitalocean::DigitalOcean;
 use crate::messenger::Messenger;
 use crate::structures::metrics::Metrics;
 
 mod database;
 mod messenger;
+#[cfg(feature = "kubernetes")]
 mod kubernetes;
+#[cfg(not(feature = "kubernetes"))]
+mod digitalocean;
 mod web;
 mod utils;
 mod structures;
@@ -42,6 +48,7 @@ async fn main() -> anyhow::Result<()> {
     let db = Arc::new(database::init().await?);
     let msgr = Arc::new(messenger::init(&uuid).await?);
     let echo_key = var("ECHO_KEY").map(|t| Uuid::from_str(&t).ok()).ok().flatten().unwrap_or_default();
+    #[cfg(feature = "kubernetes")]
     let k8s = Arc::new(kubernetes::init(&uuid, db.clone(), msgr.clone(), online_player_count.clone(), echo_key).await?);
 
     let metrics = Metrics::new()?;
@@ -52,6 +59,7 @@ async fn main() -> anyhow::Result<()> {
         uuid,
         db,
         msgr,
+        #[cfg(feature = "kubernetes")]
         k8s,
         client: Client::new(),
         proxy_check_api_key: var("PROXYCHECK_API_KEY")?,
@@ -64,10 +72,11 @@ async fn main() -> anyhow::Result<()> {
 
     let addr = SocketAddr::from_str(&var("SKYNET_ADDRESS").unwrap_or("127.0.0.1:8888".to_string()))?;
     let web_task = web::create_task(addr, data.clone()).await;
-    let k8s_task = data.k8s.run_task(data.clone());
     let messenger_task = data.msgr.run_task(data.clone());
+    #[cfg(feature = "kubernetes")]
+    let k8s_task = data.k8s.run_task(data.clone());
 
-    join!(shutdown_task, web_task, k8s_task, messenger_task);
+    join!(shutdown_task, web_task, #[cfg(feature = "kubernetes")]k8s_task, messenger_task);
 
     Ok(())
 }
@@ -76,6 +85,7 @@ pub struct AppData {
     pub uuid: Uuid,
     pub db: Arc<Database>,
     pub msgr: Arc<Messenger>,
+    #[cfg(feature = "kubernetes")]
     pub k8s: Arc<Kubernetes>,
     pub client: Client,
     pub proxy_check_api_key: String,
