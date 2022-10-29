@@ -312,7 +312,7 @@ impl Database {
     #[instrument(skip(self), level = "debug")]
     pub async fn select_player_inventory(&self, player: &Uuid) -> Result<Option<HashMap<String, i32>>, DatabaseError> {
         //#[query(select_player_inventory = "SELECT inventory FROM players WHERE uuid = ?;")]
-        Ok(select_one::<(Option<HashMap<String, i32>>, ), _>(&self.queries.select_player_inventory, &self.session, (player, )).await?.map(|t| t.0).flatten())
+        Ok(select_one::<(Option<HashMap<String, i32>>, ), _>(&self.queries.select_player_inventory, &self.session, (player, )).await?.map(|t| t.0.unwrap_or_default()))
     }
 
     #[instrument(skip(self), level = "debug")]
