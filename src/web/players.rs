@@ -40,6 +40,7 @@ pub fn filter(data: Arc<AppData>) -> impl Filter<Extract=impl Reply, Error=Rejec
         .or(warp::get().and(path!("api"/"players")).and(with_auth(data.clone(), "get-online-players")).and(with_data(data.clone())).and_then(get_online))
         .or(warp::get().and(path!("api"/"players"/String)).and(with_auth(data.clone(), "get-player")).and(with_data(data.clone())).and_then(get_player))
         .or(warp::get().and(path!("api"/"players"/String/"full")).and(with_auth(data.clone(), "get-full-player")).and(query::<PlayerSelector>()).and(with_data(data.clone())).and_then(get_full_player))
+        .or(warp::post().and(path!("api"/"players"/Uuid/"properties"/String)).and(with_auth(data.clone(), "update-player-property")).and(with_data(data.clone())).and(json::<String>()).and_then(update_player_property))
         .or(warp::post().and(path!("api"/"players"/Uuid/"groups"/"update")).and(with_auth(data.clone(), "update-player-groups")).and(with_data(data.clone())).and(json::<PlayerGroupsUpdate>()).and_then(update_player_groups))
         .or(warp::post().and(path!("api"/"players"/Uuid/"inventory"/"transaction")).and(with_auth(data.clone(), "player-inventory-transaction")).and(with_data(data.clone())).and(json::<PlayerInventoryTransaction>()).and_then(player_inventory_transaction))
 }
@@ -551,6 +552,17 @@ async fn player_transaction(uuid: Uuid, data: Arc<AppData>, request: PlayerTrans
     } else {
         Ok(StatusCode::NOT_FOUND.into_response())
     }
+}
+
+#[instrument(skip(data))]
+async fn update_player_property(uuid: Uuid, name: String, data: Arc<AppData>, value: String) -> Result<impl Reply, Rejection> {
+    if data.db.select_player_info(&uuid).await.map_err(ApiError::from)?.is_none() {
+        return Ok(StatusCode::NOT_FOUND.into_response());
+    }
+
+    data.db.update_player_property(&uuid, name, value).await.map_err(ApiError::from)?;
+
+    Ok(StatusCode::OK.into_response())
 }
 
 pub type PlayerGroupsUpdate = Vec<String>;

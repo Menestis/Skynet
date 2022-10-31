@@ -244,6 +244,12 @@ impl Database {
     }
 
     #[instrument(skip(self), level = "debug")]
+    pub async fn update_player_property(&self, player: &Uuid, key: String, value: String) -> Result<(), DatabaseError> {
+        //#[query(update_player_property = "UPDATE players SET properties[?] = ? WHERE uuid = ?")]
+        execute(&self.queries.update_player_property, &self.session, (key, value, player)).await
+    }
+
+    #[instrument(skip(self), level = "debug")]
     pub async fn set_player_waiting_move_to(&self, player: &Uuid, kind: &str) -> Result<(), DatabaseError> {
         //#[query(set_player_waiting_move_to = "UPDATE players SET waiting_move_to = ? WHERE uuid = ?;")]
         execute(&self.queries.set_player_waiting_move_to, &self.session, (kind, player)).await
