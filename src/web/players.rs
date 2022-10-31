@@ -562,6 +562,10 @@ async fn update_player_property(uuid: Uuid, name: String, data: Arc<AppData>, va
 
     data.db.update_player_property(&uuid, name, value).await.map_err(ApiError::from)?;
 
+    if let Some(server) = data.db.select_online_player_server(&uuid).await.map_err(ApiError::from)? {
+        data.msgr.send_event(&ServerEvent::InvalidatePlayer { server, uuid }).await.map_err(ApiError::from)?;
+    }
+
     Ok(StatusCode::OK.into_response())
 }
 
